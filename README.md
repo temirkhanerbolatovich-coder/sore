@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DukenAI
 
-## Getting Started
+Мобильный магазин-ссылка для микропродавцов Казахстана: фото → ИИ-карточка RU/KZ → корзина → сохранённый заказ → WhatsApp. Продавец входит по email magic link; покупатель без регистрации. Без оплаты и ботов.
 
-First, run the development server:
+Next.js 16 App Router, TypeScript, Tailwind v4, Supabase Auth/Postgres/Storage, Zustand, Zod, Anthropic. RLS отделяет кабинеты; create_order считает цены на сервере.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Локальный запуск
+
+Нужны Node 24 и Docker Desktop (Linux containers).
+
+```sh
+npm ci
+npx supabase start -x studio,edge-runtime,logflare,vector,realtime,imgproxy,supavisor
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+CLI применяет миграции и локальный seed с demo@duken.ai. Скопируйте .env.example в .env.local, перенесите API URL, anon и service_role ключи из `npx supabase status -o env`. Не публикуйте вывод. ANTHROPIC_API_KEY необязателен: без него работает ручное заполнение.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Сайт http://localhost:3000, демо http://localhost:3000/demo, локальная почта http://127.0.0.1:54324, Studio можно включить полным запуском без -x (http://127.0.0.1:54323). `npx supabase db reset` пересоздаёт только локальную БД и удаляет её данные.
 
-## Learn More
+## Проверки
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+npm run lint
+npx next typegen
+npm run typecheck
+npm test
+npm run test:rls
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+E2E запускает production-сервер, использует настоящие локальные Auth/Storage/Postgres и почту, подменяет только ИИ и внешний переход WhatsApp. Тестовый аккаунт удаляется после сценария. CI выполняет проверки на push/PR. E2E слушает порт 3100 (`E2E_PORT` меняет его; адрес `/auth/callback` этого порта должен быть в `additional_redirect_urls` в `supabase/config.toml`, после правки перезапустите локальный Supabase). Занятый порт даёт ошибку, а не подключение к чужому серверу.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Типы обновляются: `npx supabase gen types typescript --local > src/lib/database.types.ts`.
 
-## Deploy on Vercel
+## Документация
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Решения и ограничения](docs/DECISIONS.md)
+- [Деплой](docs/DEPLOY.md)
+- [Результаты проверок](docs/VALIDATION.md)
+- [Питч](docs/PITCH.md)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MVP для пилота. Нет биллинга, онлайн-оплаты, вариантов товаров и SMS OTP. Базовые лимиты не защищают от распределённого флуда. Неиспользованные фото незавершённых форм требуют уборки. Публичный deployment, настоящие Anthropic и WhatsApp требуют внешних ключей и отдельной проверки.
