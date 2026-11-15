@@ -37,7 +37,9 @@ export async function seedShop(admin: Admin, opts: { email: string; slug: string
 
 /** Удаляет пользователя вместе с его файлами в Storage (магазин и товары уходят каскадом). */
 export async function cleanupUser(admin: Admin, email: string) {
-  const { data } = await admin.auth.admin.listUsers({ perPage: 200 });
+  const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  // Раньше ошибка тут молча глотались, и тестовые пользователи копились в базе.
+  if (error) throw new Error(`cleanup listUsers: ${error.message}`);
   const user = data.users.find((u) => u.email === email);
   if (!user) return;
   const { data: files } = await admin.storage.from("product-photos").list(user.id);

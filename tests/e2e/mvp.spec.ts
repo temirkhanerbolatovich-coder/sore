@@ -70,7 +70,8 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     expect(errors).toEqual([]);
     await customer.close();
   } finally {
-    const { data } = await admin.auth.admin.listUsers();
+    const { data, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 });
+    if (listError) throw new Error(`cleanup listUsers: ${listError.message}`);
     const user = data.users.find((u) => u.email === email);
     if (user) {
       const { data: files } = await admin.storage.from("product-photos").list(user.id);
