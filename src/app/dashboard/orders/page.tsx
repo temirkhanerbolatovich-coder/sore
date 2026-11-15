@@ -1,0 +1,149 @@
+import Link from "next/link";
+import { ActionForm } from "@/components/action-form";
+import { requireShop } from "@/lib/shop";
+import { formatPrice, whatsappUrl } from "@/lib/order";
+import { DashboardNav } from "@/components/dashboard-nav";
+import { setOrderStatus } from "./actions";
+
+export const metadata = { title: "Заказы — DukenAI" };
+
+type OrderRow = {
+  id: string;
+  number: number;
+  items: { title: string; qty: number; price: number }[];
+  total: number;
+  customer_name: string;
+  customer_phone: string;
+  address: string | null;
+  comment: string | null;
+  status: "new" | "done" | "cancelled";
+  created_at: string;
+};
+
+const STATUS = {
+  new: { label: "Новый", cls: "bg-accent-soft text-accent-dark" },
+  done: { label: "Выполнен", cls: "bg-[#e6f3ea] text-[#1d4d31]" },
+  cancelled: { label: "Отменён", cls: "bg-line text-muted" },
+} as const;
+
+const fmt = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Almaty",
+});
+
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string }> }) {
+  const { supabase, shop } = await requireShop();
+  const sp = await searchParams;
+  const page = Math.min(1000, Math.max(1, Number(sp.page) || 1));
+  const onlyNew = sp.status === "new";
+  let query = supabase
+    .from("orders")
+    .select("*")
+    .eq("shop_id", shop.id)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+  if (onlyNew) query = query.eq("status", "new");
+  const { data, error } = await query.range(0, page * 20);
+  if (error) throw new Error("Не удалось загрузить заказы");
+  const hasMore = (data?.length || 0) > page * 20;
+  const orders = (data ?? []).slice(0, page * 20) as OrderRow[];
+  const newCount = orders.filter((o) => o.status === "new").length;
+
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24">
+      <div className="flex flex-col gap-1 px-5 pb-3 pt-6">
+        <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
+        <p className="text-[15px] text-muted">
+          Заказы сохраняются, даже если клиент не нажал «Отправить» в WhatsApp.
+        </p>
+      </div>
+
+      <nav className="flex gap-3 px-5 py-3" aria-label="Фильтр заказов"><Link className="btn-outline" href="?status=new" aria-current={onlyNew ? "page" : undefined}>Новые</Link><Link className="btn-outline" href="?status=all" aria-current={!onlyNew ? "page" : undefined}>Все</Link></nav>
+      <ul className="flex flex-col gap-3 px-5">
+        {orders.length === 0 && (
+          <li className="card p-5">
+            <div className="text-lg font-bold">Пока нет заказов</div>
+            <p className="mt-1 leading-relaxed text-muted">
+              Отправьте ссылку на магазин клиентам или поставьте её в био Instagram.
+            </p>
+          </li>
+        )}
+        {orders.map((o) => {
+          const st = STATUS[o.status];
+          const text = `Здравствуйте, ${o.customer_name}! Ваш заказ №${o.number} на ${formatPrice(o.total)} из магазина «${shop.name}»`;
+          return (
+            <li key={o.id} className="card flex flex-col gap-2.5 p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-[17px] font-bold">
+                  №{o.number} · {o.customer_name}
+                </div>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${st.cls}`}>{st.label}</span>
+              </div>
+              <ul className="text-sm leading-snug text-muted">
+                {o.items.map((i, idx) => (
+                  <li key={idx}>
+                    {i.title} × {i.qty}
+                  </li>
+                ))}
+              </ul>
+              <div className="text-sm text-muted">
+                {o.address === "Самовывоз" ? "Самовывоз" : o.address ? `Доставка: ${o.address}` : null}
+              </div>
+              {o.comment && <div className="text-sm text-muted">Комментарий: {o.comment}</div>}
+              <div className="text-sm text-muted">
+                {o.customer_phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")} · {fmt.format(new Date(o.created_at))}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xl font-extrabold">{formatPrice(o.total)}</div>
+                <a href={whatsappUrl(o.customer_phone, text)} target="_blank" rel="noopener noreferrer" className="btn-wa h-11 min-h-11 rounded-[10px] px-3.5 text-sm">
+                  Написать клиенту
+                </a>
+              </div>
+              {o.status === "new" && (
+                <div className="flex gap-2 border-t border-line pt-2.5">
+                  <StatusButton id={o.id} status="done">
+                    Выполнен
+                  </StatusButton>
+                  <StatusButton id={o.id} status="cancelled" muted>
+                    Отменить
+                  </StatusButton>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      {hasMore && <Link className="btn-outline m-5" href={`?status=${onlyNew ? "new" : "all"}&page=${page+1}`}>Показать ещё</Link>}
+      <DashboardNav active="orders" newOrders={newCount} />
+    </main>
+  );
+}
+
+function StatusButton({
+  id,
+  status,
+  muted,
+  children,
+}: {
+  id: string;
+  status: string;
+  muted?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <ActionForm action={setOrderStatus} className="flex-1">
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="status" value={status} />
+      <button
+        type="submit"
+        className={`h-10 w-full rounded-[10px] text-sm font-bold ${muted ? "border-[1.5px] border-field text-muted" : "bg-ink text-cream"}`}
+      >
+        {children}
+      </button>
+    </ActionForm>
+  );
+}

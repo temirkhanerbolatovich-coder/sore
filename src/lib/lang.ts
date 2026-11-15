@@ -1,0 +1,109 @@
+import type { Product } from "@/lib/types";
+
+export type Lang = "ru" | "kz";
+
+export function parseLang(v: string | undefined): Lang {
+  return v === "kz" ? "kz" : "ru";
+}
+
+export const T = {
+  ru: {
+    accepted: "Заказ принят",
+    openWa: "Открыть WhatsApp",
+    waHelp: "Если WhatsApp не открылся сам, нажмите кнопку и отправьте сообщение продавцу.",
+    emptyCart: "Корзина пуста",
+    choose: "Выберите товары в магазине",
+    yourOrder: "Ваш заказ",
+    details: "Ваши данные",
+    name: "Имя",
+    phone: "Телефон",
+    method: "Способ получения",
+    delivery: "Доставка",
+    pickup: "Самовывоз",
+    address: "Адрес",
+    comment: "Комментарий",
+    commentHint: "Например, к 18:00",
+    total: "Итого",
+    sending: "Оформляем…",
+    order: "Заказать в WhatsApp",
+    orderHint: "Откроется чат с продавцом с готовым текстом заказа",
+    decrease: "Уменьшить",
+    increase: "Увеличить",
+    phoneError: "Укажите телефон, например +7 701 123 45 67",
+    addressError: "Укажите адрес доставки",
+    unavailable: "Некоторые товары закончились. Обновите корзину.",
+    rateLimit: "Слишком много заказов. Попробуйте через час.",
+    orderError: "Не удалось оформить заказ. Проверьте соединение и повторите попытку.",
+    updated: "Корзина обновлена: цены актуализированы, недоступные товары удалены.",
+    clearDetails: "Удалить сохранённые имя и телефон",
+    savedHint: "Имя и телефон сохраняются в этом браузере.",
+    invalidItems: "Проверьте количество товаров (от 1 до 99).",
+    tooLarge: "Сумма заказа слишком велика. Разделите заказ.",
+    all: "Все",
+    add: "В корзину",
+    out: "Нет в наличии",
+    inStock: "В наличии",
+    cart: "Корзина",
+    madeWith: "Сделано в",
+    createOwn: "Создать свой магазин",
+    empty: "В магазине пока нет товаров.",
+    back: "Назад в магазин",
+  },
+  kz: {
+    accepted: "Тапсырыс қабылданды",
+    openWa: "WhatsApp ашу",
+    waHelp: "WhatsApp ашылмаса, батырманы басып, сатушыға хабарлама жіберіңіз.",
+    emptyCart: "Себет бос",
+    choose: "Дүкеннен тауар таңдаңыз",
+    yourOrder: "Сіздің тапсырысыңыз",
+    details: "Сіздің деректеріңіз",
+    name: "Аты",
+    phone: "Телефон",
+    method: "Алу тәсілі",
+    delivery: "Жеткізу",
+    pickup: "Өзі алып кету",
+    address: "Мекенжай",
+    comment: "Түсініктеме",
+    commentHint: "Мысалы, 18:00-ге дейін",
+    total: "Барлығы",
+    sending: "Рәсімделуде…",
+    order: "WhatsApp арқылы тапсырыс беру",
+    orderHint: "Дайын тапсырыс мәтіні бар сатушымен чат ашылады",
+    decrease: "Азайту",
+    increase: "Көбейту",
+    phoneError: "Телефонды көрсетіңіз, мысалы +7 701 123 45 67",
+    addressError: "Жеткізу мекенжайын көрсетіңіз",
+    unavailable: "Кейбір тауарлар таусылды. Себетті жаңартыңыз.",
+    rateLimit: "Тапсырыс тым көп. Бір сағаттан кейін қайталаңыз.",
+    orderError: "Тапсырыс рәсімделмеді. Байланысты тексеріп, қайталаңыз.",
+    updated: "Себет жаңартылды: бағалар жаңартылып, жоқ тауарлар жойылды.",
+    clearDetails: "Сақталған ат пен телефонды өшіру",
+    savedHint: "Ат пен телефон осы браузерде сақталады.",
+    invalidItems: "Тауар санын тексеріңіз (1–99).",
+    tooLarge: "Тапсырыс сомасы тым үлкен. Тапсырысты бөліңіз.",
+    all: "Барлығы",
+    add: "Себетке",
+    out: "Қалмады",
+    inStock: "Бар",
+    cart: "Себет",
+    madeWith: "Жасалған:",
+    createOwn: "Өз дүкеніңізді ашу",
+    empty: "Дүкенде әзірге тауар жоқ.",
+    back: "Дүкенге оралу",
+  },
+} as const;
+
+export function description(p: Product, lang: Lang): string {
+  const primary = lang === "kz" ? p.description_kz : p.description_ru;
+  const fallback = lang === "kz" ? p.description_ru : p.description_kz;
+  return primary || fallback || "";
+}
+
+/** Ссылка внутри магазина с сохранением языка и категории. */
+export function shopHref(base: string, lang: Lang, cat?: string): string {
+  const q = new URLSearchParams();
+  if (lang === "kz") q.set("lang", "kz");
+  if (cat) q.set("cat", cat);
+  const s = q.toString();
+  return s ? `${base}?${s}` : base;
+}
