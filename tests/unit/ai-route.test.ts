@@ -11,7 +11,7 @@ import { POST } from "@/app/api/ai/product-card/route";
 const url = "https://test.supabase.co/storage/v1/object/public/product-photos/owner/a.jpg";
 const request = (photo_url: unknown = url) => new Request("http://localhost/api/ai/product-card", { method: "POST", body: JSON.stringify({ photo_url }) });
 beforeEach(() => {
-  vi.stubEnv("ANTHROPIC_API_KEY", "test"); vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("AI_PROVIDERS", "gemini,openrouter,anthropic"); vi.stubEnv("GEMINI_API_KEY", ""); vi.stubEnv("OPENROUTER_API_KEY", ""); vi.stubEnv("ANTHROPIC_API_KEY", "test"); vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   mocks.rpc.mockResolvedValue({ data: "reservation", error: null }); mocks.download.mockResolvedValue({ data: new Blob(["test"], { type: "image/jpeg" }) });
   mocks.create.mockResolvedValue({ content: [{ type: "text", text: JSON.stringify({ title: "Товар", description_ru: "Описание", description_kz: "Сипаттама", category: "Торты" }) }] });
 });

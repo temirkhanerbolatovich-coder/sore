@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
 import { T, description, parseLang, shopHref } from "@/lib/lang";
@@ -44,12 +44,12 @@ export default async function ProductPage({ params, searchParams }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
       <div className="flex items-center gap-1 px-3 py-3">
-        <Link href={shopHref(`/${shop.slug}`, lang)} className="flex min-h-11 items-center gap-1 px-2 font-semibold">
+        <BackLink fallback={shopHref(`/${shop.slug}`, lang)} className="flex min-h-11 items-center gap-1 px-2 font-semibold">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M15 5l-7 7 7 7" />
           </svg>
           {shop.name}
-        </Link>
+        </BackLink>
       </div>
 
       <ProductPhoto url={product.photo_url} alt={product.title} className="aspect-square w-full" />

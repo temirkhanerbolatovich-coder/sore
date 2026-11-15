@@ -13,7 +13,7 @@ npm ci
 npx supabase start -x studio,edge-runtime,logflare,vector,realtime,imgproxy,supavisor
 ```
 
-CLI применяет миграции и локальный seed с demo@duken.ai. Скопируйте .env.example в .env.local, перенесите API URL, anon и service_role ключи из `npx supabase status -o env`. Не публикуйте вывод. ANTHROPIC_API_KEY необязателен: без него работает ручное заполнение.
+CLI применяет миграции и локальный seed с demo@duken.ai. Скопируйте .env.example в .env.local, перенесите API URL, anon и service_role ключи из `npx supabase status -o env`. Не публикуйте вывод. ИИ-ключи необязательны: без них работает ручное заполнение. Бесплатно: `GEMINI_API_KEY` (aistudio.google.com/apikey) и/или `OPENROUTER_API_KEY` (openrouter.ai/keys, модели `:free`). Проверка ключей на настоящем фото: `npm run ai:check -- фото.jpg`.
 
 ```sh
 npm run dev

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ActionForm } from "@/components/action-form";
 import { requireShop } from "@/lib/shop";
 import { formatPrice, whatsappUrl } from "@/lib/order";
 import { DashboardNav } from "@/components/dashboard-nav";
-import { setOrderStatus } from "./actions";
+import { StatusButton } from "./status-button";
 
 export const metadata = { title: "Заказы — DukenAI" };
 
@@ -61,7 +60,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         </p>
       </div>
 
-      <nav className="flex gap-3 px-5 py-3" aria-label="Фильтр заказов"><Link className="btn-outline" href="?status=new" aria-current={onlyNew ? "page" : undefined}>Новые</Link><Link className="btn-outline" href="?status=all" aria-current={!onlyNew ? "page" : undefined}>Все</Link></nav>
+      <nav className="flex gap-3 px-5 py-3" aria-label="Фильтр заказов"><Link className={onlyNew ? "btn-dark" : "btn-outline"} href="?status=new" aria-current={onlyNew ? "page" : undefined}>Новые</Link><Link className={!onlyNew ? "btn-dark" : "btn-outline"} href="?status=all" aria-current={!onlyNew ? "page" : undefined}>Все</Link></nav>
       <ul className="flex flex-col gap-3 px-5">
         {orders.length === 0 && (
           <li className="card p-5">
@@ -107,8 +106,15 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   <StatusButton id={o.id} status="done">
                     Выполнен
                   </StatusButton>
-                  <StatusButton id={o.id} status="cancelled" muted>
+                  <StatusButton id={o.id} status="cancelled" muted confirmText={`Отменить заказ №${o.number}? Его можно будет вернуть в «Новые».`}>
                     Отменить
+                  </StatusButton>
+                </div>
+              )}
+              {o.status !== "new" && (
+                <div className="flex gap-2 border-t border-line pt-2.5">
+                  <StatusButton id={o.id} status="new" muted>
+                    Вернуть в «Новые»
                   </StatusButton>
                 </div>
               )}
@@ -123,27 +129,3 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   );
 }
 
-function StatusButton({
-  id,
-  status,
-  muted,
-  children,
-}: {
-  id: string;
-  status: string;
-  muted?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <ActionForm action={setOrderStatus} className="flex-1">
-      <input type="hidden" name="id" value={id} />
-      <input type="hidden" name="status" value={status} />
-      <button
-        type="submit"
-        className={`h-10 w-full rounded-[10px] text-sm font-bold ${muted ? "border-[1.5px] border-field text-muted" : "bg-ink text-cream"}`}
-      >
-        {children}
-      </button>
-    </ActionForm>
-  );
-}

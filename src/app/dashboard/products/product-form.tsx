@@ -8,6 +8,7 @@ import type { Product } from "@/lib/types";
 import { deleteProduct, saveProduct, type ProductState } from "./actions";
 
 import { Field } from "@/components/field";
+import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { ActionForm } from "@/components/action-form";
 
 const initial: ProductState = {};
@@ -23,7 +24,10 @@ export function ProductForm({ product }: { product?: Product }) {
   const [descRu, setDescRu] = useState(product?.description_ru ?? "");
   const [descKz, setDescKz] = useState(product?.description_kz ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
+  const [touched, setTouched] = useState(false);
+  const [aiBackup, setAiBackup] = useState<{ title: string; descRu: string; descKz: string; category: string } | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
+  useUnsavedGuard(touched && !pending);
   const [aiMessage, setAiMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function fillWithAi() {
@@ -38,6 +42,8 @@ export function ProductForm({ product }: { product?: Product }) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "error");
       const c = json.card;
+      setAiBackup({ title, descRu, descKz, category });
+      setTouched(true);
       setTitle(c.title);
       setDescRu(c.description_ru);
       setDescKz(c.description_kz);
@@ -77,6 +83,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
       const { data } = supabase.storage.from("product-photos").getPublicUrl(path);
       setPhotoUrl(data.publicUrl);
+      setTouched(true);
     } catch {
       setPhotoError("Не удалось загрузить фото. Попробуйте другое или проверьте интернет.");
     } finally {
@@ -87,7 +94,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <form action={action} className="flex flex-1 flex-col">
+      <form action={action} onChange={() => setTouched(true)} className="flex flex-1 flex-col">
         {product && <input type="hidden" name="id" value={product.id} />}
         <input type="hidden" name="photo_url" value={photoUrl} />
 
@@ -117,6 +124,11 @@ export function ProductForm({ product }: { product?: Product }) {
               >
                 {uploading ? "Загружаем…" : photoUrl ? "Заменить фото" : "Сделать или выбрать фото"}
               </label>
+              {photoUrl && !uploading && (
+                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
+                  Убрать фото
+                </button>
+              )}
               <button
                 type="button"
                 onClick={fillWithAi}
@@ -143,6 +155,21 @@ export function ProductForm({ product }: { product?: Product }) {
               }`}
             >
               {aiMessage.text}
+              {aiMessage.ok && aiBackup && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    className="min-h-11 font-semibold underline"
+                    onClick={() => {
+                      setTitle(aiBackup.title); setDescRu(aiBackup.descRu); setDescKz(aiBackup.descKz); setCategory(aiBackup.category);
+                      setAiBackup(null); setAiMessage(null);
+                    }}
+                  >
+                    Вернуть как было
+                  </button>
+                </>
+              )}
             </p>
           )}
 
@@ -216,6 +243,9 @@ export function ProductForm({ product }: { product?: Product }) {
           <button type="submit" disabled={pending || uploading || aiBusy} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
             {pending ? "Сохраняем…" : "Сохранить товар"}
           </button>
+          <Link href="/dashboard" className="btn-outline h-12 w-full">
+            Отмена
+          </Link>
         </div>
       </form>
 

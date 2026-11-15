@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackArrow, BackLink } from "@/components/back-link";
 
 export default function NotFound() {
   return (
@@ -8,7 +9,13 @@ export default function NotFound() {
       <p className="leading-relaxed text-muted">
         Возможно, магазин переехал или в ссылке опечатка. Хотите создать свой магазин за 2 минуты?
       </p>
-      <Link href="/" className="btn-accent">
+      <Link href="/login" className="btn-accent w-full">
+        Создать магазин
+      </Link>
+      <BackLink fallback="/" className="flex min-h-11 items-center gap-1 font-semibold text-muted">
+        <BackArrow /> Назад
+      </BackLink>
+      <Link href="/" className="min-h-11 font-semibold text-muted underline">
         На главную
       </Link>
     </main>

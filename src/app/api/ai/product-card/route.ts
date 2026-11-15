@@ -1,7 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { AI_SYSTEM_PROMPT, parseCard } from "@/lib/ai-card";
+import { aiConfigured, generateCard } from "@/lib/ai-providers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ownedPhotoPath, MAX_PHOTO_BYTES, PHOTO_TYPES } from "@/lib/photos";
 
@@ -10,8 +9,7 @@ export const maxDuration = 60;
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status });
 
 export async function POST(request: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || !process.env.SUPABASE_SERVICE_ROLE_KEY) return fail(503, "ИИ пока не настроен. Заполните карточку вручную.");
+  if (!aiConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return fail(503, "ИИ пока не настроен. Заполните карточку вручную.");
 
   const supabase = await createClient();
   const {
@@ -50,28 +48,13 @@ export async function POST(request: Request) {
   if (reserveError) return fail(reserveError.message.includes("limit") ? 429 : 500, "Не удалось запустить ИИ: лимит исчерпан или сервис недоступен.");
 
   try {
-    const client = new Anthropic({ apiKey, timeout: 45_000, maxRetries: 1 });
-    const message = await client.messages.create({
-      model: process.env.AI_MODEL ?? "claude-sonnet-5-5",
-      max_tokens: 1024,
-      system: AI_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: photo.type as "image/jpeg" | "image/png" | "image/webp", data: Buffer.from(await photo.arrayBuffer()).toString("base64") } },
-            { type: "text", text: "Составь карточку товара по этому фото." },
-          ],
-        },
-      ],
-    });
-
-    const text = message.content.map((b) => (b.type === "text" ? b.text : "")).join("");
-    const card = parseCard(text);
-    if (!card) throw new Error("bad model output");
+    const bytes = Buffer.from(await photo.arrayBuffer());
+    const { card, provider } = await generateCard({ base64: bytes.toString("base64"), mime: photo.type });
+    console.info("ai-card ok", provider);
 
     return NextResponse.json({ card, remaining: Math.max(0, limit - (count ?? 0) - 1) });
-  } catch {
+  } catch (e) {
+    console.error("ai-card failed:", e instanceof Error ? e.message : e);
     // Неудачная попытка не должна съедать лимит продавца.
     await admin.from("ai_generations").delete().eq("id", reserved);
     return fail(502, "ИИ не смог разобрать фото. Попробуйте ещё раз или заполните вручную.");

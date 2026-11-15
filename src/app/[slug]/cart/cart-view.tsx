@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { useCart, useHydrated, useShopLines } from "@/lib/cart";
+import { useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
 import { buildOrderText, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
 import { ProductPhoto } from "@/components/product-photo";
 
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
+import { BackLink } from "@/components/back-link";
 
 type ShopInfo = { id: string; slug: string; name: string; whatsapp: string };
 
@@ -20,6 +21,30 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const lines = useShopLines(shop.slug);
   const setQty = useCart((s) => s.setQty);
   const clear = useCart((s) => s.clear);
+  const add = useCart((s) => s.add);
+
+  // Возврат удалённого: убранные позиции держим 8 секунд и даём кнопку «Вернуть».
+  const [removed, setRemoved] = useState<StoredLine[]>([]);
+  useEffect(() => {
+    if (removed.length === 0) return;
+    const timer = setTimeout(() => setRemoved([]), 8000);
+    return () => clearTimeout(timer);
+  }, [removed]);
+  function restore() {
+    for (const line of removed) {
+      add(shop.slug, { id: line.id, title: line.title, price: line.price, photo: line.photo });
+      if (line.qty > 1) setQty(line.id, line.qty);
+    }
+    setRemoved([]);
+  }
+  const undoToast = removed.length > 0 && (
+    <div role="status" className="flex items-center justify-between gap-3 rounded-xl bg-ink px-4 py-2 text-sm text-cream">
+      <span>{t.removed}</span>
+      <button type="button" onClick={restore} className="min-h-11 px-2 font-bold underline">
+        {t.undo}
+      </button>
+    </div>
+  );
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -105,8 +130,8 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
         <a href={sentUrl} className="btn-wa h-14 w-full text-lg">
           {t.openWa}
         </a>
-        <Link href={backHref} className="font-semibold underline">
-          {t.back}
+        <Link href={backHref} className="btn-outline h-12 w-full">
+          {t.newOrder}
         </Link>
       </main>
     );
@@ -117,6 +142,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
       <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-2xl font-extrabold">{t.emptyCart}</h1>
         {notice && <p role="status">{t.updated}</p>}
+        {undoToast}
         <p className="text-muted">{t.choose} «{shop.name}».</p>
         <Link href={backHref} className="btn-dark">
           {t.back}
@@ -128,17 +154,18 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   return (
     <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col">
       <div className="flex items-center gap-2 border-b border-line bg-white px-3 py-4">
-        <Link href={backHref} aria-label={t.back} className="flex size-11 items-center justify-center">
+        <BackLink fallback={backHref} ariaLabel={t.back} className="flex size-11 items-center justify-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M15 5l-7 7 7 7" />
           </svg>
-        </Link>
+        </BackLink>
         <h1 className="text-xl font-extrabold">{t.yourOrder}</h1>
       </div>
 
       <form onSubmit={submit} className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col gap-5 p-5">
           {notice && <p role="status">{t.updated}</p>}
+          {undoToast}
           <ul className="flex flex-col gap-2.5">
             {lines.map((l, i) => (
               <li key={l.id} className="card flex items-center gap-3 p-2.5">
@@ -148,7 +175,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
                   <div className="text-sm text-muted">{formatPrice(l.price * l.qty)}</div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button type="button" aria-label={t.decrease} onClick={() => setQty(l.id, l.qty - 1)} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
+                  <button type="button" aria-label={t.decrease} onClick={() => { if (l.qty <= 1) setRemoved([l]); setQty(l.id, l.qty - 1); }} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     −
                   </button>
                   <span className="w-6 text-center font-bold">{l.qty}</span>
@@ -159,6 +186,13 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
               </li>
             ))}
           </ul>
+          <button
+            type="button"
+            onClick={() => { if (window.confirm(t.clearConfirm)) { setRemoved(lines); clear(); } }}
+            className="min-h-11 self-start text-sm font-semibold text-muted underline"
+          >
+            {t.clearCart}
+          </button>
 
           <div className="flex flex-col gap-3">
             <h2 className="text-[17px] font-bold">{t.details}</h2>

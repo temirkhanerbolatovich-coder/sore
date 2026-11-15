@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm({ failed }: { failed: boolean }) {
@@ -12,8 +12,15 @@ export function LoginForm({ failed }: { failed: boolean }) {
     failed ? "Ссылка устарела или уже использована. Запросите новую." : "",
   );
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  async function onSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
     setStatus("sending");
     setMessage("");
     try {
@@ -27,6 +34,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
       setMessage("Не удалось отправить письмо. Проверьте адрес и попробуйте ещё раз.");
     } else {
       setStatus("sent");
+      setCooldown(60);
     }
     } catch {
       setStatus("error");
@@ -42,9 +50,14 @@ export function LoginForm({ failed }: { failed: boolean }) {
           Мы отправили ссылку для входа на <b className="text-ink">{email}</b>. Откройте письмо на
           этом же телефоне.
         </p>
-        <button type="button" className="mt-2 self-start font-semibold text-accent underline" onClick={() => setStatus("idle")}>
-          Указать другую почту
-        </button>
+        <div className="mt-2 flex flex-wrap items-center gap-x-5">
+          <button type="button" className="min-h-11 font-semibold text-accent underline" onClick={() => setStatus("idle")}>
+            Указать другую почту
+          </button>
+          <button type="button" disabled={cooldown > 0} className="min-h-11 font-semibold text-accent underline disabled:no-underline disabled:opacity-60" onClick={() => void onSubmit()}>
+            {cooldown > 0 ? `Отправить ещё раз через ${cooldown} с` : "Отправить ещё раз"}
+          </button>
+        </div>
       </div>
     );
   }

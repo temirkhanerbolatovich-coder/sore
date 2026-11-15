@@ -17,8 +17,12 @@
 | NEXT_PUBLIC_SUPABASE_URL | URL проекта |
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | Публичный anon-ключ с RLS |
 | SUPABASE_SERVICE_ROLE_KEY | Только сервер, резервация ИИ; никогда NEXT_PUBLIC_ |
-| ANTHROPIC_API_KEY | Только сервер; без ключа ручное заполнение |
-| AI_MODEL | Модель, доступная аккаунту Anthropic |
+| GEMINI_API_KEY | Только сервер; бесплатный ключ Google AI Studio, основной ИИ |
+| OPENROUTER_API_KEY | Только сервер; бесплатные модели `:free` как запасной ИИ |
+| ANTHROPIC_API_KEY, AI_MODEL | Только сервер; платный вариант по желанию |
+| AI_PROVIDERS, GEMINI_MODELS, OPENROUTER_MODELS | Необязательно: порядок цепочки и список моделей |
+
+Без ключей ИИ работает ручное заполнение карточки.
 | AI_DAILY_LIMIT | 1–1000, по умолчанию 20 |
 | NEXT_PUBLIC_SITE_URL | Канонический HTTPS-адрес без завершающего / |
 | DEMO_SLUG | По умолчанию demo |
