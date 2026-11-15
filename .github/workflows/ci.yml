@@ -1,0 +1,31 @@
+name: MVP checks
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx supabase start -x studio,edge-runtime,logflare,vector,realtime,imgproxy,supavisor
+      - name: Configure local environment
+        shell: bash
+        run: |
+          npx supabase status -o env > /tmp/supabase-env
+          source /tmp/supabase-env
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nSUPABASE_SERVICE_ROLE_KEY=%s\nNEXT_PUBLIC_SITE_URL=http://localhost:3000\n' "$API_URL" "$ANON_KEY" "$SERVICE_ROLE_KEY" > .env.local
+      - run: npm run lint
+      - run: npx next typegen && npm run typecheck
+      - run: npm test
+      - run: npm run test:rls
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results/
