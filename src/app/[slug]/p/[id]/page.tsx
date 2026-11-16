@@ -11,21 +11,25 @@ import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
+import { DocumentLanguage } from "@/components/document-language";
+import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
 
 type Props = {
   params: Promise<{ slug: string; id: string }>;
   searchParams: Promise<{ lang?: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug, id } = await params;
+  const lang = parseLang((await searchParams).lang);
   const data = await getShopBySlug(slug);
   const product = data?.products.find((p) => p.id === id);
   if (!data || !product) return {};
-  const text = product.description_ru ?? `${priceLabel(product.price, product.price_mode)} · ${data.shop.name}`;
+  const text = description(product, lang) || `${priceLabel(product.price, product.price_mode, lang)} · ${data.shop.name}`;
   return {
     title: `${product.title} — ${data.shop.name}`,
     description: text,
+    alternates: publicAlternates(`/${data.shop.slug}/p/${id}`, lang),
     openGraph: {
       title: product.title,
       description: text,
@@ -45,9 +49,13 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const { shop } = data;
   const text = description(product, lang);
   const variants = variantsOf(product);
+  const url = publicUrl(shopHref(`/${shop.slug}/p/${id}`, lang));
+  const jsonLd = productJsonLd(product, url, text || `${priceLabel(product.price, product.price_mode, lang)} · ${shop.name}`);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
+      <DocumentLanguage lang={lang} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <div className="flex items-center justify-between gap-1 px-3 py-3">
         <BackLink fallback={shopHref(`/${shop.slug}`, lang)} className="flex min-h-11 items-center gap-1 px-2 font-semibold">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
 import { parseLang } from "@/lib/lang";
+import { DocumentLanguage } from "@/components/document-language";
 import { CartView } from "./cart-view";
 
 export const metadata: Metadata = { title: "Ваш заказ", robots: { index: false } };
@@ -20,10 +21,13 @@ export default async function CartPage({
   const { shop } = data;
 
   return (
-    <CartView
-      shop={{ id: shop.id, slug: shop.slug, name: shop.name, whatsapp: shop.whatsapp, leadDays: shop.lead_days }}
-      lang={lang}
-      products={data.products}
-    />
+    <>
+      <DocumentLanguage lang={lang} />
+      <CartView
+        shop={{ id: shop.id, slug: shop.slug, name: shop.name, whatsapp: shop.whatsapp, leadDays: shop.lead_days }}
+        lang={lang}
+        products={data.products}
+      />
+    </>
   );
 }

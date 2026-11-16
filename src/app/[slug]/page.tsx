@@ -11,23 +11,29 @@ import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
 import { ViewTracker } from "@/components/view-tracker";
 import { ShareButton } from "@/components/share-button";
+import { DocumentLanguage } from "@/components/document-language";
+import { publicAlternates, publicUrl, serializeJsonLd, shopTitle, storeJsonLd } from "@/lib/shop-seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ lang?: string; cat?: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+const catalogDescription = (count: number) => `Каталог и заказ в WhatsApp: ${count} товаров`;
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const lang = parseLang((await searchParams).lang);
   const data = await getShopBySlug(slug);
   if (!data) return {};
   const { shop, products } = data;
   const image = products.find((p) => p.photo_url)?.photo_url ?? undefined;
-  const title = `${shop.name}${shop.city ? ` — ${shop.city}` : ""}`;
-  const description = `Каталог и заказ в WhatsApp: ${products.length} товаров`;
+  const title = shopTitle(shop.name, shop.city);
+  const description = catalogDescription(products.length);
   return {
     title,
     description,
+    alternates: publicAlternates(`/${shop.slug}`, lang),
     openGraph: { title, description, images: image ? [image] : undefined, type: "website" },
   };
 }
@@ -43,6 +49,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const { shop, products } = data;
 
   const base = `/${shop.slug}`;
+  const jsonLd = storeJsonLd(shop, publicUrl(shopHref(base, lang)), catalogDescription(products.length));
   const categories = [...new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))];
   const activeCat = sp.cat && categories.includes(sp.cat) ? sp.cat : undefined;
   const visible = activeCat ? products.filter((p) => p.category === activeCat) : products;
@@ -50,6 +57,8 @@ export default async function ShopPage({ params, searchParams }: Props) {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
+      <DocumentLanguage lang={lang} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <header className="flex flex-col gap-4 border-b border-line bg-white px-5 pb-4 pt-6">
         <div className="flex items-center justify-between">
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
