@@ -28,7 +28,7 @@ async function main() {
     const started = Date.now();
     try {
       const { parseCard } = await import("@/lib/ai-card");
-      const card = parseCard(await step.run({ base64, mime }));
+      const card = parseCard(await step.run({ base64, mime }, 30_000));
       const ms = Date.now() - started;
       if (card) { ok++; console.log(`✔ ${step.label} (${ms} мс): «${card.title}» / ${card.category}\n   RU: ${card.description_ru}\n   KZ: ${card.description_kz}`); }
       else console.log(`✖ ${step.label} (${ms} мс): ответ не разобран`);

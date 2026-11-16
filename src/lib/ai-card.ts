@@ -26,6 +26,17 @@ export const cardSchema = z.object({
 
 export type AiCard = z.infer<typeof cardSchema>;
 
+/**
+ * Казахский текст пригоден, если почти все буквы кириллические. Слабые бесплатные модели иногда
+ * отвечают «казахским» латиницей (транслитом), такой текст лучше оставить пустым, чем показать продавцу.
+ */
+export function kzUsable(text: string): boolean {
+  const letters = text.match(/\p{L}/gu) ?? [];
+  if (letters.length === 0) return false;
+  const cyrillic = letters.filter((c) => /\p{Script=Cyrillic}/u.test(c)).length;
+  return cyrillic / letters.length >= 0.9;
+}
+
 /** Достаёт JSON из ответа модели, даже если он обёрнут в ```json ... ```. */
 export function parseCard(text: string): AiCard | null {
   const start = text.indexOf("{");

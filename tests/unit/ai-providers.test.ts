@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { aiConfigured, aiSteps, generateCard } from "@/lib/ai-providers";
+import { kzUsable } from "@/lib/ai-card";
 
 const card = { title: "Торт", description_ru: "Описание", description_kz: "Сипаттама", category: "Торты", tags: ["торт"] };
 const img = { base64: "AAAA", mime: "image/jpeg" };
@@ -25,7 +26,7 @@ it("без ключей ИИ не настроен", () => {
 it("порядок по умолчанию: Gemini, затем OpenRouter; отдельные ключи включают только свои шаги", () => {
   expect(aiSteps().map((s) => s.label)).toEqual([
     "gemini:gemini-3.1-flash-lite", "gemini:gemini-3.5-flash-lite", "gemini:gemini-3.6-flash",
-    "openrouter:google/gemma-4-31b-it:free", "openrouter:nvidia/nemotron-3.5-super-vl:free", "openrouter:openrouter/free",
+    "openrouter:nvidia/nemotron-3.5-super-vl:free", "openrouter:google/gemma-4-31b-it:free", "openrouter:google/gemma-4-26b-a4b-it:free", "openrouter:openrouter/free",
   ]);
   vi.stubEnv("GEMINI_API_KEY", "");
   expect(aiSteps().every((s) => s.label.startsWith("openrouter:"))).toBe(true);
@@ -56,7 +57,7 @@ it("при лимите 429 у Gemini переходит к следующей �
     .mockImplementationOnce(() => reply(200, routerOk("```json\n" + JSON.stringify(card) + "\n```")));
   vi.stubGlobal("fetch", fetchMock);
   const result = await generateCard(img);
-  expect(result.provider).toBe("openrouter:google/gemma-4-31b-it:free");
+  expect(result.provider).toBe("openrouter:nvidia/nemotron-3.5-super-vl:free");
   expect(fetchMock).toHaveBeenCalledTimes(4);
   const body = JSON.parse(fetchMock.mock.calls[3][1].body);
   expect(body.messages[1].content[1].image_url.url).toBe("data:image/jpeg;base64,AAAA");
@@ -68,10 +69,26 @@ it("нечитаемый ответ считается неудачей и це�
     .mockImplementationOnce(() => reply(200, routerOk("Извините, не могу.")))
     .mockImplementationOnce(() => reply(200, routerOk(JSON.stringify(card))));
   vi.stubGlobal("fetch", fetchMock);
-  expect((await generateCard(img)).provider).toBe("openrouter:nvidia/nemotron-3.5-super-vl:free");
+  expect((await generateCard(img)).provider).toBe("openrouter:google/gemma-4-31b-it:free");
 });
 
 it("если не ответил никто, бросает ошибку со списком причин", async () => {
   vi.stubGlobal("fetch", vi.fn().mockImplementation(() => reply(500)));
   await expect(generateCard(img)).rejects.toThrow(/gemini:gemini-3.1-flash-lite: HTTP 500.*openrouter/);
+});
+
+it("казахский транслитом отбрасывается, русский текст остаётся", async () => {
+  vi.stubEnv("GEMINI_API_KEY", "");
+  const bad = { ...card, description_kz: "Surette shokoladty tort kesimi tabaqta zhatyr" };
+  vi.stubGlobal("fetch", vi.fn().mockImplementation(() => reply(200, routerOk(JSON.stringify(bad)))));
+  const result = await generateCard(img);
+  expect(result.kzDropped).toBe(true);
+  expect(result.card.description_kz).toBe("");
+  expect(result.card.description_ru).toBe("Описание");
+});
+
+it("нормальный казахский на кириллице сохраняется", () => {
+  expect(kzUsable("Шоколадты торттың тәбетті тілімі, қасында балмұздақ")).toBe(true);
+  expect(kzUsable("Shokoladty tort kesimi")).toBe(false);
+  expect(kzUsable("")).toBe(false);
 });

@@ -49,10 +49,10 @@ export async function POST(request: Request) {
 
   try {
     const bytes = Buffer.from(await photo.arrayBuffer());
-    const { card, provider } = await generateCard({ base64: bytes.toString("base64"), mime: photo.type });
+    const { card, provider, kzDropped } = await generateCard({ base64: bytes.toString("base64"), mime: photo.type });
     console.info("ai-card ok", provider);
 
-    return NextResponse.json({ card, remaining: Math.max(0, limit - (count ?? 0) - 1) });
+    return NextResponse.json({ card, provider: provider.split(":")[0], kzDropped, remaining: Math.max(0, limit - (count ?? 0) - 1) });
   } catch (e) {
     console.error("ai-card failed:", e instanceof Error ? e.message : e);
     // Неудачная попытка не должна съедать лимит продавца.

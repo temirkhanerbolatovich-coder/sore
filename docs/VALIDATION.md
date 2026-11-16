@@ -9,15 +9,16 @@
 | SQL/RLS `npm run test:rls` (supabase/tests/rls.sql) | PASS, 26 проверок |
 | `npm run lint` | PASS |
 | `npx tsc --noEmit` | PASS |
-| `npm test` (Vitest) | PASS, 21 тест в 3 файлах (в том числе цепочка ИИ-провайдеров с подменой fetch) |
+| `npm test` (Vitest) | PASS, 23 теста в 3 файлах (в том числе цепочка ИИ-провайдеров с подменой fetch) |
 | `npm run build` | PASS |
 | `npm run test:e2e` (Playwright, 17 тестов) | PASS |
 | Lighthouse `/`, mobile | Performance 100, Accessibility 100, SEO 100 |
 | Lighthouse `/demo`, mobile | Performance 94, Accessibility 100, Best Practices 100, SEO 100 |
 | Lighthouse `/demo/cart`, mobile | Performance 100, Accessibility 100, Best Practices 100, SEO 63 (см. ниже) |
 | Нет горизонтального скролла и кнопок меньше 44 px на 360×640 и 390×844 | PASS (автотест `tests/e2e/layout.spec.ts`: кабинет, товары, заказы, настройки, витрина, корзина) |
-| Gemini на живом ключе | PASS: `gemini-3.1-flash-lite` (~2 с), `gemini-3.5-flash-lite`, `gemini-3.6-flash` отвечают, русский и казахский текст разумный (проверено на иллюстрации торта, не на реальной фотографии); `gemini-2.5-*` дают 404 |
-| OpenRouter и Anthropic | НЕ проверены, нет ключей; цепочка проверена unit-тестами с подменой `fetch`/SDK. Проверка: `npm run ai:check -- фото.jpg` |
+| Gemini на живом ключе | PASS на реальном фото (CC0, кусок шоколадного торта с мороженым на скатерти, 1920×1440): три модели `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, `gemini-3.6-flash` дали верное название, описания на русском и казахском без выдуманного состава; время ответа от 1 до 22 с; `gemini-2.5-*` дают 404 |
+| OpenRouter на живом ключе | Частично: `nvidia/nemotron-3.5-super-vl:free` и роутер `openrouter/free` отвечают (12–24 с), но казахский текст у них искажён (латиница, бессмыслица); `google/gemma-4-*:free` дали 429 (лимит у провайдера). Сервис отбрасывает казахский транслитом и предупреждает продавца |
+| Anthropic | НЕ проверен, нет ключа; проверен unit-тестами с подменой SDK |
 | Vercel / облачный Supabase / DNS / SMTP | НЕ развёрнуты и НЕ проверены |
 | GitHub Actions | Workflow написан, удалённо НЕ запускался |
 

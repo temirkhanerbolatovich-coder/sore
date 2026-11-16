@@ -48,9 +48,13 @@ export function ProductForm({ product }: { product?: Product }) {
       setDescRu(c.description_ru);
       setDescKz(c.description_kz);
       setCategory(c.category);
+      const notes = [
+        json.kzDropped ? "Казахское описание не получилось, заполните его вручную." : "",
+        json.provider === "openrouter" ? "Текст составила резервная модель: особенно проверьте казахское описание." : "",
+      ].filter(Boolean).join(" ");
       setAiMessage({
         ok: true,
-        text: `ИИ заполнил поля. Проверьте текст и укажите цену — её ИИ не угадывает. Осталось генераций: ${json.remaining}.`,
+        text: `ИИ заполнил поля. Проверьте текст и укажите цену — её ИИ не угадывает. ${notes} Осталось генераций: ${json.remaining}.`.replace(/\s+/g, " "),
       });
     } catch (e) {
       setAiMessage({
