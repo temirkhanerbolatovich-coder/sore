@@ -1,11 +1,46 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { timingSafeEqual } from "node:crypto";
+import type { Bot } from "grammy";
+import type { Update } from "grammy/types";
+import { createSoreBot } from "@/lib/bot/sore-bot";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { escapeHtml, sendTelegram } from "@/lib/telegram";
 
-type Update = { message?: { text?: string; chat?: { id: number; type?: string } } };
+/**
+ * Webhook бота SÖRE. Проверяет секрет, отбрасывает повторную доставку (bot_updates) и отдаёт апдейт боту
+ * (src/lib/bot/sore-bot.ts). Долгая работа (ИИ по фото полки) идёт в after(): Telegram сразу получает 200.
+ */
+export const maxDuration = 120;
 
-/** Webhook бота: `/start КОД` привязывает чат к магазину, `/stop` отвязывает. */
+let bot: Bot | null = null;
+
+function getBot(token: string): Bot {
+  bot ??= createSoreBot(token, {
+    runInBackground: (task) =>
+      after(async () => {
+        try {
+          await task();
+        } catch (error) {
+          console.error("[bot] Фоновая задача упала:", error instanceof Error ? error.message : error);
+        }
+      }),
+  });
+  return bot;
+}
+
+/** false: этот update_id уже обрабатывали (Telegram повторил доставку). Сбой базы не блокирует бота. */
+async function firstDelivery(updateId: unknown): Promise<boolean> {
+  if (typeof updateId !== "number" || !Number.isSafeInteger(updateId)) return true;
+  const { data, error } = await createAdminClient()
+    .from("bot_updates")
+    .upsert({ update_id: updateId }, { onConflict: "update_id", ignoreDuplicates: true })
+    .select("update_id");
+  if (error) {
+    console.error("bot_updates unavailable:", error.message);
+    return true;
+  }
+  return data.length > 0;
+}
+
 export async function POST(request: Request) {
   const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
   const given = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
@@ -13,33 +48,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
+  const token = process.env.TELEGRAM_BOT_TOKEN;
   const update = (await request.json().catch(() => null)) as Update | null;
-  const chatId = update?.message?.chat?.id;
-  const text = update?.message?.text?.trim() ?? "";
-  // Для чужих и непонятных сообщений отвечаем 200, чтобы Telegram не пересылал их повторно.
-  if (!chatId || update?.message?.chat?.type !== "private") return NextResponse.json({ ok: true });
+  // Для чужих и непонятных апдейтов отвечаем 200, чтобы Telegram не пересылал их повторно.
+  if (!token || !update || typeof update !== "object") return NextResponse.json({ ok: true });
+  if (!(await firstDelivery(update.update_id))) return NextResponse.json({ ok: true, duplicate: true });
 
-  const admin = createAdminClient();
-
-  const start = text.match(/^\/start(?:@\w+)?\s+([A-Za-z0-9_-]{8,64})$/);
-  if (start) {
-    const { data: row } = await admin.from("shop_telegram").select("shop_id").eq("link_code", start[1]).maybeSingle();
-    if (!row) {
-      await sendTelegram(chatId, "Код не подошёл или устарел. Откройте в кабинете Sөre «Магазин» и нажмите «Подключить Telegram» ещё раз.");
-      return NextResponse.json({ ok: true });
-    }
-    await admin.from("shop_telegram").update({ chat_id: chatId, linked_at: new Date().toISOString(), link_code: null }).eq("shop_id", row.shop_id);
-    const { data: shop } = await admin.from("shops").select("name").eq("id", row.shop_id).maybeSingle();
-    await sendTelegram(chatId, `Готово! Магазин «${escapeHtml(shop?.name ?? "")}» подключён: новые заказы будут приходить сюда. Отключить можно командой /stop.`);
-    return NextResponse.json({ ok: true });
+  try {
+    await getBot(token).handleUpdate(update);
+  } catch (error) {
+    console.error("[bot] handleUpdate failed:", error instanceof Error ? error.message : error);
   }
-
-  if (/^\/stop(?:@\w+)?$/.test(text)) {
-    await admin.from("shop_telegram").update({ chat_id: null, linked_at: null }).eq("chat_id", chatId);
-    await sendTelegram(chatId, "Уведомления отключены. Подключить снова можно в кабинете Sөre.");
-    return NextResponse.json({ ok: true });
-  }
-
-  await sendTelegram(chatId, "Это бот уведомлений Sөre. Чтобы получать заказы, откройте в кабинете «Магазин» и нажмите «Подключить Telegram».");
   return NextResponse.json({ ok: true });
 }
