@@ -61,7 +61,8 @@ test("варианты по весу и дата заказа: от выбора
     const honeypot = buyer.locator('input[name="website"]');
     await honeypot.evaluate((input: HTMLInputElement) => { input.value = "spam"; });
     await submit.click();
-    await expect(buyer.getByRole("alert")).toContainText("Не удалось оформить заказ");
+    // У Next.js есть свой служебный role="alert" (анонсер маршрутов), поэтому выбираем по тексту ошибки.
+    await expect(buyer.getByRole("alert").filter({ hasText: "Не удалось оформить заказ" })).toBeVisible();
     expect(whatsapp).toBe("");
     await honeypot.evaluate((input: HTMLInputElement) => { input.value = ""; });
     await submit.click();
