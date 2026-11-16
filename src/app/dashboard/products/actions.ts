@@ -128,12 +128,16 @@ export async function toggleStock(formData: FormData) {
 export async function deleteProduct(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const { supabase, shop } = await requireShop();
-  const { data: product } = await supabase.from("products").select("photo_url").eq("id", id).eq("shop_id", shop.id).single();
+  const { data: product } = await supabase.from("products").select("photo_url,source_photo_url").eq("id", id).eq("shop_id", shop.id).single();
   const { error } = await supabase.from("products").delete().eq("id", id).eq("shop_id", shop.id);
   if (error) throw new Error("Не удалось удалить товар");
   invalidateShop(shop.slug);
   revalidatePath("/dashboard");
   await removeUnusedPhoto(supabase, product?.photo_url, shop.owner_id);
+  // Снимок полки общий для нескольких товаров: удаляется, только когда на него не ссылается ни один.
+  if (product?.source_photo_url && product.source_photo_url !== product.photo_url) {
+    await removeUnusedPhoto(supabase, product.source_photo_url, shop.owner_id);
+  }
   redirect("/dashboard?saved=deleted");
 }
 

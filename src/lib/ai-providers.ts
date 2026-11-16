@@ -23,9 +23,10 @@ const STEP_TIMEOUT_MS = 25_000;
 const TOTAL_BUDGET_MS = 50_000;
 /** Если модель не ответила за 8 с, параллельно стартует следующая (у бесплатных моделей бывают хвосты 25+ с). */
 const HEDGE_MS = 8_000;
-const PROMPT = "Составь карточку товара по этому фото.";
+/** Что спросить у модели: системный промпт, текст запроса и потолок длины ответа. */
+export type AiTask = { system: string; prompt: string; maxTokens: number };
 
-type Step = { label: string; run: (img: ImageInput, timeoutMs: number) => Promise<string> };
+type Step = { label: string; run: (img: ImageInput, timeoutMs: number, task: AiTask) => Promise<string> };
 
 const list = (value: string | undefined, fallback: string) =>
   (value || fallback).split(",").map((s) => s.trim()).filter(Boolean);
@@ -46,14 +47,14 @@ function geminiSteps(): Step[] {
   if (!key) return [];
   return list(process.env.GEMINI_MODELS, "gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.6-flash").map((model) => ({
     label: `gemini:${model}`,
-    run: async (img, timeoutMs) => {
+    run: async (img, timeoutMs, task) => {
       const json = (await postJson(
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         { "x-goog-api-key": key },
         {
-          systemInstruction: { parts: [{ text: buildSystemPrompt(img.categories) }] },
-          contents: [{ role: "user", parts: [{ inline_data: { mime_type: img.mime, data: img.base64 } }, { text: PROMPT }] }],
-          generationConfig: { responseMimeType: "application/json", temperature: 0.4, maxOutputTokens: 4096 },
+          systemInstruction: { parts: [{ text: task.system }] },
+          contents: [{ role: "user", parts: [{ inline_data: { mime_type: img.mime, data: img.base64 } }, { text: task.prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.4, maxOutputTokens: task.maxTokens },
         },
         timeoutMs,
       )) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
@@ -68,7 +69,7 @@ function openRouterSteps(): Step[] {
   const models = list(process.env.OPENROUTER_MODELS, "nvidia/nemotron-3.5-super-vl:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free,openrouter/free");
   return models.map((model) => ({
     label: `openrouter:${model}`,
-    run: async (img, timeoutMs) => {
+    run: async (img, timeoutMs, task) => {
       const json = (await postJson(
         "https://openrouter.ai/api/v1/chat/completions",
         {
@@ -79,14 +80,14 @@ function openRouterSteps(): Step[] {
         {
           model,
           // Reasoning-модели тратят токены на «размышления»: при малом лимите content приходит пустым.
-          max_tokens: 4096,
+          max_tokens: Math.max(task.maxTokens, 4096),
           temperature: 0.4,
           messages: [
-            { role: "system", content: buildSystemPrompt(img.categories) },
+            { role: "system", content: task.system },
             {
               role: "user",
               content: [
-                { type: "text", text: PROMPT },
+                { type: "text", text: task.prompt },
                 { type: "image_url", image_url: { url: `data:${img.mime};base64,${img.base64}` } },
               ],
             },
@@ -106,18 +107,18 @@ function anthropicSteps(): Step[] {
   return [
     {
       label: "anthropic",
-      run: async (img, timeoutMs) => {
+      run: async (img, timeoutMs, task) => {
         const client = new Anthropic({ apiKey: key, timeout: timeoutMs, maxRetries: 0 });
         const message = await client.messages.create({
           model: process.env.AI_MODEL ?? "claude-sonnet-5-5",
-          max_tokens: 1024,
-          system: buildSystemPrompt(img.categories),
+          max_tokens: task.maxTokens,
+          system: task.system,
           messages: [
             {
               role: "user",
               content: [
                 { type: "image", source: { type: "base64", media_type: img.mime as "image/jpeg" | "image/png" | "image/webp", data: img.base64 } },
-                { type: "text", text: PROMPT },
+                { type: "text", text: task.prompt },
               ],
             },
           ],
@@ -138,16 +139,16 @@ export function aiSteps(): Step[] {
 export const aiConfigured = () => aiSteps().length > 0;
 
 /**
- * Запрашивает модели по цепочке и отдаёт первый разобранный ответ. Следующая модель стартует, когда предыдущая
+ * Запрашивает модели по цепочке и отдаёт первый ответ, который принял accept. Следующая модель стартует, когда предыдущая
  * упала или молчит дольше HEDGE_MS, поэтому медленный ответ одной модели не растягивает ожидание продавца.
  * Бросает ошибку, только если не получилось ни у одной.
  */
-export function generateCard(img: ImageInput): Promise<AiResult> {
+export function runChain<T>(img: ImageInput, task: AiTask, accept: (text: string) => T | null): Promise<{ value: T; provider: string }> {
   const steps = aiSteps();
   if (steps.length === 0) return Promise.reject(new Error("no provider"));
 
   const started = Date.now();
-  return new Promise<AiResult>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const failures: string[] = [];
     let next = 0;
     let pending = 0;
@@ -171,16 +172,14 @@ export function generateCard(img: ImageInput): Promise<AiResult> {
       hedgeTimer = setTimeout(launch, HEDGE_MS);
 
       step
-        .run(img, Math.min(STEP_TIMEOUT_MS, remaining))
+        .run(img, Math.min(STEP_TIMEOUT_MS, remaining), task)
         .then((text) => {
-          const card = parseCard(text);
-          if (!card || !card.title) throw new Error("нечитаемый ответ");
+          const value = accept(text);
+          if (value === null) throw new Error("нечитаемый ответ");
           if (settled) return;
           settled = true;
           clearTimeout(hedgeTimer);
-          // Слабая модель могла ответить «казахским» латиницей: лучше пустое поле, чем мусор.
-          const kzDropped = card.description_ru !== "" && !kzUsable(card.description_kz);
-          resolve({ card: kzDropped ? { ...card, description_kz: "" } : card, provider: step.label, kzDropped });
+          resolve({ value, provider: step.label });
         })
         .catch((e) => {
           failures.push(`${step.label}: ${e instanceof Error ? e.message : "ошибка"}`);
@@ -193,4 +192,22 @@ export function generateCard(img: ImageInput): Promise<AiResult> {
 
     launch();
   });
+}
+
+/** Запрос «карточка одного товара по фото». */
+export const cardTask = (categories?: string[]): AiTask => ({
+  system: buildSystemPrompt(categories),
+  prompt: "Составь карточку товара по этому фото.",
+  maxTokens: 4096,
+});
+
+/** Карточка одного товара по фото. */
+export async function generateCard(img: ImageInput): Promise<AiResult> {
+  const { value: card, provider } = await runChain(img, cardTask(img.categories), (text) => {
+    const parsed = parseCard(text);
+    return parsed && parsed.title ? parsed : null;
+  });
+  // Слабая модель могла ответить «казахским» латиницей: лучше пустое поле, чем мусор.
+  const kzDropped = card.description_ru !== "" && !kzUsable(card.description_kz);
+  return { card: kzDropped ? { ...card, description_kz: "" } : card, provider, kzDropped };
 }

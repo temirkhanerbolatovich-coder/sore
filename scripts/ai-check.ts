@@ -9,7 +9,7 @@ import { loadEnvConfig } from "@next/env";
 loadEnvConfig(process.cwd());
 
 async function main() {
-  const { aiSteps, generateCard } = await import("@/lib/ai-providers");
+  const { aiSteps, cardTask, generateCard } = await import("@/lib/ai-providers");
   const steps = aiSteps();
   if (steps.length === 0) {
     console.error("Ни один ИИ-провайдер не настроен. Задайте GEMINI_API_KEY и/или OPENROUTER_API_KEY в .env.local.");
@@ -28,7 +28,7 @@ async function main() {
     const started = Date.now();
     try {
       const { parseCard } = await import("@/lib/ai-card");
-      const card = parseCard(await step.run({ base64, mime }, 30_000));
+      const card = parseCard(await step.run({ base64, mime }, 30_000, cardTask()));
       const ms = Date.now() - started;
       if (card) { ok++; console.log(`✔ ${step.label} (${ms} мс): «${card.title}» / ${card.category}\n   RU: ${card.description_ru}\n   KZ: ${card.description_kz}`); }
       else console.log(`✖ ${step.label} (${ms} мс): ответ не разобран`);

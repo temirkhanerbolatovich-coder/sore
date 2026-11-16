@@ -27,6 +27,7 @@
     "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "sharp": "^0.35.5",
     "zod": "^4.6.7",
     "zustand": "^5.1.0"
   },
@@ -41,7 +42,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "lighthouse": "^13.6.0",
-    "sharp": "^0.35.5",
     "supabase": "^3.1.0",
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",

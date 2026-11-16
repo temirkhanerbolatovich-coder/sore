@@ -12,7 +12,7 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { FirstSteps } from "./first-steps";
 import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
-import { PlusIcon } from "@/components/icons";
+import { CameraIcon, PlusIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata = { title: "Кабинет — Sөre" };
@@ -97,10 +97,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
 
       {!full && (
-        <div className="px-5 pt-2">
-          <Link href="/dashboard/products/batch" className="btn-outline h-11 min-h-11 w-full text-sm">
-            Добавить сразу несколько фото
+        <div className="flex flex-col gap-2 px-5 pt-2">
+          <Link href="/dashboard/products/shelf" className="btn-dark h-12 min-h-12 w-full text-[15px]">
+            <CameraIcon />
+            Фото полки — сразу несколько товаров
           </Link>
+          <div className="grid grid-cols-2 gap-2">
+            <Link href="/dashboard/products/batch" className="btn-outline h-11 min-h-11 px-2 text-sm">
+              Несколько фото
+            </Link>
+            <Link href="/dashboard/products/import" className="btn-outline h-11 min-h-11 px-2 text-sm">
+              Прайс из Excel
+            </Link>
+          </div>
         </div>
       )}
 
