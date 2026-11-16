@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import { publicRpc } from "@/lib/public-rpc";
 
 /**
  * «Узнать цену» для позиций «от» и «по запросу»: обычная ссылка на WhatsApp с готовым текстом
@@ -25,10 +25,7 @@ export function InquiryButton({
     } catch {
       /* Хранилище может быть отключено: сервер всё равно ограничивает частоту. */
     }
-    // Запрос Supabase выполняется только при .then(): простое `void` его не отправляло бы.
-    createClient()
-      .rpc("record_inquiry", { p_shop: shopId, p_product: productId, p_client: client })
-      .then(() => undefined, () => undefined);
+    void publicRpc("record_inquiry", { p_shop: shopId, p_product: productId, p_client: client }, true).catch(() => undefined);
   }
 
   return (

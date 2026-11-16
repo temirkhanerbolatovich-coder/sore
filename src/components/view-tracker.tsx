@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { hasSellerSession, publicRpc } from "@/lib/public-rpc";
 
 /** Считает один просмотр магазина за сессию браузера. */
 export function ViewTracker({ shopId }: { shopId: string }) {
   useEffect(() => {
+    if (hasSellerSession(document.cookie)) return;
     const key = `duken-view-${shopId}`;
     try {
       if (sessionStorage.getItem(key)) return;
@@ -18,10 +19,7 @@ export function ViewTracker({ shopId }: { shopId: string }) {
       client = localStorage.getItem("duken-client") || client;
       localStorage.setItem("duken-client", client);
     } catch { /* Storage may be disabled; the server still enforces the per-client quota. */ }
-    // Запрос Supabase выполняется только при .then(): простое `void` его не отправляло бы (просмотры всегда были 0).
-    createClient()
-      .rpc("record_view", { p_shop: shopId, p_client: client })
-      .then(() => undefined, () => undefined);
+    void publicRpc("record_view", { p_shop: shopId, p_client: client }, true).catch(() => undefined);
   }, [shopId]);
 
   return null;

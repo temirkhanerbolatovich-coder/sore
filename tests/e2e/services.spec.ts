@@ -32,6 +32,10 @@ test("продавец создаёт услугу «от», покупател�
     await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await expect(page.getByText("Цена по запросу")).toBeVisible();
 
+    await page.goto(`/${slug}`);
+    await page.waitForLoadState("networkidle");
+    expect((await admin.from("events").select("id", { count: "exact", head: true }).eq("shop_id", shopId).eq("type", "view")).count).toBe(0);
+
     // Покупатель: вместо «В корзину» кнопка «Узнать цену» с готовым текстом.
     const buyer = await ctx.newPage();
     const base = test.info().project.use.baseURL;
@@ -51,7 +55,7 @@ test("продавец создаёт услугу «от», покупател�
     expect(text).toContain("Интересует: Повар на выезд (от 15 000 ₸)");
 
     // Клик считается обращением (нажатие «Заказать» в статистике), сама вкладка WhatsApp подменена.
-    await buyer.route("https://wa.me/**", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "ok" }));
+    await ctx.route("https://wa.me/**", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "ok" }));
     const popup = buyer.waitForEvent("popup");
     await ask.click();
     await (await popup).close();

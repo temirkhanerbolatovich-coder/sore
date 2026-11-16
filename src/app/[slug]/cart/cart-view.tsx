@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { publicRpc } from "@/lib/public-rpc";
 import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
 import { buildOrderText, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
@@ -88,16 +88,15 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
     setSending(true);
     try {
-    const supabase = createClient();
-    const { data, error: rpcError } = await supabase.rpc("create_order", {
+    const { data, error: rpcError } = await publicRpc("create_order", {
       p_shop: shop.id,
       p_items: lines.map((l) => ({ id: l.id, qty: l.qty, variant: l.variantId ?? null })),
       p_name: name.trim(),
       p_phone: digits,
       p_address: delivery === "delivery" ? address.trim() : "Самовывоз",
       p_comment: comment.trim(),
-      p_needed_date: neededDate || null,
-      p_needed_time: neededTime || null,
+      p_needed_date: neededDate || undefined,
+      p_needed_time: neededTime || undefined,
     });
 
     const row = Array.isArray(data) ? data[0] : null;
