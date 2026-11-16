@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireShop } from "@/lib/shop";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
 import { DashboardNav } from "@/components/dashboard-nav";
+import { Field } from "@/components/field";
+import { applyOrderFilters, filterQuery, parseOrderFilters } from "@/lib/orders-query";
 import { StatusButton } from "./status-button";
 
 export const metadata = { title: "Заказы — DukenAI" };
@@ -35,18 +37,20 @@ const fmt = new Intl.DateTimeFormat("ru-RU", {
   timeZone: "Asia/Almaty",
 });
 
-export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string }> }) {
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string; q?: string; date?: string }> }) {
   const { supabase, shop } = await requireShop();
   const sp = await searchParams;
   const page = Math.min(1000, Math.max(1, Number(sp.page) || 1));
-  const onlyNew = sp.status === "new";
+  const filters = parseOrderFilters(sp);
+  const { onlyNew } = filters;
+  const filtered = Boolean(filters.q || filters.date);
   let query = supabase
     .from("orders")
     .select("*")
     .eq("shop_id", shop.id)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false });
-  if (onlyNew) query = query.eq("status", "new");
+  query = applyOrderFilters(query, filters);
   const { data, error } = await query.range(0, page * 20);
   if (error) throw new Error("Не удалось загрузить заказы");
   const hasMore = (data?.length || 0) > page * 20;
@@ -62,13 +66,28 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         </p>
       </div>
 
-      <nav className="flex gap-3 px-5 py-3" aria-label="Фильтр заказов"><Link className={onlyNew ? "btn-dark" : "btn-outline"} href="?status=new" aria-current={onlyNew ? "page" : undefined}>Новые</Link><Link className={!onlyNew ? "btn-dark" : "btn-outline"} href="?status=all" aria-current={!onlyNew ? "page" : undefined}>Все</Link></nav>
+      <nav className="flex gap-3 px-5 py-3" aria-label="Фильтр заказов"><Link className={onlyNew ? "btn-dark" : "btn-outline"} href={filterQuery({ ...filters, onlyNew: true })} aria-current={onlyNew ? "page" : undefined}>Новые</Link><Link className={!onlyNew ? "btn-dark" : "btn-outline"} href={filterQuery({ ...filters, onlyNew: false })} aria-current={!onlyNew ? "page" : undefined}>Все</Link></nav>
+      <form method="get" role="search" className="flex flex-col gap-3 px-5 pb-3">
+        <input type="hidden" name="status" value={onlyNew ? "new" : "all"} />
+        <label htmlFor="orders-q" className="sr-only">Поиск по номеру, имени или телефону</label>
+        <input id="orders-q" name="q" type="search" defaultValue={filters.q} placeholder="Номер, имя или телефон" maxLength={40} enterKeyHint="search" autoComplete="off" className="input" />
+        <div className="flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <Field label="Когда нужно" htmlFor="orders-date"><input id="orders-date" name="date" type="date" defaultValue={filters.date} className="input" /></Field>
+          </div>
+          <button type="submit" className="btn-dark h-11 min-h-11 px-5">Найти</button>
+        </div>
+        <div className="flex items-center justify-between gap-3 text-sm">
+          {filtered ? <Link href={filterQuery({ ...filters, q: "", date: "" })} className="flex min-h-11 items-center font-semibold underline">Сбросить поиск</Link> : <span />}
+          <a href={`/dashboard/orders/export${filterQuery(filters)}`} className="flex min-h-11 items-center font-semibold underline">Скачать CSV</a>
+        </div>
+      </form>
       <ul className="flex flex-col gap-3 px-5">
         {orders.length === 0 && (
           <li className="card p-5">
-            <div className="text-lg font-bold">Пока нет заказов</div>
+            <div className="text-lg font-bold">{filtered ? "Ничего не найдено" : "Пока нет заказов"}</div>
             <p className="mt-1 leading-relaxed text-muted">
-              Отправьте ссылку на магазин клиентам или поставьте её в био Instagram.
+              {filtered ? "Проверьте номер, имя или дату, либо сбросьте поиск." : "Отправьте ссылку на магазин клиентам или поставьте её в био Instagram."}
             </p>
           </li>
         )}
@@ -128,7 +147,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         })}
       </ul>
 
-      {hasMore && <Link className="btn-outline m-5" href={`?status=${onlyNew ? "new" : "all"}&page=${page+1}`}>Показать ещё</Link>}
+      {hasMore && <Link className="btn-outline m-5" href={filterQuery(filters, { page: String(page + 1) })}>Показать ещё</Link>}
       <DashboardNav active="orders" newOrders={newCount} />
     </main>
   );

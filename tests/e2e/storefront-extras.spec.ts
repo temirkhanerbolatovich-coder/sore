@@ -78,7 +78,7 @@ test("у небольшой витрины нет поиска и пустого
   }
 });
 
-test("статус заказа для покупателя: ссылка в WhatsApp, страница и смена статуса", async ({ page, browser, request }) => {
+test("статус заказа для покупателя: ссылка в WhatsApp, страница и смена статуса", async ({ browser, request }) => {
   test.setTimeout(120_000);
   const s = stamp();
   const email = `status-${s}@example.test`;
