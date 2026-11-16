@@ -34,7 +34,7 @@ export function InquiryButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={record}
-      className="flex h-11 w-full items-center justify-center rounded-xl bg-wa px-3 text-sm font-bold text-white"
+      className="flex h-11 w-full items-center justify-center rounded-xl bg-wa px-3 text-sm font-bold text-on-accent"
     >
       {label}
     </a>

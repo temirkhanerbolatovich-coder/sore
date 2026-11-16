@@ -21,7 +21,7 @@ export function FirstSteps({ hasProducts, shared, telegram }: { hasProducts: boo
           <li key={s.title} className="flex gap-3">
             <span
               aria-hidden="true"
-              className={`mt-0.5 flex size-6 flex-none items-center justify-center rounded-full text-sm font-extrabold ${s.done ? "bg-wa text-white" : "border-2 border-field text-transparent"}`}
+              className={`mt-0.5 flex size-6 flex-none items-center justify-center rounded-full text-sm font-extrabold ${s.done ? "bg-wa text-on-accent" : "border-2 border-field text-transparent"}`}
             >
               ✓
             </span>

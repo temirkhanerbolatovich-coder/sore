@@ -11,6 +11,8 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { FirstSteps } from "./first-steps";
 import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
+import { PlusIcon } from "@/components/icons";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata = { title: "Кабинет — DukenAI" };
 
@@ -46,11 +48,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
       <div className="flex flex-col gap-4 px-5 pb-3 pt-6">
         <div className="flex items-center gap-3">
-          <div className="size-11 flex-none rounded-full bg-[#f3d9c4]" />
+          <div className="size-11 flex-none rounded-full bg-thumb" />
           <div className="min-w-0 flex-1">
             <div className="truncate text-xl font-extrabold">{shop.name}</div>
             {shop.city && <div className="text-sm text-muted">{shop.city}</div>}
           </div>
+          <ThemeToggle />
           <form action="/auth/signout" method="post">
             <button type="submit" className="min-h-11 min-w-11 px-1 text-sm font-semibold text-muted underline">
               Выйти
@@ -76,7 +79,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
 
       {saved && SAVED[saved] && (
-        <div role="status" className="mx-5 mt-3 flex items-center justify-between gap-3 rounded-xl border border-[#b7dcc3] bg-[#e6f3ea] px-4 py-3 text-[15px] font-semibold text-[#1d4d31]">
+        <div role="status" className="mx-5 mt-3 flex items-center justify-between gap-3 rounded-xl border border-ok-line bg-ok-bg px-4 py-3 text-[15px] font-semibold text-ok-ink">
           <span>{saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]}</span>
           <Link href="/dashboard" className="flex min-h-11 items-center px-1 text-sm underline" aria-label="Закрыть сообщение">
             Закрыть
@@ -127,9 +130,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 role="switch"
                 aria-checked={p.in_stock}
                 aria-label={`В наличии: ${p.title}`}
-                className={`flex h-11 w-12 items-center rounded-full p-[3px] ${p.in_stock ? "justify-end bg-wa" : "justify-start bg-[#8a7b6e]"}`}
+                className={`flex h-11 w-12 items-center rounded-full p-[3px] ${p.in_stock ? "justify-end bg-wa" : "justify-start bg-switch-off"}`}
               >
-                <span className="size-[22px] rounded-full bg-white" />
+                <span className="size-[22px] rounded-full bg-surface" />
               </button>
             </ActionForm>
             {[-1, 1].map((direction) => <ActionForm key={direction} action={moveProduct}>
@@ -145,9 +148,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           href="/dashboard/products/new"
           className="btn-accent fixed bottom-20 right-5 h-14 rounded-full pl-4 pr-5 shadow-lg md:right-[calc(50%-12rem)]"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          <PlusIcon size={22} />
           Товар
         </Link>
       )}
