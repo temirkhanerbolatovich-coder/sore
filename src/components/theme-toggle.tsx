@@ -15,6 +15,15 @@ function readStoredTheme(): string | null {
   }
 }
 
+/** Восстанавливает тему при клиентском отображении страницы ошибки Next.js. */
+export function ThemeInitializer() {
+  useEffect(() => {
+    const saved = readStoredTheme();
+    applyTheme(saved ? (saved === "dark" ? "dark" : "light") : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  }, []);
+  return null;
+}
+
 export function ThemeToggle({ className = "" }: { className?: string }) {
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");

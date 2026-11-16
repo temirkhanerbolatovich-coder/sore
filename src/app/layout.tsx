@@ -5,6 +5,7 @@ import "@fontsource/onest/700.css";
 import "@fontsource/onest/800.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ThemeInitializer } from "@/components/theme-toggle";
 import "./globals.css";
 import "./motion.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
+        <ThemeInitializer />
         {children}
         <Analytics />
         <SpeedInsights />
