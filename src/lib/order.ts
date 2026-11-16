@@ -1,4 +1,4 @@
-export type CartLine = { id: string; title: string; price: number; qty: number };
+export type CartLine = { id: string; title: string; price: number; qty: number; variantId?: string | null };
 
 export type OrderInput = {
   number?: number | string;
@@ -7,6 +7,8 @@ export type OrderInput = {
   delivery: "delivery" | "pickup";
   address?: string;
   comment?: string;
+  neededDate?: string | null;
+  neededTime?: string | null;
 };
 
 const nf = new Intl.NumberFormat("ru-RU");
@@ -41,6 +43,7 @@ export function buildOrderText(o: OrderInput): string {
     `Имя: ${o.name}`,
     o.delivery === "pickup" ? "Самовывоз" : `Доставка: ${o.address ?? ""}`,
   ];
+  if (o.neededDate) parts.push(`Когда: ${formatNeeded(o.neededDate, o.neededTime)}`);
   if (o.comment) parts.push(`Комментарий: ${o.comment}`);
   return parts.join("\n");
 }
@@ -59,8 +62,8 @@ export function asPriceMode(value: string | null | undefined): PriceMode {
 export const isInquiry = (mode: string | null | undefined) => asPriceMode(mode) !== "fixed";
 
 /** 15000 + «from» → «от 15 000 ₸»; «request» → «Цена по запросу». */
-export function priceLabel(price: number, mode: string | null | undefined, lang: "ru" | "kz" = "ru"): string {
-  const m = asPriceMode(mode);
+export function priceLabel(price: number, mode: string | null | undefined, lang: "ru" | "kz" = "ru", hasVariants = false): string {
+  const m = asPriceMode(mode) === "fixed" && hasVariants ? "from" : asPriceMode(mode);
   if (m === "request") return lang === "kz" ? "Бағасы келісім бойынша" : "Цена по запросу";
   if (m === "from") return lang === "kz" ? `${formatPrice(price)}-ден бастап` : `от ${formatPrice(price)}`;
   return formatPrice(price);
@@ -71,4 +74,13 @@ export function inquiryText(title: string, price: number, mode: string | null | 
   const m = asPriceMode(mode);
   const cost = m === "from" ? ` (${priceLabel(price, m)})` : "";
   return `Здравствуйте! Пишу из магазина «${shopName}» в DukenAI. Интересует: ${title}${cost}. Подскажите, пожалуйста, детали и стоимость.`;
+}
+
+/** «2026-11-20» + «18:00» → «20 ноября, 18:00» (дата без часового пояса). */
+export function formatNeeded(date: string, time?: string | null): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  const day = Number.isNaN(d.getTime())
+    ? date
+    : new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" }).format(d);
+  return time ? `${day}, ${time}` : day;
 }

@@ -65,14 +65,14 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "address": string | null,"comment": string | null,"created_at": string,"customer_name": string,"customer_phone": string,"id": string,"items": NonNullable<Json>,"number": number,"shop_id": string,"status": string,"total": number
+                    "address": string | null,"comment": string | null,"created_at": string,"customer_name": string,"customer_phone": string,"id": string,"items": NonNullable<Json>,"needed_date": string | null,"needed_time": string | null,"number": number,"shop_id": string,"status": string,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name": string,"customer_phone": string,"id"?: string,"items": NonNullable<Json>,"number": number,"shop_id": string,"status"?: string,"total": number
+                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name": string,"customer_phone": string,"id"?: string,"items": NonNullable<Json>,"needed_date"?: string | null,"needed_time"?: string | null,"number": number,"shop_id": string,"status"?: string,"total": number
                   }
                   Update: {
-                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name"?: string,"customer_phone"?: string,"id"?: string,"items"?: NonNullable<Json>,"number"?: number,"shop_id"?: string,"status"?: string,"total"?: number
+                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name"?: string,"customer_phone"?: string,"id"?: string,"items"?: NonNullable<Json>,"needed_date"?: string | null,"needed_time"?: string | null,"number"?: number,"shop_id"?: string,"status"?: string,"total"?: number
                   }
                   Relationships: [
                     {
@@ -85,14 +85,14 @@ isOneToOne: false
                   ]
                 },"products": {
                   Row: {
-                    "category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"price_mode": string,"shop_id": string,"sort": number,"title": string
+                    "category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"price_mode": string,"shop_id": string,"sort": number,"title": string,"variants": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"shop_id": string,"sort"?: number,"title": string
+                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"shop_id": string,"sort"?: number,"title": string,"variants"?: NonNullable<Json>
                   }
                   Update: {
-                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"shop_id"?: string,"sort"?: number,"title"?: string
+                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"shop_id"?: string,"sort"?: number,"title"?: string,"variants"?: NonNullable<Json>
                   }
                   Relationships: [
                     {
@@ -103,16 +103,36 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"shops": {
+                },"shop_telegram": {
                   Row: {
-                    "avatar_url": string | null,"city": string | null,"created_at": string,"id": string,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"whatsapp": string
+                    "chat_id": number | null,"created_at": string,"link_code": string | null,"linked_at": string | null,"shop_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"id"?: string,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"whatsapp": string
+                    "chat_id"?: number | null,"created_at"?: string,"link_code"?: string | null,"linked_at"?: string | null,"shop_id": string
                   }
                   Update: {
-                    "avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"id"?: string,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"whatsapp"?: string
+                    "chat_id"?: number | null,"created_at"?: string,"link_code"?: string | null,"linked_at"?: string | null,"shop_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shop_telegram_shop_id_fkey"
+      columns: ["shop_id"]
+isOneToOne: true
+      referencedRelation: "shops"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shops": {
+                  Row: {
+                    "avatar_url": string | null,"city": string | null,"created_at": string,"id": string,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"whatsapp": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"id"?: string,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"whatsapp": string
+                  }
+                  Update: {
+                    "avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"id"?: string,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"whatsapp"?: string
                   }
                   Relationships: [
                     
@@ -124,7 +144,7 @@ isOneToOne: false
           }
           Functions: {
             "create_order":
-{ Args: { "p_address": string,"p_comment": string,"p_items": Json,"p_name": string,"p_phone": string,"p_shop": string }; Returns: {
+{ Args: { "p_address": string,"p_comment": string,"p_items": Json,"p_name": string,"p_needed_date"?: string,"p_needed_time"?: string,"p_phone": string,"p_shop": string }; Returns: {
               "order_items": Json,"order_number": number,"order_total": number
             }[]
                            },
@@ -142,6 +162,12 @@ isOneToOne: false
                            },
 "reserve_ai":
 { Args: { "p_limit": number,"p_shop": string }; Returns: string
+                           },
+"set_notify_config":
+{ Args: { "p_secret": string,"p_url": string }; Returns: undefined
+                           },
+"valid_variants":
+{ Args: { "v": Json }; Returns: boolean
                            }
           }
           Enums: {

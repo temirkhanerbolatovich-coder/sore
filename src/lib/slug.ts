@@ -6,7 +6,7 @@ const RU: Record<string, string> = {
 };
 
 export const RESERVED_SLUGS = new Set([
-  "login", "dashboard", "auth", "api", "demo", "admin", "app", "www", "static", "about", "terms",
+  "login", "dashboard", "auth", "api", "demo", "admin", "app", "www", "static", "about", "terms", "privacy",
 ]);
 
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]{2,29}$/;

@@ -1,14 +1,27 @@
 "use client";
 
-import { useCart, useShopLines } from "@/lib/cart";
+import { lineKey, useCart, useShopLines } from "@/lib/cart";
 import { T, type Lang } from "@/lib/lang";
 import type { Product } from "@/lib/types";
+import type { Variant } from "@/lib/variants";
 
-export function AddToCart({ slug, product, lang }: { slug: string; product: Product; lang: Lang }) {
+/** Кнопка «В корзину» и счётчик «− 1 +». Для товара с вариантами передаётся выбранный вариант. */
+export function AddToCart({
+  slug,
+  product,
+  lang,
+  variant = null,
+}: {
+  slug: string;
+  product: Product;
+  lang: Lang;
+  variant?: Variant | null;
+}) {
   const add = useCart((s) => s.add);
   const setQty = useCart((s) => s.setQty);
   const lines = useShopLines(slug);
-  const qty = lines.find((l) => l.id === product.id)?.qty ?? 0;
+  const key = lineKey({ id: product.id, variantId: variant?.id ?? null });
+  const qty = lines.find((l) => lineKey(l) === key)?.qty ?? 0;
   const t = T[lang];
 
   if (!product.in_stock) {
@@ -24,7 +37,14 @@ export function AddToCart({ slug, product, lang }: { slug: string; product: Prod
       <button
         type="button"
         onClick={() =>
-          add(slug, { id: product.id, title: product.title, price: product.price, photo: product.photo_url })
+          add(slug, {
+            id: product.id,
+            title: product.title,
+            price: variant?.price ?? product.price,
+            photo: product.photo_url,
+            variantId: variant?.id ?? null,
+            variantTitle: variant?.title ?? null,
+          })
         }
         className="flex h-11 w-full items-center justify-center rounded-xl bg-ink text-sm font-bold text-cream"
       >
@@ -38,7 +58,7 @@ export function AddToCart({ slug, product, lang }: { slug: string; product: Prod
       <button
         type="button"
         aria-label="Уменьшить количество"
-        onClick={() => setQty(product.id, qty - 1)}
+        onClick={() => setQty(key, qty - 1)}
         className="size-11 rounded-lg text-xl font-bold"
       >
         −
@@ -49,7 +69,7 @@ export function AddToCart({ slug, product, lang }: { slug: string; product: Prod
       <button
         type="button"
         aria-label="Увеличить количество"
-        onClick={() => setQty(product.id, qty + 1)}
+        onClick={() => setQty(key, qty + 1)}
         className="size-11 rounded-lg text-xl font-bold"
       >
         +

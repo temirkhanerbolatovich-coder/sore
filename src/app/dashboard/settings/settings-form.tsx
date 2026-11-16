@@ -40,6 +40,7 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
       <Field label="Название магазина" htmlFor="name"><input id="name" name="name" className="input" required minLength={2} maxLength={60} defaultValue={shop.name} /></Field>
       <Field label="Город" htmlFor="city"><input id="city" name="city" className="input" maxLength={60} defaultValue={shop.city || ""} /></Field>
       <Field label="WhatsApp" htmlFor="whatsapp"><input id="whatsapp" name="whatsapp" type="tel" className="input" required defaultValue={shop.whatsapp} /></Field>
+      <Field label="Предзаказ: за сколько дней принимать заказы (0 = в любой день)" htmlFor="lead_days"><input id="lead_days" name="lead_days" type="number" inputMode="numeric" min={0} max={60} className="input" defaultValue={shop.lead_days} /></Field>
       <Field label="Адрес (не меняется)" htmlFor="slug"><input id="slug" className="input" readOnly value={shop.slug} /></Field>
       <input type="hidden" name="avatar_url" value={avatar} />
       {avatar && <button type="button" className="min-h-11 self-start text-sm font-semibold text-accent-dark underline" onClick={() => { setAvatar(""); setDirtyFor(state); }}>Убрать фото магазина</button>}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
+import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
 import { buildOrderText, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
 import { ProductPhoto } from "@/components/product-photo";
@@ -12,7 +12,7 @@ import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
 
-type ShopInfo = { id: string; slug: string; name: string; whatsapp: string };
+type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; leadDays: number };
 
 export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang; products: Product[] }) {
   const t = T[lang];
@@ -32,8 +32,8 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   }, [removed]);
   function restore() {
     for (const line of removed) {
-      add(shop.slug, { id: line.id, title: line.title, price: line.price, photo: line.photo });
-      if (line.qty > 1) setQty(line.id, line.qty);
+      add(shop.slug, { id: line.id, title: line.title, price: line.price, photo: line.photo, variantId: line.variantId ?? null, variantTitle: line.variantTitle ?? null });
+      if (line.qty > 1) setQty(lineKey(line), line.qty);
     }
     setRemoved([]);
   }
@@ -51,6 +51,12 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const [delivery, setDelivery] = useState<"delivery" | "pickup">("delivery");
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
+  const [neededDate, setNeededDate] = useState("");
+  const [neededTime, setNeededTime] = useState("");
+  // Самая ранняя дата заказа по времени Астаны: сегодня + срок предзаказа магазина.
+  const [minDate] = useState(() =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Almaty" }).format(Date.now() + shop.leadDays * 86_400_000),
+  );
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
@@ -76,24 +82,28 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     const digits = normalizePhone(phone);
     if (!/^[0-9]{10,15}$/.test(digits)) return setError(t.phoneError);
     if (delivery === "delivery" && !address.trim()) return setError(t.addressError);
+    if (shop.leadDays > 0 && !neededDate) return setError(t.dateRequired);
+    if (neededDate && neededDate < minDate) return setError(t.dateTooEarly);
 
     setSending(true);
     try {
     const supabase = createClient();
     const { data, error: rpcError } = await supabase.rpc("create_order", {
       p_shop: shop.id,
-      p_items: lines.map((l) => ({ id: l.id, qty: l.qty })),
+      p_items: lines.map((l) => ({ id: l.id, qty: l.qty, variant: l.variantId ?? null })),
       p_name: name.trim(),
       p_phone: digits,
       p_address: delivery === "delivery" ? address.trim() : "Самовывоз",
       p_comment: comment.trim(),
+      p_needed_date: neededDate || null,
+      p_needed_time: neededTime || null,
     });
 
     const row = Array.isArray(data) ? data[0] : null;
     if (rpcError || !row) {
       setSending(false);
       const message = rpcError?.message || "";
-      setError(message.includes("rate limit") ? t.rateLimit : message.includes("unavailable") ? t.unavailable : message.includes("invalid phone") ? t.phoneError : message.includes("invalid items") || message.includes("quantity") ? t.invalidItems : message.includes("total too large") ? t.tooLarge : t.orderError);
+      setError(message.includes("rate limit") ? t.rateLimit : message.includes("unavailable") ? t.unavailable : message.includes("invalid phone") ? t.phoneError : message.includes("invalid items") || message.includes("quantity") ? t.invalidItems : message.includes("date too early") ? t.dateTooEarly : message.includes("date required") ? t.dateRequired : message.includes("total too large") ? t.tooLarge : t.orderError);
       return;
     }
 
@@ -108,6 +118,8 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
       delivery,
       address: address.trim(),
       comment: comment.trim() || undefined,
+      neededDate: neededDate || null,
+      neededTime: neededTime || null,
     });
     const url = whatsappUrl(shop.whatsapp, text);
 
@@ -168,18 +180,21 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           {undoToast}
           <ul className="flex flex-col gap-2.5">
             {lines.map((l, i) => (
-              <li key={l.id} className="card flex items-center gap-3 p-2.5">
+              <li key={lineKey(l)} className="card flex items-center gap-3 p-2.5">
                 <ProductPhoto url={l.photo} alt="" seed={i} className="size-14 flex-none rounded-xl" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[15px] font-semibold leading-tight">{l.title}</div>
+                  <div className="text-[15px] font-semibold leading-tight">
+                    {l.title}
+                    {l.variantTitle ? ` · ${l.variantTitle}` : ""}
+                  </div>
                   <div className="text-sm text-muted">{formatPrice(l.price * l.qty)}</div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button type="button" aria-label={t.decrease} onClick={() => { if (l.qty <= 1) setRemoved([l]); setQty(l.id, l.qty - 1); }} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
+                  <button type="button" aria-label={t.decrease} onClick={() => { if (l.qty <= 1) setRemoved([l]); setQty(lineKey(l), l.qty - 1); }} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     −
                   </button>
                   <span className="w-6 text-center font-bold">{l.qty}</span>
-                  <button type="button" aria-label={t.increase} onClick={() => setQty(l.id, l.qty + 1)} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
+                  <button type="button" aria-label={t.increase} onClick={() => setQty(lineKey(l), l.qty + 1)} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     +
                   </button>
                 </div>
@@ -224,6 +239,19 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
                 <input id="address" required autoComplete="street-address" maxLength={200} value={address} onChange={(e) => setAddress(e.target.value)} className="input" />
               </Field>
             )}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t.date} htmlFor="needed-date">
+                <input id="needed-date" type="date" required={shop.leadDays > 0} min={minDate} value={neededDate} onChange={(e) => setNeededDate(e.target.value)} className="input" />
+              </Field>
+              <Field label={t.time} htmlFor="needed-time">
+                <input id="needed-time" type="time" value={neededTime} onChange={(e) => setNeededTime(e.target.value)} className="input" />
+              </Field>
+            </div>
+            {shop.leadDays > 0 && (
+              <p className="text-[13px] text-muted">
+                {t.leadPre} {shop.leadDays} {t.leadPost}
+              </p>
+            )}
             <Field label={t.comment} htmlFor="comment">
               <input id="comment" maxLength={300} placeholder={t.commentHint} value={comment} onChange={(e) => setComment(e.target.value)} className="input" />
             </Field>
@@ -245,6 +273,12 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             {sending ? t.sending : t.order}
           </button>
           <p className="text-center text-[13px] text-muted">{t.orderHint}</p>
+          <p className="text-center text-[12px] text-muted">
+            {t.consent}{" "}
+            <Link href="/privacy" className="underline">
+              {t.consentLink}
+            </Link>
+          </p>
         </div>
       </form>
     </main>

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildOrderText, formatPrice, normalizePhone } from "@/lib/order";
 import { slugify, slugError, RESERVED_SLUGS } from "@/lib/slug";
 import { parseCard } from "@/lib/ai-card";
-import { useCart } from "@/lib/cart";
+import { lineKey, useCart } from "@/lib/cart";
 import { ownedPhotoPath } from "@/lib/photos";
 
 describe("заказ", () => {
@@ -31,7 +31,7 @@ it("разбирает JSON модели и обрезает длины", () => 
 it("корзина меняет магазин, ограничивает количество и обновляет цену", () => {
   const cart = useCart.getState(); cart.clear();
   cart.add("one", { id: "1", title: "A", price: 20, photo: null });
-  cart.setQty("1", 1000); expect(useCart.getState().lines[0].qty).toBe(99);
+  cart.setQty(lineKey({ id: "1" }), 1000); expect(useCart.getState().lines[0].qty).toBe(99);
   cart.add("two", { id: "2", title: "B", price: 30, photo: null });
   expect(useCart.getState().lines.map((x) => x.id)).toEqual(["2"]);
   expect(cart.reconcile("two", [])).toBe(true); expect(useCart.getState().lines).toEqual([]);
@@ -41,4 +41,19 @@ it("принимает только каноническое фото владе
   expect(ownedPhotoPath(url + "file.jpg", "owner", base)).toBe("owner/file.jpg");
   for (const suffix of ["../other/file.jpg", "%2e%2e/file.jpg", "file.jpg?x=1", "file.svg"]) expect(ownedPhotoPath(url + suffix, "owner", base)).toBeNull();
   expect(ownedPhotoPath(url + "file.jpg", "other", base)).toBeNull();
+});
+
+it("варианты одного товара лежат в корзине отдельными строками, а сверка берёт актуальную цену варианта", () => {
+  const product = (variants: unknown, price = 12000) =>
+    ({ id: "p1", title: "Торт", price, in_stock: true, price_mode: "fixed", photo_url: null, variants }) as never;
+  const cart = useCart.getState(); cart.clear();
+  cart.add("shop", { id: "p1", title: "Торт", price: 12000, photo: null, variantId: "k1", variantTitle: "1 кг" });
+  cart.add("shop", { id: "p1", title: "Торт", price: 22000, photo: null, variantId: "k2", variantTitle: "2 кг" });
+  cart.add("shop", { id: "p1", title: "Торт", price: 12000, photo: null, variantId: "k1", variantTitle: "1 кг" });
+  expect(useCart.getState().lines.map((l) => [l.variantId, l.qty])).toEqual([["k1", 2], ["k2", 1]]);
+
+  // Продавец поднял цену 2 кг и убрал вариант 1 кг: строка 1 кг пропадает, у 2 кг новая цена.
+  const changed = cart.reconcile("shop", [product([{ id: "k2", title: "2 кг", price: 25000 }], 25000)]);
+  expect(changed).toBe(true);
+  expect(useCart.getState().lines.map((l) => [l.variantId, l.price])).toEqual([["k2", 25000]]);
 });

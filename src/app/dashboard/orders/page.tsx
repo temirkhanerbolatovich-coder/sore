@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireShop } from "@/lib/shop";
-import { formatPrice, whatsappUrl } from "@/lib/order";
+import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { StatusButton } from "./status-button";
 
@@ -15,6 +15,8 @@ type OrderRow = {
   customer_phone: string;
   address: string | null;
   comment: string | null;
+  needed_date: string | null;
+  needed_time: string | null;
   status: "new" | "done" | "cancelled";
   created_at: string;
 };
@@ -91,6 +93,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               <div className="text-sm text-muted">
                 {o.address === "Самовывоз" ? "Самовывоз" : o.address ? `Доставка: ${o.address}` : null}
               </div>
+              {o.needed_date && (
+                <div className="text-sm font-semibold text-ink">Когда нужно: {formatNeeded(o.needed_date, o.needed_time)}</div>
+              )}
               {o.comment && <div className="text-sm text-muted">Комментарий: {o.comment}</div>}
               <div className="text-sm text-muted">
                 {o.customer_phone.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")} · {fmt.format(new Date(o.created_at))}

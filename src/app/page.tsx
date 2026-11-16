@@ -137,7 +137,14 @@ export default function Home() {
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-sm text-muted">
         <div>© DukenAI · Сделано в Казахстане</div>
-        <div>Русский · Қазақша</div>
+        <nav aria-label="Юридическая информация" className="flex flex-wrap gap-x-5">
+          <Link href="/terms" className="flex min-h-11 items-center underline">
+            Условия
+          </Link>
+          <Link href="/privacy" className="flex min-h-11 items-center underline">
+            Конфиденциальность
+          </Link>
+        </nav>
       </footer>
     </main>
   );

@@ -5,6 +5,7 @@ import { getShopBySlug } from "@/lib/shop-data";
 import { T, parseLang, shopHref } from "@/lib/lang";
 import { inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 import { InquiryButton } from "@/components/inquiry-button";
+import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
@@ -107,7 +108,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
                   <ProductPhoto url={p.photo_url} alt={p.title} seed={i} className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`} />
                   <div className="flex flex-col gap-1 p-3 pb-2">
                     <div className="text-[15px] font-semibold leading-tight">{p.title}</div>
-                    <div className="text-base font-extrabold">{priceLabel(p.price, p.price_mode, lang)}</div>
+                    <div className="text-base font-extrabold">{priceLabel(p.price, p.price_mode, lang, variantsOf(p).length > 0)}</div>
                   </div>
                 </Link>
                 <div className="mt-auto px-3 pb-3">
@@ -118,6 +119,13 @@ export default async function ShopPage({ params, searchParams }: Props) {
                       href={whatsappUrl(shop.whatsapp, inquiryText(p.title, p.price, p.price_mode, shop.name))}
                       label={t.ask}
                     />
+                  ) : variantsOf(p).length > 0 && p.in_stock ? (
+                    <Link
+                      href={shopHref(`${base}/p/${p.id}`, lang)}
+                      className="flex h-11 w-full items-center justify-center rounded-xl bg-ink text-sm font-bold text-cream"
+                    >
+                      {t.pick}
+                    </Link>
                   ) : (
                     <AddToCart slug={shop.slug} product={p} lang={lang} />
                   )}
@@ -133,6 +141,14 @@ export default async function ShopPage({ params, searchParams }: Props) {
             DukenAI
           </Link>{" "}
           · {t.createOwn}
+        </p>
+        <p className="mt-2 flex justify-center gap-5 text-[13px] text-muted">
+          <Link href="/terms" className="flex min-h-11 items-center underline">
+            {t.terms}
+          </Link>
+          <Link href="/privacy" className="flex min-h-11 items-center underline">
+            {t.privacy}
+          </Link>
         </p>
       </section>
 

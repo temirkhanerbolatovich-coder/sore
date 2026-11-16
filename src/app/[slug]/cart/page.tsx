@@ -21,7 +21,7 @@ export default async function CartPage({
 
   return (
     <CartView
-      shop={{ id: shop.id, slug: shop.slug, name: shop.name, whatsapp: shop.whatsapp }}
+      shop={{ id: shop.id, slug: shop.slug, name: shop.name, whatsapp: shop.whatsapp, leadDays: shop.lead_days }}
       lang={lang}
       products={data.products}
     />

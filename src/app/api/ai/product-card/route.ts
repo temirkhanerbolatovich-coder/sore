@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const { data: shop } = await supabase.from("shops").select("id").eq("owner_id", user.id).maybeSingle();
   if (!shop) return fail(404, "Сначала создайте магазин.");
 
-  const body = (await request.json().catch(() => null)) as { photo_url?: string } | null;
+  const body = (await request.json().catch(() => null)) as { photo_url?: string; categories?: unknown } | null;
   const photoUrl = body?.photo_url ?? "";
   const photoPath = ownedPhotoPath(photoUrl, user.id);
   if (!photoPath) return fail(400, "Сначала загрузите фото товара.");
@@ -57,6 +57,9 @@ export async function POST(request: Request) {
     } catch {
       /* категории необязательны */
     }
+    // Категории, уже выбранные ИИ для соседних фото одной партии, помогают держать их единообразными.
+    const extra = Array.isArray(body?.categories) ? body.categories.filter((c): c is string => typeof c === "string").map((c) => c.slice(0, 60)).slice(0, 20) : [];
+    categories = [...new Set([...categories, ...extra])];
     const { card, provider, kzDropped } = await generateCard({ base64: bytes.toString("base64"), mime: photo.type, categories });
     console.info("ai-card ok", provider);
 

@@ -9,6 +9,7 @@ import { deleteProduct, saveProduct, type ProductState } from "./actions";
 
 import { Field } from "@/components/field";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
+import { newVariantId, variantsOf } from "@/lib/variants";
 import { ActionForm } from "@/components/action-form";
 
 const initial: ProductState = {};
@@ -25,6 +26,9 @@ export function ProductForm({ product }: { product?: Product }) {
   const [descKz, setDescKz] = useState(product?.description_kz ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
   const [touched, setTouched] = useState(false);
+  const [variants, setVariants] = useState<{ id: string; title: string; price: string }[]>(() =>
+    variantsOf(product ?? {}).map((v) => ({ id: v.id, title: v.title, price: String(v.price) })),
+  );
   const [priceMode, setPriceMode] = useState<"fixed" | "from" | "request">(
     product?.price_mode === "from" || product?.price_mode === "request" ? product.price_mode : "fixed",
   );
@@ -104,6 +108,7 @@ export function ProductForm({ product }: { product?: Product }) {
       <form action={action} onChange={() => setTouched(true)} className="flex flex-1 flex-col">
         {product && <input type="hidden" name="id" value={product.id} />}
         <input type="hidden" name="photo_url" value={photoUrl} />
+        <input type="hidden" name="variants" value={JSON.stringify(variants)} />
 
         <div className="flex flex-1 flex-col gap-4 p-5">
           <div className="flex items-center gap-3.5">
@@ -224,7 +229,10 @@ export function ProductForm({ product }: { product?: Product }) {
                     priceMode === value ? "bg-ink text-cream" : "border-[1.5px] border-field"
                   }`}
                 >
-                  <input type="radio" name="price_mode" value={value} checked={priceMode === value} onChange={() => setPriceMode(value)} className="sr-only" />
+                  <input type="radio" name="price_mode" value={value} checked={priceMode === value} onChange={() => {
+                      setPriceMode(value);
+                      if (value !== "fixed") setVariants([]);
+                    }} className="sr-only" />
                   {label}
                 </label>
               ))}
@@ -240,7 +248,7 @@ export function ProductForm({ product }: { product?: Product }) {
             <Field label="Категория" htmlFor="category">
               <input id="category" name="category" maxLength={60} value={category} onChange={(e) => setCategory(e.target.value)} className="input" />
             </Field>
-            {priceMode !== "request" && (
+            {priceMode !== "request" && variants.length === 0 && (
               <Field label={priceMode === "from" ? "Цена от, ₸" : "Цена, ₸"} htmlFor="price">
                 <input
                   id="price"
@@ -254,6 +262,69 @@ export function ProductForm({ product }: { product?: Product }) {
               </Field>
             )}
           </div>
+
+          {priceMode === "fixed" && (
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-semibold">Варианты: вес, размер</legend>
+              {variants.length === 0 ? (
+                <button
+                  type="button"
+                  className="min-h-11 self-start text-sm font-semibold underline"
+                  onClick={() => setVariants([{ id: newVariantId(), title: "", price: "" }])}
+                >
+                  + У товара несколько цен (например, 1 кг и 2 кг)
+                </button>
+              ) : (
+                <>
+                  {variants.map((v, i) => (
+                    <div key={v.id} className="flex gap-2">
+                      <input
+                        aria-label={`Название варианта ${i + 1}`}
+                        placeholder="1 кг"
+                        maxLength={40}
+                        required
+                        value={v.title}
+                        onChange={(e) => setVariants((list) => list.map((x) => (x.id === v.id ? { ...x, title: e.target.value } : x)))}
+                        className="input"
+                      />
+                      <input
+                        aria-label={`Цена варианта ${i + 1}, ₸`}
+                        placeholder="12000"
+                        inputMode="numeric"
+                        required
+                        value={v.price}
+                        onChange={(e) => setVariants((list) => list.map((x) => (x.id === v.id ? { ...x, price: e.target.value.replace(/\D/g, "") } : x)))}
+                        className="input w-28 flex-none"
+                      />
+                      <button
+                        type="button"
+                        aria-label={`Убрать вариант ${i + 1}`}
+                        className="min-h-11 min-w-11 flex-none rounded-xl border-[1.5px] border-field text-lg font-bold"
+                        onClick={() => setVariants((list) => list.filter((x) => x.id !== v.id))}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex flex-wrap gap-x-5">
+                    {variants.length < 10 && (
+                      <button
+                        type="button"
+                        className="min-h-11 text-sm font-semibold underline"
+                        onClick={() => setVariants((list) => [...list, { id: newVariantId(), title: "", price: "" }])}
+                      >
+                        + Ещё вариант
+                      </button>
+                    )}
+                    <button type="button" className="min-h-11 text-sm font-semibold text-muted underline" onClick={() => setVariants([])}>
+                      Убрать все варианты
+                    </button>
+                  </div>
+                  <p className="text-[13px] leading-snug text-muted">В магазине покупатель выберет вариант, а на витрине будет «от» самой низкой цены.</p>
+                </>
+              )}
+            </fieldset>
+          )}
 
           <label className="flex cursor-pointer items-center justify-between py-1 text-base font-semibold">
             В наличии

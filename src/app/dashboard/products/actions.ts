@@ -7,6 +7,7 @@ import { requireShop } from "@/lib/shop";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { ownedPhotoPath } from "@/lib/photos";
 import { FREE_PRODUCT_LIMIT } from "@/lib/types";
+import { newVariantId } from "@/lib/variants";
 
 export type ProductState = { error?: string };
 
@@ -37,8 +38,32 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
   const rawMode = String(formData.get("price_mode") ?? "fixed");
   const priceMode = rawMode === "from" || rawMode === "request" ? rawMode : "fixed";
   // «По запросу»: цену не вводят (в базе 0). Для «точной» и «от» нужна положительная цена.
-  let price = 0;
-  if (priceMode !== "request") {
+  // Варианты (вес, размер): у каждого своё название и цена; базовая цена товара = самая низкая.
+  let variants: { id: string; title: string; price: number }[] = [];
+  try {
+    const parsedVariants = z
+      .array(
+        z.object({
+          id: z.string().max(20).optional(),
+          title: z.string().trim().min(1).max(40),
+          price: z.coerce.number().int().min(1).max(100_000_000),
+        }),
+      )
+      .max(10)
+      .parse(JSON.parse(String(formData.get("variants") || "[]")));
+    variants = parsedVariants.map((v) => ({
+      id: v.id && /^[a-zA-Z0-9_-]{1,20}$/.test(v.id) ? v.id : newVariantId(),
+      title: v.title,
+      price: v.price,
+    }));
+  } catch {
+    return { error: "Проверьте варианты: у каждого нужны название и цена в тенге." };
+  }
+  if (variants.length > 0 && priceMode !== "fixed") return { error: "Варианты возможны только при точной цене." };
+  if (new Set(variants.map((v) => v.id)).size !== variants.length) return { error: "Проверьте варианты: названия не должны повторяться." };
+
+  let price = variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : 0;
+  if (priceMode !== "request" && variants.length === 0) {
     price = /^\d+$/.test(d.price) ? Number(d.price) : NaN;
     if (!Number.isInteger(price) || price <= 0 || price > 100_000_000) {
       return { error: "Цена: целое число в тенге, например 12000" };
@@ -53,6 +78,7 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
     category: d.category || null,
     price,
     price_mode: priceMode,
+    variants,
     photo_url: d.photo_url || null,
     in_stock: formData.get("in_stock") === "on",
   };

@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(30);
+select plan(41);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -56,5 +56,29 @@ select throws_like($$select public.record_inquiry('a0000000-0000-4000-8000-00000
 reset role;
 insert into public.products(shop_id,title,price) select 'a0000000-0000-4000-8000-000000000002','Extra '||n,1 from generate_series(1,11) n;
 select throws_like($$insert into public.products(shop_id,title,price) values('a0000000-0000-4000-8000-000000000002','Sixteenth',1)$$,'%free product limit%','SQL enforces 15 products');
+
+-- Варианты, дата заказа и Telegram
+reset role;
+insert into public.products(id,shop_id,title,price,variants) values
+('b0000000-0000-4000-8000-000000000004','b0000000-0000-4000-8000-000000000002','Cake',1,'[{"id":"k1","title":"1 кг","price":100},{"id":"k2","title":"2 кг","price":180}]');
+select is((select price from public.products where id='b0000000-0000-4000-8000-000000000004'),100,'base price follows the cheapest variant');
+select throws_like($$insert into public.products(shop_id,title,price,variants) values('b0000000-0000-4000-8000-000000000002','Bad',1,'[{"id":"x","title":"t","price":0}]')$$,'%violates check constraint%','invalid variant price rejected');
+select throws_like($$insert into public.products(shop_id,title,price,price_mode,variants) values('b0000000-0000-4000-8000-000000000002','Bad2',0,'request','[{"id":"x","title":"t","price":5}]')$$,'%products_variants_price_mode%','variants are not allowed with price on request');
+update public.shops set lead_days = 2 where id='b0000000-0000-4000-8000-000000000002';
+insert into public.shop_telegram(shop_id,link_code,chat_id) values ('a0000000-0000-4000-8000-000000000002','CODEA',111),('b0000000-0000-4000-8000-000000000002','CODEB',222);
+set local role anon;
+select set_config('request.jwt.claim.sub','',true);
+select is((select order_total from public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000004","qty":1,"variant":"k2"}]','Buyer','77055555555','','',(now() at time zone 'Asia/Almaty')::date + 5,'18:00')),180,'variant price is charged');
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000004","qty":1}]','Buyer','77055555555','','',(now() at time zone 'Asia/Almaty')::date + 5,null)$$,'%items unavailable%','variant is required when the product has variants');
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000004","qty":1,"variant":"zz"}]','Buyer','77055555555','','',(now() at time zone 'Asia/Almaty')::date + 5,null)$$,'%items unavailable%','unknown variant rejected');
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1,"variant":"k1"}]','Buyer','77055555555','','',(now() at time zone 'Asia/Almaty')::date + 5,null)$$,'%items unavailable%','variant on a product without variants rejected');
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77055555555','','')$$,'%date required%','date is required when the shop needs lead time');
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77055555555','','',(now() at time zone 'Asia/Almaty')::date,null)$$,'%date too early%','date inside the lead time rejected');
+select throws_like($$select count(*) from public.shop_telegram$$,'%permission denied%','anonymous cannot read Telegram links');
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
+select is((select count(*)::integer from public.shop_telegram),1,'owner sees only own Telegram link status');
+reset role;
 select * from finish();
 rollback;

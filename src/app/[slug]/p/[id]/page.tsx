@@ -5,6 +5,8 @@ import { getShopBySlug } from "@/lib/shop-data";
 import { T, description, parseLang, shopHref } from "@/lib/lang";
 import { inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 import { InquiryButton } from "@/components/inquiry-button";
+import { ProductBuy } from "@/components/product-buy";
+import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
@@ -41,6 +43,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   if (!data || !product) notFound();
   const { shop } = data;
   const text = description(product, lang);
+  const variants = variantsOf(product);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
@@ -58,7 +61,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <div className="flex flex-col gap-3 px-5 pt-5">
         <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>
         <div className="flex items-center justify-between gap-3">
-          <div className="text-2xl font-extrabold">{priceLabel(product.price, product.price_mode, lang)}</div>
+          <div className="text-2xl font-extrabold">{priceLabel(product.price, product.price_mode, lang, variants.length > 0)}</div>
           <div className={`text-sm font-bold ${product.in_stock ? "text-wa" : "text-accent-dark"}`}>
             {product.in_stock ? t.inStock : t.out}
           </div>
@@ -75,6 +78,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
               />
               <p className="text-center text-[13px] text-muted">{t.askHint}</p>
             </div>
+          ) : variants.length > 0 && product.in_stock ? (
+            <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} />
           ) : (
             <AddToCart slug={shop.slug} product={product} lang={lang} />
           )}

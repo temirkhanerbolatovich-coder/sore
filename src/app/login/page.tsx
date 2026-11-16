@@ -36,7 +36,8 @@ export default async function LoginPage({
       </div>
       <LoginForm failed={Boolean(error)} />
       <p className="mt-auto text-center text-sm leading-relaxed text-muted">
-        Продолжая, вы соглашаетесь с условиями сервиса.
+        Продолжая, вы соглашаетесь с <Link href="/terms" className="underline">условиями</Link> и{" "}
+        <Link href="/privacy" className="underline">политикой конфиденциальности</Link>.
       </p>
     </main>
   );

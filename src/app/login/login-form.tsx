@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 
 /** Вход по коду работает, только если письмо содержит код ({{ .Token }}): нужен свой SMTP и шаблоны из docs/email-templates. */
 const EMAIL_CODE = process.env.NEXT_PUBLIC_EMAIL_CODE === "1";
+/** Кнопка Google: включайте (=1), когда провайдер настроен в Supabase (см. docs/DEPLOY.md). */
+const GOOGLE_LOGIN = process.env.NEXT_PUBLIC_GOOGLE_LOGIN === "1";
 
 export function LoginForm({ failed }: { failed: boolean }) {
   const [email, setEmail] = useState("");
@@ -118,6 +120,25 @@ export function LoginForm({ failed }: { failed: boolean }) {
   }
 
   return (
+    <div className="flex flex-col gap-5">
+      {GOOGLE_LOGIN && (
+        <>
+          <button
+            type="button"
+            onClick={() =>
+              void createClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } })
+            }
+            className="btn-outline h-14 text-lg"
+          >
+            Войти через Google
+          </button>
+          <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
+            <span className="h-px flex-1 bg-line" />
+            или по почте
+            <span className="h-px flex-1 bg-line" />
+          </div>
+        </>
+      )}
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
         <label htmlFor="email" className="text-[15px] font-semibold">
@@ -143,5 +164,6 @@ export function LoginForm({ failed }: { failed: boolean }) {
         {status === "sending" ? "Отправляем…" : "Получить ссылку для входа"}
       </button>
     </form>
+    </div>
   );
 }

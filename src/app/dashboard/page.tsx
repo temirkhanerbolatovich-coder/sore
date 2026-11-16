@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireShop } from "@/lib/shop";
 import { priceLabel } from "@/lib/order";
+import { variantsOf } from "@/lib/variants";
 import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
 import { ActionForm } from "@/components/action-form";
 import { toggleStock, moveProduct } from "./products/actions";
@@ -67,6 +68,14 @@ export default async function DashboardPage() {
         </span>
       </div>
 
+      {!full && (
+        <div className="px-5 pt-2">
+          <Link href="/dashboard/products/batch" className="btn-outline h-11 min-h-11 w-full text-sm">
+            Добавить сразу несколько фото
+          </Link>
+        </div>
+      )}
+
       <ul className="flex flex-col gap-2.5 px-5 pt-3">
         {products.length === 0 && (
           <li className="card flex flex-col gap-1 p-5">
@@ -85,7 +94,7 @@ export default async function DashboardPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-base font-semibold">{p.title}</div>
-                <div className="text-[15px] text-muted">{priceLabel(p.price, p.price_mode)}</div>
+                <div className="text-[15px] text-muted">{priceLabel(p.price, p.price_mode, "ru", variantsOf(p).length > 0)}</div>
                 <div className={`text-[13px] font-semibold ${p.in_stock ? "text-wa" : "text-accent-dark"}`}>
                   {p.in_stock ? "В наличии" : "Нет в наличии"}
                 </div>
