@@ -40,3 +40,24 @@ src/proxy.ts обновляет сессию и перенаправляет г�
 - Lighthouse запускайте по production-сборке. Корзина намеренно noindex: crawlability снижает SEO, снимать noindex ради оценки не следует.
 
 Публичный деплой требует доступа к Vercel, облачному Supabase, домену и SMTP. Локальная сборка не доказывает работу на Vercel. Не публикуйте .env.local, сервисные ключи и traces реальных покупателей. Ограничения флуда и очистки Storage описаны в DECISIONS.md.
+
+## Боевое развёртывание (16.11.2026)
+
+| Что | Где |
+| --- | --- |
+| Сайт | https://dukenai.vercel.app (Vercel, проект `dukenai`, автодеплой с ветки `master` репозитория `temirkhanerbolatovich-coder/dukenai`) |
+| База, Auth, Storage | Supabase, проект `dukenai`, ref `pcgvyxwueshxksoffodf`, регион eu-central-1 (Франкфурт), бесплатный тариф |
+| Миграции | 0001–0009 применены командой `npx supabase db push --remote` |
+| Адреса возврата для входа | заданы блоком `[remotes.production]` в `supabase/config.toml`, применяются `npx supabase config push --remote pcgvyxwueshxksoffodf`; остальные значения закреплены как в облаке, чтобы push не ослаблял защиту |
+| Переменные Vercel (Production) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `AI_DAILY_LIMIT`, `DEMO_SLUG=povar-astana` |
+| Пилот | `/povar-astana`, он же `/demo`; создан скриптом `npm run seed:pilot` с флагом `--allow-remote` |
+
+Пароль базы лежит только в локальном `.env.local` (`SUPABASE_DB_PASSWORD`), ключи API только в Vercel и локальных файлах, в git их нет.
+
+### Что нужно знать
+
+- **Автор коммита должен совпадать с аккаунтом Vercel.** Иначе деплой блокируется («commit author doesn't have permission»). В репозитории настроен локальный `git config user` на GitHub-аккаунт владельца.
+- **Почта входа.** Встроенная почта Supabase на бесплатном тарифе рассчитана на команду проекта и сильно ограничена по частоте; шаблоны писем на ней менять нельзя (`entitlement_required`). Для реальных пользователей подключите свой SMTP (Supabase → Authentication → SMTP; подойдёт Resend с подтверждённым доменом). После этого загрузите шаблоны из `docs/email-templates/` (в них есть и ссылка, и код) и включите вход по коду: `NEXT_PUBLIC_EMAIL_CODE=1` в Vercel.
+- **Ссылка из письма и браузер.** Вход по ссылке (PKCE) работает только в том браузере, где его запросили. Если письмо откроется во встроенном браузере другого приложения, будет «ссылка устарела». Вход по коду решает это, но требует шаблонов выше.
+- **Vercel Hobby** официально для некоммерческого использования; для работающего бизнеса нужен Pro.
+- **Владелец пилотного магазина** сейчас аккаунт создателя проекта (один магазин на аккаунт). Когда у повара будет своя почта, поменяйте email владельца через админ-API или создайте для него магазин заново.

@@ -16,7 +16,7 @@ jobs:
         run: |
           npx supabase status -o env > /tmp/supabase-env
           source /tmp/supabase-env
-          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nSUPABASE_SERVICE_ROLE_KEY=%s\nNEXT_PUBLIC_SITE_URL=http://localhost:3000\n' "$API_URL" "$ANON_KEY" "$SERVICE_ROLE_KEY" > .env.local
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\nNEXT_PUBLIC_SUPABASE_ANON_KEY=%s\nSUPABASE_SERVICE_ROLE_KEY=%s\nNEXT_PUBLIC_SITE_URL=http://localhost:3000\nNEXT_PUBLIC_EMAIL_CODE=1\n' "$API_URL" "$ANON_KEY" "$SERVICE_ROLE_KEY" > .env.local
       - run: npm run lint
       - run: npx next typegen && npm run typecheck
       - run: npm test

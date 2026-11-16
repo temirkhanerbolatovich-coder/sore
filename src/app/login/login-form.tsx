@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+/** Вход по коду работает, только если письмо содержит код ({{ .Token }}): нужен свой SMTP и шаблоны из docs/email-templates. */
+const EMAIL_CODE = process.env.NEXT_PUBLIC_EMAIL_CODE === "1";
+
 export function LoginForm({ failed }: { failed: boolean }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
@@ -74,6 +77,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
           Мы отправили ссылку для входа на <b className="text-ink">{email}</b>. Откройте письмо на
           этом же телефоне.
         </p>
+        {EMAIL_CODE && (
         <form onSubmit={onCode} className="mt-2 flex flex-col gap-2 border-t border-line pt-3">
           <label htmlFor="otp" className="text-sm font-semibold">
             Или введите код из письма
@@ -100,6 +104,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
             </p>
           )}
         </form>
+        )}
         <div className="mt-2 flex flex-wrap items-center gap-x-5">
           <button type="button" className="min-h-11 font-semibold text-accent underline" onClick={() => setStatus("idle")}>
             Указать другую почту
