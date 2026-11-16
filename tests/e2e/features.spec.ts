@@ -26,7 +26,7 @@ test("варианты по весу и дата заказа: от выбора
     await page.getByLabel("Название варианта 2").fill("2 кг");
     await page.getByLabel("Цена варианта 2, ₸").fill("22000");
     await page.getByRole("button", { name: "Сохранить товар" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await expect(page.getByText("от 12 000 ₸")).toBeVisible();
 
     // Покупатель: на карточке «Выбрать», на странице товара выбирает 2 кг.
@@ -99,7 +99,7 @@ test("несколько фото сразу: ИИ-черновики, прав�
     await expect(page.getByRole("button", { name: "Сохранить 2 товаров" })).toBeDisabled();
     await page.getByLabel("Цена 2, ₸").fill("9000");
     await page.getByRole("button", { name: "Сохранить 2 товаров" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await expect(page.getByText("Товары · 2")).toBeVisible();
     await expect(page.getByText("Цена по запросу")).toBeVisible();
     await expect(page.getByText("9 000 ₸")).toBeVisible();

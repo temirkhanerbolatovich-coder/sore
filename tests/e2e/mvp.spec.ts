@@ -32,7 +32,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await page.getByLabel("Адрес ссылки").fill(slug);
     await page.getByLabel(/WhatsApp/).fill("87011234567");
     await page.getByRole("button", { name: /Создать/ }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await page.getByRole("link", { name: "Товар", exact: true }).click();
     await page.locator('input[type="file"]').setInputFiles("public/icon-192.png");
     await expect(page.getByRole("button", { name: "Заполнить с ИИ" })).toBeEnabled();
@@ -41,7 +41,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await expect(page.getByLabel("Название", { exact: true })).toHaveValue("Торт тестовый");
     await page.getByLabel("Цена, ₸").fill("12000");
     await page.getByRole("button", { name: "Сохранить товар" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await page.getByRole("link", { name: "Магазин", exact: true }).click();
     await page.getByLabel("Город").fill("Алматы");
     await page.getByRole("button", { name: "Сохранить настройки" }).click();

@@ -10,6 +10,7 @@ import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
 import { ViewTracker } from "@/components/view-tracker";
+import { ShareButton } from "@/components/share-button";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -49,7 +50,8 @@ export default async function ShopPage({ params, searchParams }: Props) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
       <header className="flex flex-col gap-4 border-b border-line bg-white px-5 pb-4 pt-6">
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex overflow-hidden rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
             <Link
               href={shopHref(base, "ru", activeCat)}
@@ -72,6 +74,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
           <ProductPhoto
             url={shop.avatar_url}
             alt=""
+            initial={shop.name}
             className="size-[72px] flex-none rounded-full"
           />
           <div className="min-w-0">
@@ -81,7 +84,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
         </div>
 
         {categories.length > 0 && (
-          <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1" aria-label="Категории">
+          <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
             <Chip href={shopHref(base, lang)} active={!activeCat}>
               {t.all}
             </Chip>

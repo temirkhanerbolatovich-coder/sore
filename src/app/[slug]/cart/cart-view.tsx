@@ -60,6 +60,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
+  const [sentNumber, setSentNumber] = useState<number | null>(null);
 
   useEffect(() => {
     // Hydration synchronizes the persisted browser cart and contact details with server data.
@@ -125,6 +126,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
     try { localStorage.setItem("duken-customer", JSON.stringify({ name: name.trim(), phone: digits })); } catch { /* Optional storage. */ }
     clear();
+    setSentNumber(Number(row.order_number));
     setSentUrl(url);
     window.location.href = url;
     } catch { setError(t.orderError); } finally { setSending(false); }
@@ -135,7 +137,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   if (sentUrl) {
     return (
       <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-        <h1 className="text-2xl font-extrabold">{t.accepted}</h1>
+        <h1 className="text-2xl font-extrabold">
+          {t.accepted}
+          {sentNumber ? ` · №${sentNumber}` : ""}
+        </h1>
+        <p className="text-[17px] font-semibold">{t.nextStep}</p>
         <p className="leading-relaxed text-muted">
           {t.waHelp}
         </p>

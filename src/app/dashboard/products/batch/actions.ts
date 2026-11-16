@@ -58,5 +58,5 @@ export async function saveBatch(_prev: BatchState, formData: FormData): Promise<
 
   revalidatePath("/dashboard");
   revalidatePath(`/${shop.slug}`);
-  redirect("/dashboard");
+  redirect(`/dashboard?saved=batch&n=${items.length}`);
 }

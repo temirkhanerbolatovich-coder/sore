@@ -47,7 +47,7 @@ test("форма товара: уход с несохранёнными прав
     await page.goto("/dashboard/products/new");
     await page.waitForLoadState("networkidle");
     await page.getByRole("link", { name: "Отмена" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
 
     await page.goto("/dashboard/products/new");
     await page.waitForLoadState("networkidle");
@@ -77,7 +77,7 @@ test("форма товара: уход с несохранёнными прав
     // Подтверждение уходит на дашборд.
     page.once("dialog", (d) => void d.accept());
     await page.getByRole("link", { name: "Назад", exact: true }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
   } finally {
     await cleanupUser(admin, email);
   }

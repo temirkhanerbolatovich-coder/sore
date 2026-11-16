@@ -1,13 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useStatefulAction } from "@/lib/use-stateful-action";
 import { createShop, type OnboardingState } from "./actions";
 import { slugify } from "@/lib/slug";
 
 const initial: OnboardingState = {};
 
 export function OnboardingForm() {
-  const [state, action, pending] = useActionState(createShop, initial);
+  const [state, onSubmit, pending] = useStatefulAction(createShop, initial);
   const [name, setName] = useState(state.values?.name ?? "");
   const [slug, setSlug] = useState(state.values?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -16,7 +17,7 @@ export function OnboardingForm() {
   const errIn = (f: string) => state.field === f;
 
   return (
-    <form action={action} className="flex flex-col gap-5">
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm font-semibold">
           Название магазина

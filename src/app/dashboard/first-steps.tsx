@@ -1,0 +1,45 @@
+import Link from "next/link";
+
+type Step = { done: boolean; title: string; text: string; href?: string; cta?: string };
+
+/** Подсказка «Первые шаги» для нового продавца: показывается, пока что-то из списка не сделано. */
+export function FirstSteps({ hasProducts, shared, telegram }: { hasProducts: boolean; shared: boolean; telegram: "off" | "pending" | "done" }) {
+  const steps: Step[] = [
+    { done: hasProducts, title: "Добавьте первый товар", text: "Сфотографируйте его, ИИ составит описание.", href: "/dashboard/products/new", cta: "Добавить товар" },
+    { done: shared, title: "Поделитесь ссылкой", text: "Поставьте ссылку в био Instagram или отправьте клиентам. Скопируйте её выше." },
+    ...(telegram === "off" ? [] : [{ done: telegram === "done", title: "Подключите Telegram", text: "Заказы будут приходить вам сообщением.", href: "/dashboard/settings", cta: "Подключить" }]),
+  ];
+  if (steps.every((s) => s.done)) return null;
+
+  return (
+    <section className="card mx-5 mt-3 flex flex-col gap-3 p-4" aria-labelledby="first-steps">
+      <h2 id="first-steps" className="text-lg font-bold">
+        Первые шаги
+      </h2>
+      <ol className="flex flex-col gap-3">
+        {steps.map((s) => (
+          <li key={s.title} className="flex gap-3">
+            <span
+              aria-hidden="true"
+              className={`mt-0.5 flex size-6 flex-none items-center justify-center rounded-full text-sm font-extrabold ${s.done ? "bg-wa text-white" : "border-2 border-field text-transparent"}`}
+            >
+              ✓
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className={`font-semibold ${s.done ? "text-muted line-through" : ""}`}>
+                {s.title}
+                {s.done && <span className="sr-only"> — сделано</span>}
+              </div>
+              {!s.done && <p className="text-[14px] leading-snug text-muted">{s.text}</p>}
+              {!s.done && s.href && (
+                <Link href={s.href} className="mt-1 inline-flex min-h-11 items-center text-sm font-bold text-accent underline">
+                  {s.cta}
+                </Link>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}

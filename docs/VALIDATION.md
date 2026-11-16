@@ -4,14 +4,14 @@
 
 | Проверка | Результат |
 |---|---|
-| Миграции 0001–0009 на чистом локальном Supabase | PASS |
+| Миграции 0001–0010 на чистом локальном Supabase | PASS |
 | local-user.sql + seed.sql | PASS, демо-пользователь и товары созданы |
-| SQL/RLS `npm run test:rls` (supabase/tests/rls.sql) | PASS, 30 проверок (в том числе: услуги «от»/«по запросу» нельзя заказать, обращение по ним учитывается) |
+| SQL/RLS `npm run test:rls` (supabase/tests/rls.sql) | PASS, 41 проверка (в том числе: услуги «от»/«по запросу» нельзя заказать, обращение по ним учитывается) |
 | `npm run lint` | PASS |
 | `npx tsc --noEmit` | PASS |
-| `npm test` (Vitest) | PASS, 30 тестов в 4 файлах (в том числе цепочка ИИ-провайдеров с подменой fetch) |
+| `npm test` (Vitest) | PASS, 37 тестов в 5 файлах (в том числе цепочка ИИ-провайдеров с подменой fetch) |
 | `npm run build` | PASS |
-| `npm run test:e2e` (Playwright, 18 тестов + 1 живой по флагу) | PASS |
+| `npm run test:e2e` (Playwright, 25 тестов + 1 живой по флагу) | PASS |
 | Lighthouse `/`, mobile | Performance 100, Accessibility 100, SEO 100 |
 | Lighthouse `/demo`, mobile | Performance 94, Accessibility 100, Best Practices 100, SEO 100 |
 | Lighthouse `/demo/cart`, mobile | Performance 100, Accessibility 100, Best Practices 100, SEO 63 (см. ниже) |
@@ -46,3 +46,4 @@
 
 Счётчик просмотров витрины не работал с самого начала: запрос Supabase выполняется только при `.then()`, а в `ViewTracker` стояло `void …rpc(…)`, поэтому «Просмотры за неделю» всегда были 0. Найдено E2E-тестом услуг, исправлено, добавлена проверка в `services.spec.ts`.
 
+Telegram-уведомления проверены целиком на подставном Bot API: заказ → триггер базы (pg_net) → /api/telegram/notify → сообщение с составом, суммой и кнопками. Настоящий Telegram не проверялся (нужен токен бота).

@@ -115,7 +115,7 @@ test.describe("продавец", () => {
       await page.locator('input[type="file"]').setInputFiles("public/icon-192.png");
       await expect(page.getByAltText("Фото товара")).toBeVisible();
       await page.getByRole("button", { name: "Сохранить товар" }).click();
-      await expect(page).toHaveURL(/\/dashboard$/);
+      await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
       expect(await storedFiles(admin, ownerId)).toHaveLength(1);
       const [first] = await storedFiles(admin, ownerId);
 
@@ -123,14 +123,14 @@ test.describe("продавец", () => {
       await page.locator('input[type="file"]').setInputFiles("public/icon-512.png");
       await expect(page.getByAltText("Фото товара")).toBeVisible();
       await page.getByRole("button", { name: "Сохранить товар" }).click();
-      await expect(page).toHaveURL(/\/dashboard$/);
+      await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
       await expect.poll(() => storedFiles(admin, ownerId)).toHaveLength(1);
       expect(await storedFiles(admin, ownerId)).not.toContain(first);
 
       await page.getByRole("link", { name: /Фото-товар/ }).click();
       page.once("dialog", (d) => void d.accept());
       await page.getByRole("button", { name: "Удалить товар" }).click();
-      await expect(page).toHaveURL(/\/dashboard$/);
+      await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
       await expect.poll(() => storedFiles(admin, ownerId)).toHaveLength(0);
     } finally {
       await cleanupUser(admin, email);

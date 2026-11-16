@@ -50,6 +50,15 @@ for (const [width, height] of [[360, 640], [390, 844]]) {
         await check(page, url);
       }
 
+      // Форма с редактором вариантов (раньше fieldset распирал её шире экрана).
+      await page.goto("/dashboard/products/new");
+      await page.waitForLoadState("networkidle");
+      await page.getByRole("button", { name: /У товара несколько цен/ }).click();
+      await page.getByRole("button", { name: "+ Ещё вариант" }).click();
+      await check(page, "/форма с вариантами");
+      await page.goto("/dashboard/products/batch");
+      await check(page, "/несколько фото");
+
       const ctx = await browser.newContext({ viewport: { width, height } });
       const buyer = await ctx.newPage();
       const base = test.info().project.use.baseURL;

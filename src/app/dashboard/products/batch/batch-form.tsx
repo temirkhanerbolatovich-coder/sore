@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useStatefulAction } from "@/lib/use-stateful-action";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
@@ -26,7 +27,7 @@ const MAX_AT_ONCE = 12;
 
 /** Выбор нескольких фото → загрузка и ИИ-карточки по каждому → проверка списка → сохранить всё сразу. */
 export function BatchForm({ slots, categories }: { slots: number; categories: string[] }) {
-  const [state, action, saving] = useActionState(saveBatch, initial);
+  const [state, onSubmit, saving] = useStatefulAction(saveBatch, initial);
   const [items, setItems] = useState<Item[]>([]);
   const [message, setMessage] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -124,7 +125,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
   );
 
   return (
-    <form action={action} className="flex flex-1 flex-col">
+    <form onSubmit={onSubmit} className="flex flex-1 flex-col">
       <input type="hidden" name="payload" value={payload} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (

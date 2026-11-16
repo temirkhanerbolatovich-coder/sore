@@ -1,19 +1,31 @@
 const TINTS = ["#f3d9c4", "#e8d5e6", "#d9e6d0", "#f6e3a8", "#d6e4f0", "#f0d2c0"];
 
-/** Фото товара или цветная заглушка, если фото нет. */
+/** Фото товара или цветная заглушка с первой буквой названия, если фото нет. */
 export function ProductPhoto({
   url,
   alt,
   seed = 0,
   className = "",
+  initial,
 }: {
   url: string | null;
   alt: string;
   seed?: number;
   className?: string;
+  /** Текст, из которого берётся буква для заглушки (по умолчанию alt). */
+  initial?: string;
 }) {
   if (!url) {
-    return <div className={className} style={{ background: TINTS[seed % TINTS.length] }} role="img" aria-label={alt} />;
+    const letter = (initial ?? alt).trim().charAt(0).toUpperCase();
+    return (
+      <div className={`flex items-center justify-center overflow-hidden ${className}`} style={{ background: TINTS[seed % TINTS.length] }} role={alt ? "img" : undefined} aria-label={alt || undefined}>
+        {letter && (
+          <span aria-hidden="true" className="select-none text-[clamp(1.5rem,32%,3.5rem)] font-extrabold leading-none text-ink/25">
+            {letter}
+          </span>
+        )}
+      </div>
+    );
   }
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={url} alt={alt} loading="lazy" className={`object-cover ${className}`} />;

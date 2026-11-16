@@ -1,5 +1,6 @@
 "use client";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useStatefulAction } from "@/lib/use-stateful-action";
 import QRCode from "qrcode";
 import type { Shop } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
@@ -10,7 +11,7 @@ import { saveSettings } from "./actions";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 
 export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
-  const [state, action, pending] = useActionState(saveSettings, {});
+  const [state, onSubmit, pending] = useStatefulAction(saveSettings, {});
   const [avatar, setAvatar] = useState(shop.avatar_url || "");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +37,7 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
     finally { setUploading(false); }
   }
   return <div className="flex flex-col gap-5">
-    <form action={action} onChange={() => setDirtyFor(state)} className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} onChange={() => setDirtyFor(state)} className="flex flex-col gap-4">
       <Field label="Название магазина" htmlFor="name"><input id="name" name="name" className="input" required minLength={2} maxLength={60} defaultValue={shop.name} /></Field>
       <Field label="Город" htmlFor="city"><input id="city" name="city" className="input" maxLength={60} defaultValue={shop.city || ""} /></Field>
       <Field label="WhatsApp" htmlFor="whatsapp"><input id="whatsapp" name="whatsapp" type="tel" className="input" required defaultValue={shop.whatsapp} /></Field>

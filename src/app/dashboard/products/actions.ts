@@ -109,7 +109,7 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
 
   revalidatePath("/dashboard");
   revalidatePath(`/${shop.slug}`);
-  redirect("/dashboard");
+  redirect(id ? "/dashboard?saved=updated" : "/dashboard?saved=added");
 }
 
 export async function toggleStock(formData: FormData) {
@@ -131,7 +131,7 @@ export async function deleteProduct(formData: FormData) {
   await removeUnusedPhoto(supabase, product?.photo_url, shop.owner_id);
   revalidatePath("/dashboard");
   revalidatePath(`/${shop.slug}`);
-  redirect("/dashboard");
+  redirect("/dashboard?saved=deleted");
 }
 
 export async function moveProduct(formData: FormData) {

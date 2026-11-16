@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useStatefulAction } from "@/lib/use-stateful-action";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
@@ -15,7 +16,7 @@ import { ActionForm } from "@/components/action-form";
 const initial: ProductState = {};
 
 export function ProductForm({ product }: { product?: Product }) {
-  const [state, action, pending] = useActionState(saveProduct, initial);
+  const [state, onSubmit, pending] = useStatefulAction(saveProduct, initial);
   const [photoUrl, setPhotoUrl] = useState(product?.photo_url ?? "");
   const [uploading, setUploading] = useState(false);
   const [photoError, setPhotoError] = useState("");
@@ -105,7 +106,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <form action={action} onChange={() => setTouched(true)} className="flex flex-1 flex-col">
+      <form onSubmit={onSubmit} onChange={() => setTouched(true)} className="flex flex-1 flex-col">
         {product && <input type="hidden" name="id" value={product.id} />}
         <input type="hidden" name="photo_url" value={photoUrl} />
         <input type="hidden" name="variants" value={JSON.stringify(variants)} />
@@ -152,6 +153,7 @@ export function ProductForm({ product }: { product?: Product }) {
                 </svg>
                 {aiBusy ? "ИИ думает…" : "Заполнить с ИИ"}
               </button>
+              {!photoUrl && <p className="text-[13px] leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
             </div>
           </div>
           {photoError && (
@@ -213,7 +215,7 @@ export function ProductForm({ product }: { product?: Product }) {
             />
           </Field>
 
-          <fieldset className="flex flex-col gap-1.5">
+          <fieldset className="flex min-w-0 flex-col gap-1.5">
             <legend className="mb-1.5 text-sm font-semibold">Цена</legend>
             <div className="grid grid-cols-3 gap-2">
               {(
@@ -264,7 +266,7 @@ export function ProductForm({ product }: { product?: Product }) {
           </div>
 
           {priceMode === "fixed" && (
-            <fieldset className="flex flex-col gap-2">
+            <fieldset className="flex min-w-0 flex-col gap-2">
               <legend className="mb-1 text-sm font-semibold">Варианты: вес, размер</legend>
               {variants.length === 0 ? (
                 <button
@@ -285,7 +287,7 @@ export function ProductForm({ product }: { product?: Product }) {
                         required
                         value={v.title}
                         onChange={(e) => setVariants((list) => list.map((x) => (x.id === v.id ? { ...x, title: e.target.value } : x)))}
-                        className="input"
+                        className="input min-w-0"
                       />
                       <input
                         aria-label={`Цена варианта ${i + 1}, ₸`}

@@ -20,7 +20,7 @@ test("продавец создаёт услугу «от», покупател�
     await expect(page.getByLabel("Цена от, ₸")).toBeVisible();
     await page.getByLabel("Цена от, ₸").fill("15000");
     await page.getByRole("button", { name: "Сохранить товар" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await expect(page.getByText("от 15 000 ₸")).toBeVisible();
 
     await page.goto("/dashboard/products/new");
@@ -29,7 +29,7 @@ test("продавец создаёт услугу «от», покупател�
     await page.getByText("По запросу", { exact: true }).click();
     await expect(page.getByLabel(/Цена/)).toHaveCount(0); // поле цены скрыто
     await page.getByRole("button", { name: "Сохранить товар" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
     await expect(page.getByText("Цена по запросу")).toBeVisible();
 
     // Покупатель: вместо «В корзину» кнопка «Узнать цену» с готовым текстом.

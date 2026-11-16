@@ -7,11 +7,21 @@ import { ActionForm } from "@/components/action-form";
 import { toggleStock, moveProduct } from "./products/actions";
 import { CopyLink } from "./copy-link";
 import { DashboardNav } from "@/components/dashboard-nav";
+import { FirstSteps } from "./first-steps";
+import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
 
 export const metadata = { title: "Кабинет — DukenAI" };
 
-export default async function DashboardPage() {
+const SAVED: Record<string, string> = {
+  added: "Товар добавлен. Он уже на витрине.",
+  updated: "Изменения сохранены.",
+  deleted: "Товар удалён.",
+  batch: "Товары добавлены.",
+};
+
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ saved?: string; n?: string }> }) {
+  const { saved, n } = await searchParams;
   const { supabase, shop } = await requireShop();
 
   const { data } = await supabase
@@ -22,6 +32,9 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: true });
   const products = (data ?? []) as Product[];
   const stats = await getStats(supabase, shop.id);
+  const tgConfigured = telegramConfigured();
+  const { data: tg } = tgConfigured ? await supabase.from("shop_telegram").select("linked_at").eq("shop_id", shop.id).maybeSingle() : { data: null };
+  const telegram: "off" | "pending" | "done" = !tgConfigured ? "off" : tg?.linked_at ? "done" : "pending";
 
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const fullUrl = `${site}/${shop.slug}`;
@@ -60,6 +73,16 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {saved && SAVED[saved] && (
+        <div role="status" className="mx-5 mt-3 flex items-center justify-between gap-3 rounded-xl border border-[#b7dcc3] bg-[#e6f3ea] px-4 py-3 text-[15px] font-semibold text-[#1d4d31]">
+          <span>{saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]}</span>
+          <Link href="/dashboard" className="flex min-h-11 items-center px-1 text-sm underline" aria-label="Закрыть сообщение">
+            Закрыть
+          </Link>
+        </div>
+      )}
+      <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
 
       <div className="flex items-center justify-between px-5 pt-2">
         <h2 className="text-lg font-bold">Товары · {products.length}</h2>
