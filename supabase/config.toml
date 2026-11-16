@@ -451,3 +451,11 @@ enable_confirmations = true
 
 [remotes.production.storage.vector]
 enabled = false
+
+# Вход через Google (только облако). Client ID и Secret берутся из переменных окружения при `config push`,
+# в файле их нет. См. docs/DEPLOY.md, раздел «Вход через Google».
+[remotes.production.auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
