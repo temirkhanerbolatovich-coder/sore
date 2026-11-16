@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(49);
+select plan(54);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -108,5 +108,31 @@ set local role service_role;
 select is(public.rate_limit_hit('rls-report',60,1),true,'service role can start window');
 select is(public.rate_limit_hit('rls-report',60,1),false,'rate limiter returns false after allowance');
 reset role;
+
+-- Очистка удаляет только записи старше соответствующего срока.
+insert into private.rate_limits(key, window_start, hits) values
+  ('rls-retention:old', now() - interval '25 hours', 1),
+  ('rls-retention:fresh', now() - interval '23 hours', 1);
+insert into public.events(id, shop_id, type, created_at) values
+  ('c0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002', 'view', now() - interval '91 days'),
+  ('c0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000002', 'view', now() - interval '89 days');
+insert into public.ai_generations(id, shop_id, created_at) values
+  ('c0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000002', now() - interval '31 days'),
+  ('c0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000002', now() - interval '29 days');
+update public.orders set created_at = now() - interval '91 days'
+where shop_id = 'b0000000-0000-4000-8000-000000000002' and number = 1;
+select lives_ok($$select private.purge_old_data()$$, 'maintenance function runs');
+select results_eq(
+  $$select key from private.rate_limits where key like 'rls-retention:%' order by key$$,
+  array['rls-retention:fresh'], 'only expired rate windows are deleted');
+select results_eq(
+  $$select id::text from public.events where id::text like 'c0000000-%' order by id$$,
+  array['c0000000-0000-4000-8000-000000000002'], 'only events older than 90 days are deleted');
+select results_eq(
+  $$select id::text from public.ai_generations where id::text like 'c0000000-%' order by id$$,
+  array['c0000000-0000-4000-8000-000000000004'], 'only AI usage older than 30 days is deleted');
+select is((select count(*)::integer from public.orders where
+  shop_id = 'b0000000-0000-4000-8000-000000000002' and number = 1), 1, 'old orders are preserved');
+
 select * from finish();
 rollback;
