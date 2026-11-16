@@ -1,9 +1,9 @@
-// Логотип бота SÖRE: только надпись, в стиле направления 05 «Связь» (жирный гротеск, тёмно-зелёный на светлом).
+// Логотип бота SÖRE: только надпись, в стиле направления 05 «Связь» (жирный гротеск, белая надпись на тёмном фоне).
 // Используется только ботом: аватар (@BotFather) и картинка приветствия. Сайт его не использует.
 // Файл public/brand/sore-bot-avatar.png собирает npm run brand:export.
 
-const TEXT = "#12332A";
-const BACKGROUND = "#F6F7F3";
+const TEXT = "#F4F5F2";
+const BACKGROUND = "#111417";
 
 /** Квадрат с надписью SÖRE по центру. Надпись не шире ~64% стороны: Telegram обрезает аватар кругом. */
 export function avatarSvg(size = 640): string {
@@ -12,7 +12,7 @@ export function avatarSvg(size = 640): string {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`,
     `<rect width="${size}" height="${size}" fill="${BACKGROUND}"/>`,
     `<text x="50%" y="${Math.round(size / 2 + fontSize * 0.36)}" text-anchor="middle" fill="${TEXT}"`,
-    ` font-family="'Segoe UI', Onest, Inter, Helvetica, Arial, sans-serif" font-size="${fontSize}" font-weight="800" letter-spacing="${Math.round(fontSize * 0.02)}">SÖRE</text>`,
+    ` font-family="'Segoe UI', Onest, Inter, Helvetica, Arial, sans-serif" font-size="${fontSize}" font-weight="800" letter-spacing="0">SÖRE</text>`,
     `</svg>`,
   ].join("");
 }
