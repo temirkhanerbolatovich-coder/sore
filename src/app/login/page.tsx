@@ -31,7 +31,7 @@ export default async function LoginPage({
           Войдите, чтобы создать магазин
         </h1>
         <p className="text-[17px] leading-relaxed text-muted">
-          Пришлём ссылку для входа на почту. Пароль не нужен.
+          Войдите по ссылке из письма или через Google, чтобы создать витрину и принимать заказы. Пароль не нужен.
         </p>
       </div>
       <LoginForm failed={Boolean(error)} />

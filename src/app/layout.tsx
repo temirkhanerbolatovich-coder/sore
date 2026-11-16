@@ -12,9 +12,9 @@ import "./motion.css";
 export const metadata: Metadata = {
   icons: { apple: "/apple-touch-icon.png" },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "Sөre — магазин-ссылка за 2 минуты",
+  title: "Sөre — ваша полка в интернете",
   description:
-    "Сфотографируйте товар, ИИ напишет карточку, а заказы придут в WhatsApp уже собранными.",
+    "Фото товаров, карточки с помощью ИИ и витрина по ссылке с заказами в WhatsApp.",
 };
 
 export const viewport: Viewport = {
