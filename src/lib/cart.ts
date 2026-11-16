@@ -80,7 +80,7 @@ export const useCart = create<CartState>()(
         return changed;
       },
     }),
-    { name: "duken-cart" },
+    { name: "sore-cart" },
   ),
 );
 

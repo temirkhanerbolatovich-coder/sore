@@ -12,6 +12,7 @@ import { Field } from "@/components/field";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { newVariantId, variantsOf } from "@/lib/variants";
 import { ActionForm } from "@/components/action-form";
+import { AiIcon, BackIcon } from "@/components/icons";
 
 const initial: ProductState = {};
 
@@ -105,7 +106,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
         <div className="flex flex-1 flex-col gap-4 p-5">
           <div className="flex items-center gap-3.5">
-            <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-[#f3d9c4] text-center text-[13px] text-muted">
+            <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-thumb text-center text-[13px] text-muted">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoUrl} alt="Фото товара" className="size-full object-cover" />
@@ -125,7 +126,7 @@ export function ProductForm({ product }: { product?: Product }) {
               />
               <label
                 htmlFor="photo"
-                className="flex h-11 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-white text-[15px] font-semibold has-[:disabled]:opacity-60"
+                className="flex h-11 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-surface text-[15px] font-semibold has-[:disabled]:opacity-60"
               >
                 {uploading ? "Загружаем…" : photoUrl ? "Заменить фото" : "Сделать или выбрать фото"}
               </label>
@@ -140,9 +141,7 @@ export function ProductForm({ product }: { product?: Product }) {
                 disabled={!photoUrl || uploading || aiBusy}
                 className="flex h-11 items-center justify-center gap-2 rounded-xl bg-ink text-[15px] font-bold text-cream disabled:opacity-50"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />
-                </svg>
+                <AiIcon size={18} />
                 {aiBusy ? "ИИ думает…" : "Заполнить с ИИ"}
               </button>
               {!photoUrl && <p className="text-[13px] leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
@@ -157,7 +156,7 @@ export function ProductForm({ product }: { product?: Product }) {
             <p
               role={aiMessage.ok ? "status" : "alert"}
               className={`rounded-xl border px-3.5 py-3 text-sm leading-snug ${
-                aiMessage.ok ? "border-[#b7dcc3] bg-[#e6f3ea] text-[#1d4d31]" : "border-line bg-accent-soft font-semibold text-accent-dark"
+                aiMessage.ok ? "border-ok-line bg-ok-bg text-ok-ink" : "border-line bg-accent-soft font-semibold text-accent-dark"
               }`}
             >
               {aiMessage.text}
@@ -330,7 +329,7 @@ export function ProductForm({ product }: { product?: Product }) {
             />
             <span
               aria-hidden="true"
-              className="relative h-[30px] w-[52px] rounded-full bg-[#8a7b6e] transition-colors after:absolute after:left-[3px] after:top-[3px] after:size-6 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-wa peer-checked:after:translate-x-[22px] peer-focus-visible:ring-2 peer-focus-visible:ring-ink"
+              className="relative h-[30px] w-[52px] rounded-full bg-switch-off transition-colors after:absolute after:left-[3px] after:top-[3px] after:size-6 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-wa peer-checked:after:translate-x-[22px] peer-focus-visible:ring-2 peer-focus-visible:ring-ink"
             />
           </label>
 
@@ -341,7 +340,7 @@ export function ProductForm({ product }: { product?: Product }) {
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-white p-5">
+        <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-surface p-5">
           <button type="submit" disabled={pending || uploading || aiBusy} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
             {pending ? "Сохраняем…" : "Сохранить товар"}
           </button>
@@ -354,7 +353,7 @@ export function ProductForm({ product }: { product?: Product }) {
       {product && (
         <ActionForm
           action={async (form) => { if (confirm("Удалить товар? Это нельзя отменить.")) await deleteProduct(form); }}
-          className="bg-white px-5 pb-6"
+          className="bg-surface px-5 pb-6"
         >
           <input type="hidden" name="id" value={product.id} />
           <button type="submit" className="w-full py-2 text-[15px] font-semibold text-accent-dark underline">
@@ -368,11 +367,9 @@ export function ProductForm({ product }: { product?: Product }) {
 
 export function FormHeader({ title }: { title: string }) {
   return (
-    <div className="flex items-center gap-2 border-b border-line bg-white px-3 py-4">
+    <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-4">
       <Link href="/dashboard" aria-label="Назад" className="flex size-11 items-center justify-center">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M15 5l-7 7 7 7" />
-        </svg>
+        <BackIcon size={24} />
       </Link>
       <h1 className="text-xl font-extrabold">{title}</h1>
     </div>

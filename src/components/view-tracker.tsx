@@ -7,7 +7,7 @@ import { hasSellerSession, publicRpc } from "@/lib/public-rpc";
 export function ViewTracker({ shopId }: { shopId: string }) {
   useEffect(() => {
     if (hasSellerSession(document.cookie)) return;
-    const key = `duken-view-${shopId}`;
+    const key = `sore-view-${shopId}`;
     try {
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, "1");
@@ -16,8 +16,8 @@ export function ViewTracker({ shopId }: { shopId: string }) {
     }
     let client = crypto.randomUUID();
     try {
-      client = localStorage.getItem("duken-client") || client;
-      localStorage.setItem("duken-client", client);
+      client = localStorage.getItem("sore-client") || client;
+      localStorage.setItem("sore-client", client);
     } catch { /* Storage may be disabled; the server still enforces the per-client quota. */ }
     void publicRpc("record_view", { p_shop: shopId, p_client: client }, true).catch(() => undefined);
   }, [shopId]);

@@ -40,7 +40,7 @@ export function OnboardingForm() {
           Адрес ссылки
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-[15px] text-muted">duken.ai/</span>
+          <span className="text-[15px] text-muted">sore.kz/</span>
           <input
             id="slug"
             name="slug"

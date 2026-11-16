@@ -11,10 +11,12 @@ import { ProductPhoto } from "@/components/product-photo";
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
+import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
-type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; leadDays: number };
+type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number };
 
 export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang; products: Product[] }) {
   const t = T[lang];
@@ -62,6 +64,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
+  const [sentText, setSentText] = useState("");
   const [sentNumber, setSentNumber] = useState<number | null>(null);
   const [statusHref, setStatusHref] = useState("");
   const openedAt = useRef<number | null>(null);
@@ -75,7 +78,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotice(useCart.getState().reconcile(shop.slug, products));
     try {
-      const saved = JSON.parse(localStorage.getItem("duken-customer") || "{}");
+      const saved = JSON.parse(localStorage.getItem("sore-customer") || "{}");
       if (typeof saved.name === "string") setName(saved.name.slice(0,80));
       if (typeof saved.phone === "string") setPhone(saved.phone.slice(0,30));
     } catch { /* Optional browser storage. */ }
@@ -138,10 +141,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     });
     const url = whatsappUrl(shop.whatsapp, text);
 
-    try { localStorage.setItem("duken-customer", JSON.stringify({ name: name.trim(), phone: digits })); } catch { /* Optional storage. */ }
+    try { localStorage.setItem("sore-customer", JSON.stringify({ name: name.trim(), phone: digits })); } catch { /* Optional storage. */ }
     clear();
     setSentNumber(Number(row.order_number));
     setStatusHref(statusPath);
+    setSentText(text);
     setSentUrl(url);
     window.location.href = url;
     } catch { setError(t.orderError); } finally { setSending(false); }
@@ -161,8 +165,10 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           {t.waHelp}
         </p>
         <a href={sentUrl} className="btn-wa h-14 w-full text-lg">
+          <WhatsAppIcon />
           {t.openWa}
         </a>
+        {shop.telegram && <TelegramContact username={shop.telegram} text={sentText} label={t.writeTelegram} copiedLabel={t.tgCopied} />}
         {statusHref && (
           <Link href={statusHref} className="btn-outline h-12 w-full">
             {t.trackOrder}
@@ -191,11 +197,9 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   return (
     <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col">
-      <div className="flex items-center gap-2 border-b border-line bg-white px-3 py-4">
+      <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-4">
         <BackLink fallback={backHref} ariaLabel={t.back} className="flex size-11 items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
+          <BackIcon size={24} />
         </BackLink>
         <h1 className="text-xl font-extrabold">{t.yourOrder}</h1>
       </div>
@@ -246,7 +250,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden />
 
             <p className="text-sm text-muted">{t.savedHint}</p>
-            <button type="button" className="min-h-11 text-sm underline" onClick={() => { try { localStorage.removeItem("duken-customer"); } catch {} setName(""); setPhone(""); }}>{t.clearDetails}</button>
+            <button type="button" className="min-h-11 text-sm underline" onClick={() => { try { localStorage.removeItem("sore-customer"); } catch {} setName(""); setPhone(""); }}>{t.clearDetails}</button>
             <div className="grid grid-cols-2 gap-2" role="group" aria-label={t.method}>
               {(["delivery", "pickup"] as const).map((v) => (
                 <button
@@ -291,12 +295,13 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-white p-5">
+        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-surface p-5">
           <div className="flex items-center justify-between">
             <span className="text-muted">{t.total}</span>
             <span className="text-2xl font-extrabold">{formatPrice(total)}</span>
           </div>
           <button type="submit" disabled={sending} className="btn-wa h-14 text-lg disabled:opacity-60">
+            <WhatsAppIcon />
             {sending ? t.sending : t.order}
           </button>
           <p className="text-center text-[13px] text-muted">{t.orderHint}</p>

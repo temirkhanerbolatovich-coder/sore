@@ -1,7 +1,7 @@
 import { requireShop } from "@/lib/shop";
 import { FormHeader, ProductForm } from "../product-form";
 
-export const metadata = { title: "Новый товар — DukenAI" };
+export const metadata = { title: "Новый товар — Sөre" };
 
 export default async function NewProductPage() {
   await requireShop();

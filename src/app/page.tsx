@@ -1,17 +1,23 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { AiIcon, CameraIcon, WhatsAppIcon } from "@/components/icons";
 
 const steps = [
   {
-    title: "Сфотографируйте",
-    text: "Снимите товар на телефон и укажите цену. Больше ничего вводить не нужно.",
+    title: "Сфотографируйте полку",
+    Icon: CameraIcon,
+    text: "Одно фото полки или витрины: ИИ найдёт товары и вырежет фото каждого. Есть прайс в Excel? Загрузите его файлом.",
   },
   {
-    title: "ИИ напишет карточку",
-    text: "Название, описание на русском и казахском, категория. Вы только правите.",
+    title: "Проверьте и опубликуйте",
+    Icon: AiIcon,
+    text: "ИИ предложит названия, описания на русском и казахском и категории. Вы правите, указываете цены и выбираете, что выложить.",
   },
   {
-    title: "Получите заказ в WhatsApp",
-    text: "Клиент собирает корзину по вашей ссылке, а вы получаете готовый текст заказа с суммой и адресом.",
+    title: "Получите заказ в WhatsApp или Telegram",
+    Icon: WhatsAppIcon,
+    text: "Покупатель собирает корзину по ссылке и пишет вам в WhatsApp, а при желании и в Telegram. Новые заказы можно получать в Telegram.",
   },
 ];
 
@@ -20,9 +26,10 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-5 pb-14 pt-6 sm:px-8">
       <header className="flex items-center justify-between gap-4">
         <div className="text-2xl font-extrabold tracking-tight">
-          duken<span className="text-accent">.ai</span>
+          S<span className="text-accent">ө</span>re
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <ThemeToggle />
           <Link href="/login" className="font-semibold">
             Войти
           </Link>
@@ -38,11 +45,11 @@ export default function Home() {
             Для продавцов из Instagram и WhatsApp
           </span>
           <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            Магазин за 2 минуты — прямо с телефона
+            Ваша полка в интернете — прямо с телефона
           </h1>
           <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-            Сфотографируйте товар — ИИ напишет карточку на русском и казахском. Ссылку поставьте
-            в био, а заказы придут вам в WhatsApp уже собранными.
+            Сфотографируйте полку — ИИ найдёт товары и составит карточки на русском и казахском. Или загрузите прайс из Excel.
+            Поделитесь ссылкой на витрину: покупатели соберут корзину и напишут вам в WhatsApp или Telegram.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/login" className="btn-accent min-h-14 text-lg">
@@ -56,29 +63,29 @@ export default function Home() {
         </div>
 
         <div
-          className="mx-auto flex w-[300px] flex-none flex-col gap-3 rounded-[40px] border-8 border-ink bg-white p-4"
+          className="mx-auto flex w-[300px] flex-none flex-col gap-3 rounded-[40px] border-8 border-ink bg-surface p-4"
           aria-hidden="true"
         >
           <div className="flex items-center gap-2.5">
-            <div className="size-10 rounded-full bg-[#f3d9c4]" />
+            <div className="size-10 rounded-full bg-thumb" />
             <div>
               <div className="text-[15px] font-bold">Сладкий дом Алии</div>
-              <div className="text-xs text-muted">Алматы · duken.ai/aliya</div>
+              <div className="text-xs text-muted">Алматы · пример витрины</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
             {[
-              ["Торт «Прага»", "12 000 ₸", "#f3d9c4"],
-              ["Капкейки, 6 шт", "4 500 ₸", "#e8d5e6"],
+              ["Торт «Прага»", "12 000 ₸", "bg-thumb"],
+              ["Капкейки, 6 шт", "4 500 ₸", "bg-accent-soft"],
             ].map(([t, p, c]) => (
               <div key={t} className="flex flex-col gap-1.5">
-                <div className="h-24 rounded-xl" style={{ background: c }} />
+                <div className={`h-24 rounded-xl ${c}`} />
                 <div className="text-[13px] font-semibold">{t}</div>
                 <div className="text-[13px] text-muted">{p}</div>
               </div>
             ))}
           </div>
-          <div className="flex min-h-11 items-center justify-center rounded-xl bg-wa text-sm font-bold text-white">
+          <div className="flex min-h-11 items-center justify-center rounded-xl bg-wa text-sm font-bold text-on-accent">
             Заказать в WhatsApp · 21 000 ₸
           </div>
         </div>
@@ -88,9 +95,9 @@ export default function Home() {
         <h2 className="text-3xl font-extrabold tracking-tight">Три шага до первого заказа</h2>
         <div className="grid gap-5 sm:grid-cols-3">
           {steps.map((s, i) => (
-            <div key={s.title} className="card flex flex-col gap-2.5 p-6">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-accent-soft font-extrabold text-accent-dark">
-                {i + 1}
+            <div key={s.title} className="card icon-host flex flex-col gap-2.5 p-6" style={{ "--rise-index": i } as CSSProperties}>
+              <div className="icon-badge">
+                <s.Icon size={24} />
               </div>
               <div className="text-xl font-bold">{s.title}</div>
               <p className="leading-relaxed text-muted">{s.text}</p>
@@ -111,32 +118,18 @@ export default function Home() {
             </div>
             <ul className="flex flex-col gap-2 text-muted">
               <li>До 15 товаров</li>
-              <li>20 ИИ-генераций в день</li>
-              <li>Плашка «Сделано в DukenAI»</li>
+              <li>Ограниченное число ИИ-генераций в день</li>
+              <li>Плашка «Сделано в Sөre»</li>
             </ul>
             <Link href="/login" className="btn-accent mt-auto">
               Создать магазин
             </Link>
           </div>
-          <div className="card flex flex-col gap-4 border-2 border-ink p-6">
-            <div>
-              <div className="text-xl font-bold">Pro · скоро</div>
-              <div className="text-3xl font-extrabold">~2 500 ₸/мес</div>
-            </div>
-            <ul className="flex flex-col gap-2 text-muted">
-              <li>До 500 товаров</li>
-              <li>Свой логотип и цвета, без плашки</li>
-              <li>Аналитика заказов и безлимит ИИ</li>
-            </ul>
-            <span className="btn-outline mt-auto cursor-default opacity-60" aria-disabled="true">
-              Появится после запуска
-            </span>
-          </div>
         </div>
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-sm text-muted">
-        <div>© DukenAI · Сделано в Казахстане</div>
+        <div>© Sөre · Сделано в Казахстане</div>
         <nav aria-label="Юридическая информация" className="flex flex-wrap gap-x-5">
           <Link href="/terms" className="flex min-h-11 items-center underline">
             Условия

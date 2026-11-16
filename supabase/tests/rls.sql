@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(75);
+select plan(95);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -178,6 +178,37 @@ select lives_ok($$update public.orders set status='done' where public_code=curre
 reset role;
 set local role anon;
 select is((select order_status from public.get_order_status(current_setting('dukenai.status_code'))), 'done', 'buyer sees the new status');
+reset role;
+
+insert into auth.users(id,email) values ('c0000000-0000-4000-8000-000000000001','rls-c@example.test');
+insert into public.shops(id,owner_id,name,slug,whatsapp) values ('c0000000-0000-4000-8000-000000000002','c0000000-0000-4000-8000-000000000001','Shop C','rls-shop-c','77033333334');
+-- 0016–0018: фото полки, Telegram продавца, импорт прайса.
+set local role authenticated;
+select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
+select lives_ok($$update public.products set bbox='{"x1":0.1,"y1":0.2,"x2":0.5,"y2":0.9}', source_photo_url='https://example.test/shelf.jpg', sku='A-1' where id='a0000000-0000-4000-8000-000000000003'$$,'owner sets bbox, shelf photo and sku');
+select throws_like($$update public.products set bbox='{"x1":0.6,"y1":0.2,"x2":0.5,"y2":0.9}' where id='a0000000-0000-4000-8000-000000000003'$$,'%products_bbox_valid%','inverted bbox rejected');
+select throws_like($$update public.products set bbox='{"x1":0,"y1":0,"x2":1.5,"y2":1}' where id='a0000000-0000-4000-8000-000000000003'$$,'%products_bbox_valid%','bbox outside the frame rejected');
+select throws_like($$update public.products set bbox='{"x1":"0","y1":0,"x2":1,"y2":1}' where id='a0000000-0000-4000-8000-000000000003'$$,'%products_bbox_valid%','non-numeric bbox rejected');
+select throws_like($$update public.products set bbox='{"x1":0,"y1":0,"x2":1,"y2":1,"z":1}' where id='a0000000-0000-4000-8000-000000000003'$$,'%products_bbox_valid%','bbox with extra keys rejected');
+select throws_like($$update public.products set source_photo_url=null where id='a0000000-0000-4000-8000-000000000003'$$,'%products_shelf_fields%','bbox without shelf photo rejected');
+select throws_like($$update public.products set sku='A-1' where id='a0000000-0000-4000-8000-000000000004'$$,'%products_shop_sku_key%','duplicate sku in one shop rejected');
+select lives_ok($$update public.products set sku='X-1' where id='b0000000-0000-4000-8000-000000000003'$$,'update of a foreign product is silently filtered');
+select is((select sku from public.products where id='b0000000-0000-4000-8000-000000000003'),null,'A cannot change B shelf fields');
+select lives_ok($$update public.shops set telegram_username='shop_a_tg' where id='a0000000-0000-4000-8000-000000000002'$$,'owner sets Telegram username');
+select throws_like($$update public.shops set telegram_username='@bad' where id='a0000000-0000-4000-8000-000000000002'$$,'%shops_telegram_username_format%','invalid Telegram username rejected');
+select set_config('request.jwt.claim.sub','c0000000-0000-4000-8000-000000000001',true);
+select is((public.import_products('c0000000-0000-4000-8000-000000000002','[{"row":2,"title":"A renamed","price":150,"sku":"A-1"},{"row":3,"title":"New","price":300,"sku":"N-1","in_stock":false},{"row":4,"title":"Bad","price":-5}]'::jsonb)->'skipped'),'[{"row":4,"reason":"invalid"}]'::jsonb,'import reports a broken row without failing');
+select is((select title||':'||price||':'||coalesce(category,'-') from public.products where shop_id='c0000000-0000-4000-8000-000000000002' and sku='A-1'),'A renamed:150:-','import creates a product with title, price and sku');
+select is((select in_stock from public.products where shop_id='c0000000-0000-4000-8000-000000000002' and sku='N-1'),false,'import creates a new product with its stock flag');
+select is((public.import_products('c0000000-0000-4000-8000-000000000002','[{"row":2,"title":"New","price":0,"sku":"N-1"}]'::jsonb)->>'updated')::integer,1,'reimport updates instead of duplicating');
+select is((select count(*)::integer||':'||min(price_mode)||':'||bool_and(in_stock = false)::text from public.products where shop_id='c0000000-0000-4000-8000-000000000002' and sku='N-1'),'1:request:true','reimport keeps one row, empty fields do not overwrite');
+select throws_like($$select public.import_products('b0000000-0000-4000-8000-000000000002','[{"row":2,"title":"X","price":1}]')$$,'%not owner%','cannot import into another shop');
+select set_config('sore.room',(select (15-count(*))::text from public.products where shop_id='c0000000-0000-4000-8000-000000000002'),true);
+select is((select count(*)::integer from jsonb_array_elements(public.import_products('c0000000-0000-4000-8000-000000000002',(select jsonb_agg(jsonb_build_object('row',g,'title','L'||g,'price',10)) from generate_series(1,20) g))->'skipped') e where e->>'reason'='limit'),20-current_setting('sore.room')::integer,'rows beyond the free limit are reported, not fatal');
+select is((select count(*)::integer from public.products where shop_id='c0000000-0000-4000-8000-000000000002'),15,'import never exceeds the free limit');
+reset role;
+set local role anon;
+select throws_like($$select public.import_products('c0000000-0000-4000-8000-000000000002','[{"row":2,"title":"X","price":1}]')$$,'%permission denied%','anonymous cannot import');
 reset role;
 
 select * from finish();

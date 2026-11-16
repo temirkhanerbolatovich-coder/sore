@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
@@ -16,6 +17,7 @@ import { publicAlternates, publicUrl, serializeJsonLd, shopTitle, storeJsonLd } 
 import { shopDescription } from "@/lib/shop-info";
 import { ShopAbout } from "@/components/shop-about";
 import { ProductFilter } from "@/components/product-filter";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -64,9 +66,11 @@ export default async function ShopPage({ params, searchParams }: Props) {
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
       <DocumentLanguage lang={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <header className="flex flex-col gap-4 border-b border-line bg-white px-5 pb-4 pt-6">
+      <header className="flex flex-col gap-4 border-b border-line bg-surface px-5 pb-4 pt-6">
         <div className="flex items-center justify-between">
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
+          <div className="flex items-center gap-2">
+          <ThemeToggle className="size-11" />
           <div className="flex overflow-hidden rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
             <Link
               href={shopHref(base, "ru", activeCat)}
@@ -82,6 +86,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
             >
               KZ
             </Link>
+          </div>
           </div>
         </div>
 
@@ -128,7 +133,8 @@ export default async function ShopPage({ params, searchParams }: Props) {
               node: (
               <li
                 key={p.id}
-                className="card flex flex-col overflow-hidden"
+                className={`card flex flex-col overflow-hidden ${i < 12 ? "rise-in" : ""}`}
+                style={i < 12 ? { "--rise-index": i } as CSSProperties : undefined}
               >
                 <Link href={shopHref(`${base}/p/${p.id}`, lang)} className="flex flex-col">
                   <ProductPhoto
@@ -173,7 +179,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
         <p className="mt-8 text-center text-[13px] text-muted">
           {t.madeWith}{" "}
           <Link href="/" className="font-bold text-accent underline">
-            DukenAI
+            Sөre
           </Link>{" "}
           · {t.createOwn}
         </p>

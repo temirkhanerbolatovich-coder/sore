@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { BackArrow } from "@/components/back-link";
 import { LoginForm } from "./login-form";
 
-export const metadata = { title: "Вход — DukenAI" };
+export const metadata = { title: "Вход — Sөre" };
 
 export default async function LoginPage({
   searchParams,
@@ -20,7 +20,7 @@ export default async function LoginPage({
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-8">
       <div className="flex items-center justify-between gap-4">
         <Link href="/" className="text-2xl font-extrabold tracking-tight">
-          duken<span className="text-accent">.ai</span>
+          S<span className="text-accent">ө</span>re
         </Link>
         <Link href="/" className="flex min-h-11 items-center gap-1 font-semibold text-muted">
           <BackArrow /> На главную
@@ -31,7 +31,7 @@ export default async function LoginPage({
           Войдите, чтобы создать магазин
         </h1>
         <p className="text-[17px] leading-relaxed text-muted">
-          Пришлём ссылку для входа на почту. Пароль не нужен.
+          Войдите по ссылке из письма или через Google, чтобы создать витрину и принимать заказы. Пароль не нужен.
         </p>
       </div>
       <LoginForm failed={Boolean(error)} />

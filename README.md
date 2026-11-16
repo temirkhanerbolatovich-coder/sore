@@ -1,4 +1,4 @@
-# DukenAI
+# Sөre
 
 Мобильный магазин-ссылка для микропродавцов Казахстана: фото → ИИ-карточка RU/KZ → корзина → сохранённый заказ → WhatsApp. Продавец входит по email magic link; покупатель без регистрации. Без оплаты и ботов.
 
@@ -13,13 +13,23 @@ npm ci
 npx supabase start -x studio,edge-runtime,logflare,vector,realtime,imgproxy,supavisor
 ```
 
-CLI применяет миграции и локальный seed с demo@duken.ai. Скопируйте .env.example в .env.local, перенесите API URL, anon и service_role ключи из `npx supabase status -o env`. Не публикуйте вывод. ИИ-ключи необязательны: без них работает ручное заполнение. Бесплатно: `GEMINI_API_KEY` (aistudio.google.com/apikey) и/или `OPENROUTER_API_KEY` (openrouter.ai/keys, модели `:free`). Проверка ключей на настоящем фото: `npm run ai:check -- фото.jpg`.
+CLI применяет миграции и локальный seed с demo@sore.kz. Скопируйте .env.example в .env.local, перенесите API URL, anon и service_role ключи из `npx supabase status -o env`. Не публикуйте вывод. ИИ-ключи необязательны: без них работает ручное заполнение. Бесплатно: `GEMINI_API_KEY` (aistudio.google.com/apikey) и/или `OPENROUTER_API_KEY` (openrouter.ai/keys, модели `:free`). Проверка ключей на настоящем фото: `npm run ai:check -- фото.jpg`.
 
 ```sh
 npm run dev
 ```
 
 Сайт http://localhost:3000, демо http://localhost:3000/demo, локальная почта http://127.0.0.1:54324, Studio можно включить полным запуском без -x (http://127.0.0.1:54323). `npx supabase db reset` пересоздаёт только локальную БД и удаляет её данные.
+
+## Как добавить товары
+
+| Способ | Где | Что делает |
+|---|---|---|
+| Фото полки | `/dashboard/products/shelf` | Одно фото полки: ИИ находит до 12 товаров, вырезает фото каждого, продавец выбирает и публикует. На карточке товара видно, где он стоит на полке. |
+| Несколько фото | `/dashboard/products/batch` | До 12 отдельных фото, ИИ пишет карточку по каждому. |
+| Прайс из Excel | `/dashboard/products/import` | `.xlsx` или `.csv` до 4 МБ и 2000 строк. Шаблон: `/api/import/template?format=xlsx` (или `csv`). Колонки: «Название» и «Цена» обязательны; «Артикул» (повторная загрузка обновляет товар), «Категория», «Описание», «Описание (каз)», «Количество». Строки с ошибками попадают в отчёт, остальные загружаются. |
+
+Каналы связи: после заказа покупатель пишет продавцу в WhatsApp, а если в настройках указан Telegram, то и в Telegram (текст заказа копируется в буфер обмена).
 
 ## Проверки
 

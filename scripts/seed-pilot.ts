@@ -9,7 +9,7 @@
  *
  * Фото и телефон повара в репозиторий НЕ попадают: фото читаются из папки, номер задаётся окружением.
  *   PILOT_WHATSAPP  номер WhatsApp магазина (по умолчанию заглушка, чтобы тестовые заказы не уходили реальному человеку)
- *   PILOT_EMAIL     email владельца (по умолчанию povar@duken.ai)
+ *   PILOT_EMAIL     email владельца (по умолчанию povar@sore.kz)
  *   PILOT_SLUG      адрес (по умолчанию povar-astana)
  * Без --allow-remote работает только с локальной базой.
  */
@@ -76,7 +76,7 @@ async function main() {
   if (!process.argv.includes("--allow-remote") && !/^http:\/\/(localhost|127\.0\.0\.1):/.test(url)) {
     throw new Error("Скрипт пилота работает только с локальной базой; для облака добавьте --allow-remote осознанно.");
   }
-  const email = process.env.PILOT_EMAIL ?? "povar@duken.ai";
+  const email = process.env.PILOT_EMAIL ?? "povar@sore.kz";
   const slug = process.env.PILOT_SLUG ?? "povar-astana";
   const whatsapp = (process.env.PILOT_WHATSAPP ?? "77010000000").replace(/\D/g, "");
 

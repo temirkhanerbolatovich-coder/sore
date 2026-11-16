@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
+/* Токены Sөre. Основа — тёплая палитра (кремовый, терракота).
+   Тёмная тема переопределяет те же переменные в :root[data-theme="dark"]:
+   атрибут ставит скрипт в layout.tsx до первой отрисовки (без вспышки), выбор хранится в localStorage,
+   без выбора тема следует за системой. Цвета в компонентах — только через токены, без hex. */
 :root {
-  --cream: #fff8f0;
+  --cream: #fff8f0; /* фон страницы */
+  --surface: #ffffff; /* карточки, поля, панели */
   --ink: #2b2118;
   --muted: #6b5b4d;
   --line: #eadfd2;
@@ -10,10 +15,75 @@
   --accent-dark: #8f2a12;
   --accent-soft: #fce8e1;
   --wa: #0e7c3f;
+  --on-accent: #ffffff; /* текст на accent и wa */
+  --ok-bg: #e6f3ea;
+  --ok-line: #b7dcc3;
+  --ok-ink: #1d4d31;
+  --thumb: #f3d9c4; /* заглушка вместо фото */
+  --thumb-2: #e8d5e6;
+  --thumb-3: #d9e6d0;
+  --thumb-4: #f6e3a8;
+  --thumb-5: #d6e4f0;
+  --thumb-6: #f0d2c0;
+  --switch-off: #8a7b6e;
+  --shine: rgb(255 255 255 / 0.38);
+
+  /* Движение (используется в motion.css) */
+  --ease-key: cubic-bezier(0.22, 0.8, 0.28, 1);
+  --dur-icon: 420ms;
+  --dur-long: 500ms;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --cream: #17110c;
+  --surface: #221a13;
+  --ink: #f6ece1;
+  --muted: #b8a695;
+  --line: #3a2f26;
+  --field: #66554a;
+  --accent: #ea6542; /* светлее: читается и как текст на тёмном фоне */
+  --accent-dark: #f5a58c;
+  --accent-soft: #3b1e14;
+  --wa: #2fae66;
+  --on-accent: #1a0f0a; /* на светлом акценте текст тёмный */
+  --ok-bg: #14281c;
+  --ok-line: #2b5a3d;
+  --ok-ink: #9ad9b0;
+  --thumb: #3b2e23;
+  --thumb-2: #3b293a;
+  --thumb-3: #2d3a29;
+  --thumb-4: #3c3520;
+  --thumb-5: #293744;
+  --thumb-6: #3e2c24;
+  --switch-off: #6d5f53;
+  --shine: rgb(255 255 255 / 0.22);
+
+  color-scheme: dark;
+}
+
+/* Печать (плакат с QR): всегда светлая палитра, даже если на экране включена тёмная тема. */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --cream: #ffffff;
+    --surface: #ffffff;
+    --ink: #2b2118;
+    --muted: #6b5b4d;
+    --line: #eadfd2;
+    --field: #cdbba8;
+    --accent: #c73e1d;
+    --accent-dark: #8f2a12;
+    --accent-soft: #fce8e1;
+    --on-accent: #ffffff;
+    color-scheme: light;
+  }
 }
 
 @theme inline {
   --color-cream: var(--cream);
+  --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
@@ -22,6 +92,12 @@
   --color-accent-dark: var(--accent-dark);
   --color-accent-soft: var(--accent-soft);
   --color-wa: var(--wa);
+  --color-on-accent: var(--on-accent);
+  --color-ok-bg: var(--ok-bg);
+  --color-ok-line: var(--ok-line);
+  --color-ok-ink: var(--ok-ink);
+  --color-thumb: var(--thumb);
+  --color-switch-off: var(--switch-off);
   --font-sans: "Onest", system-ui, sans-serif;
 }
 
@@ -33,7 +109,7 @@ body {
 
 @layer components {
   .btn-accent {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-base font-bold transition-colors bg-accent text-white hover:bg-accent-dark;
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-base font-bold transition-colors bg-accent text-on-accent hover:bg-accent-dark;
   }
   .btn-dark {
     @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-base font-bold transition-colors bg-ink text-cream hover:opacity-90;
@@ -42,13 +118,16 @@ body {
     @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-base font-bold transition-colors border-2 border-ink text-ink hover:bg-ink hover:text-cream;
   }
   .btn-wa {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-base font-bold transition-colors bg-wa text-white hover:opacity-90;
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 text-base font-bold transition-colors bg-wa text-on-accent hover:opacity-90;
+  }
+  .btn-icon {
+    @apply inline-flex size-12 items-center justify-center rounded-xl border-[1.5px] border-line bg-surface text-ink transition-colors hover:border-ink;
   }
   .input {
-    @apply h-12 w-full rounded-xl border-[1.5px] border-field bg-white px-4 text-base text-ink outline-none focus:border-ink;
+    @apply h-12 w-full rounded-xl border-[1.5px] border-field bg-surface px-4 text-base text-ink outline-none focus:border-ink;
   }
   .card {
-    @apply rounded-2xl border border-line bg-white;
+    @apply rounded-2xl border border-line bg-surface;
   }
 }
 

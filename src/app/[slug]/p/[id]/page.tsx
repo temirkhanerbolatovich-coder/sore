@@ -13,6 +13,9 @@ import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
 import { DocumentLanguage } from "@/components/document-language";
 import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
+import { BackIcon } from "@/components/icons";
+import { ShelfFrames } from "@/components/shelf-frames";
+import { asBBox } from "@/lib/bbox";
 
 type Props = {
   params: Promise<{ slug: string; id: string }>;
@@ -49,6 +52,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const { shop } = data;
   const text = description(product, lang);
   const variants = variantsOf(product);
+  const shelfBox = product.source_photo_url ? asBBox(product.bbox) : null;
   const url = publicUrl(shopHref(`/${shop.slug}/p/${id}`, lang));
   const jsonLd = productJsonLd(product, url, text || `${priceLabel(product.price, product.price_mode, lang)} · ${shop.name}`);
 
@@ -58,9 +62,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <div className="flex items-center justify-between gap-1 px-3 py-3">
         <BackLink fallback={shopHref(`/${shop.slug}`, lang)} className="flex min-h-11 items-center gap-1 px-2 font-semibold">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
+          <BackIcon size={22} />
           {shop.name}
         </BackLink>
         <ShareButton title={`${product.title} — ${shop.name}`} label={t.share} copiedLabel={t.shared} />
@@ -94,6 +96,13 @@ export default async function ProductPage({ params, searchParams }: Props) {
             <AddToCart slug={shop.slug} product={product} lang={lang} />
           )}
         </div>
+        {shelfBox && product.source_photo_url && (
+          // Снимок полки ниже кнопок и с ленивой загрузкой: не влияет на первый экран и не сдвигает его.
+          <figure className="flex flex-col gap-2 pt-4">
+            <figcaption className="text-sm font-semibold text-muted">{t.onShelf}</figcaption>
+            <ShelfFrames src={product.source_photo_url} alt={`${product.title}: ${t.onShelf.toLowerCase()}`} frames={[{ bbox: shelfBox }]} lazy />
+          </figure>
+        )}
       </div>
 
       <CartBar slug={shop.slug} lang={lang} />

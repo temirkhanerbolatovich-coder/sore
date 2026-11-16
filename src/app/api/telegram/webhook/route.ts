@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (start) {
     const { data: row } = await admin.from("shop_telegram").select("shop_id").eq("link_code", start[1]).maybeSingle();
     if (!row) {
-      await sendTelegram(chatId, "Код не подошёл или устарел. Откройте в кабинете DukenAI «Магазин» и нажмите «Подключить Telegram» ещё раз.");
+      await sendTelegram(chatId, "Код не подошёл или устарел. Откройте в кабинете Sөre «Магазин» и нажмите «Подключить Telegram» ещё раз.");
       return NextResponse.json({ ok: true });
     }
     await admin.from("shop_telegram").update({ chat_id: chatId, linked_at: new Date().toISOString(), link_code: null }).eq("shop_id", row.shop_id);
@@ -36,10 +36,10 @@ export async function POST(request: Request) {
 
   if (/^\/stop(?:@\w+)?$/.test(text)) {
     await admin.from("shop_telegram").update({ chat_id: null, linked_at: null }).eq("chat_id", chatId);
-    await sendTelegram(chatId, "Уведомления отключены. Подключить снова можно в кабинете DukenAI.");
+    await sendTelegram(chatId, "Уведомления отключены. Подключить снова можно в кабинете Sөre.");
     return NextResponse.json({ ok: true });
   }
 
-  await sendTelegram(chatId, "Это бот уведомлений DukenAI. Чтобы получать заказы, откройте в кабинете «Магазин» и нажмите «Подключить Telegram».");
+  await sendTelegram(chatId, "Это бот уведомлений Sөre. Чтобы получать заказы, откройте в кабинете «Магазин» и нажмите «Подключить Telegram».");
   return NextResponse.json({ ok: true });
 }

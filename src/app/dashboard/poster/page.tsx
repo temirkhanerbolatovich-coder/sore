@@ -2,8 +2,9 @@ import QRCode from "qrcode";
 import { BackLink } from "@/components/back-link";
 import { requireShop } from "@/lib/shop";
 import { PrintButton } from "./print-button";
+import { BackIcon } from "@/components/icons";
 
-export const metadata = { title: "Плакат с QR-кодом — DukenAI", robots: { index: false } };
+export const metadata = { title: "Плакат с QR-кодом — Sөre", robots: { index: false } };
 
 /** Страница для печати: название магазина, крупный QR-код на витрину и адрес ссылки. */
 export default async function PosterPage() {
@@ -20,16 +21,14 @@ export default async function PosterPage() {
 
       <div className="flex items-center justify-between gap-3 print:hidden">
         <BackLink fallback="/dashboard/settings" className="flex min-h-11 items-center gap-1 font-semibold">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
+          <BackIcon size={22} />
           Магазин
         </BackLink>
       </div>
 
       <section
         aria-label="Плакат"
-        className="flex flex-col items-center gap-5 rounded-3xl border-2 border-ink bg-white px-6 py-8 text-center print:min-h-[250mm] print:justify-center print:gap-10 print:rounded-none print:border-4"
+        className="flex flex-col items-center gap-5 rounded-3xl border-2 border-ink bg-surface px-6 py-8 text-center print:min-h-[250mm] print:justify-center print:gap-10 print:rounded-none print:border-4"
       >
         <h1 className="text-3xl font-extrabold leading-tight tracking-tight print:text-6xl">{shop.name}</h1>
         {shop.city && <p className="text-lg text-muted print:text-3xl">{shop.city}</p>}
@@ -42,7 +41,7 @@ export default async function PosterPage() {
         />
         <p className="text-base text-muted print:text-2xl">Наведите камеру телефона на QR-код</p>
         <p className="break-all text-lg font-extrabold text-accent print:text-3xl">{url.replace(/^https?:\/\//, "")}</p>
-        <p className="text-sm text-muted print:text-lg">Сделано в DukenAI</p>
+        <p className="text-sm text-muted print:text-lg">Сделано в Sөre</p>
       </section>
 
       <div className="flex flex-col gap-2 print:hidden">

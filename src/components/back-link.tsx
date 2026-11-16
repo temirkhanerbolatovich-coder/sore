@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BackIcon } from "@/components/icons";
 
 /**
  * Кнопка «Назад»: возвращает туда, откуда пользователь пришёл (история браузера).
@@ -39,8 +40,6 @@ export function BackLink({
 
 export function BackArrow() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M15 5l-7 7 7 7" />
-    </svg>
+    <BackIcon size={22} />
   );
 }
