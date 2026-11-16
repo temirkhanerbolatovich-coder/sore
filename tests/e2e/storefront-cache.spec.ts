@@ -50,6 +50,7 @@ test("после создания магазин открывается сраз
   const admin = adminClient();
   try {
     const missing = await request.get(storefront);
+    expect(missing.status()).toBe(404);
     expect(await missing.text()).toContain("Такой страницы нет");
     await loginAs(page, request, email);
     await expect(page).toHaveURL(/dashboard\/onboarding/);
@@ -68,6 +69,7 @@ test("после создания магазин открывается сраз
     await page.getByRole("button", { name: "Удалить навсегда" }).click();
     await expect(page).toHaveURL(/\/\?deleted=1$/);
     const removed = await request.get(storefront);
+    expect(removed.status()).toBe(404);
     expect(await removed.text()).toContain("Такой страницы нет");
   } finally {
     await cleanupUser(admin, email);
