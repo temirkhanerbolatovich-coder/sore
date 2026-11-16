@@ -46,6 +46,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const categories = [...new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))];
   const activeCat = sp.cat && categories.includes(sp.cat) ? sp.cat : undefined;
   const visible = activeCat ? products.filter((p) => p.category === activeCat) : products;
+  const firstPhoto = visible.findIndex((product) => Boolean(product.photo_url));
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
@@ -75,6 +76,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
             url={shop.avatar_url}
             alt=""
             initial={shop.name}
+            eager
             className="size-[72px] flex-none rounded-full"
           />
           <div className="min-w-0">
@@ -108,7 +110,14 @@ export default async function ShopPage({ params, searchParams }: Props) {
                 className="card flex flex-col overflow-hidden"
               >
                 <Link href={shopHref(`${base}/p/${p.id}`, lang)} className="flex flex-col">
-                  <ProductPhoto url={p.photo_url} alt={p.title} seed={i} className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`} />
+                  <ProductPhoto
+                    url={p.photo_url}
+                    alt={p.title}
+                    seed={i}
+                    priority={i === firstPhoto}
+                    eager={i < 4}
+                    className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}
+                  />
                   <div className="flex flex-col gap-1 p-3 pb-2">
                     <div className="text-[15px] font-semibold leading-tight">{p.title}</div>
                     <div className="text-base font-extrabold">{priceLabel(p.price, p.price_mode, lang, variantsOf(p).length > 0)}</div>

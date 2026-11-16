@@ -58,7 +58,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <ShareButton title={`${product.title} — ${shop.name}`} label={t.share} copiedLabel={t.shared} />
       </div>
 
-      <ProductPhoto url={product.photo_url} alt={product.title} className="aspect-square w-full" />
+      <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full" />
 
       <div className="flex flex-col gap-3 px-5 pt-5">
         <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>
