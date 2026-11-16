@@ -6,7 +6,7 @@ import { Field } from "@/components/field";
 import { applyOrderFilters, filterQuery, parseOrderFilters } from "@/lib/orders-query";
 import { StatusButton } from "./status-button";
 
-export const metadata = { title: "Заказы — DukenAI" };
+export const metadata = { title: "Заказы — Sөre" };
 
 type OrderRow = {
   id: string;

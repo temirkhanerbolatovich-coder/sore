@@ -20,8 +20,8 @@ export function InquiryButton({
   function record() {
     let client = crypto.randomUUID();
     try {
-      client = localStorage.getItem("duken-client") || client;
-      localStorage.setItem("duken-client", client);
+      client = localStorage.getItem("sore-client") || client;
+      localStorage.setItem("sore-client", client);
     } catch {
       /* Хранилище может быть отключено: сервер всё равно ограничивает частоту. */
     }

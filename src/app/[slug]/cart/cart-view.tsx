@@ -76,7 +76,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotice(useCart.getState().reconcile(shop.slug, products));
     try {
-      const saved = JSON.parse(localStorage.getItem("duken-customer") || "{}");
+      const saved = JSON.parse(localStorage.getItem("sore-customer") || "{}");
       if (typeof saved.name === "string") setName(saved.name.slice(0,80));
       if (typeof saved.phone === "string") setPhone(saved.phone.slice(0,30));
     } catch { /* Optional browser storage. */ }
@@ -139,7 +139,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     });
     const url = whatsappUrl(shop.whatsapp, text);
 
-    try { localStorage.setItem("duken-customer", JSON.stringify({ name: name.trim(), phone: digits })); } catch { /* Optional storage. */ }
+    try { localStorage.setItem("sore-customer", JSON.stringify({ name: name.trim(), phone: digits })); } catch { /* Optional storage. */ }
     clear();
     setSentNumber(Number(row.order_number));
     setStatusHref(statusPath);
@@ -245,7 +245,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden />
 
             <p className="text-sm text-muted">{t.savedHint}</p>
-            <button type="button" className="min-h-11 text-sm underline" onClick={() => { try { localStorage.removeItem("duken-customer"); } catch {} setName(""); setPhone(""); }}>{t.clearDetails}</button>
+            <button type="button" className="min-h-11 text-sm underline" onClick={() => { try { localStorage.removeItem("sore-customer"); } catch {} setName(""); setPhone(""); }}>{t.clearDetails}</button>
             <div className="grid grid-cols-2 gap-2" role="group" aria-label={t.method}>
               {(["delivery", "pickup"] as const).map((v) => (
                 <button

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage, contactLine } from "@/components/legal-page";
 
-export const metadata: Metadata = { title: "Условия использования — DukenAI", description: "Правила пользования сервисом DukenAI для продавцов и покупателей." };
+export const metadata: Metadata = { title: "Условия использования — Sөre", description: "Правила пользования сервисом Sөre для продавцов и покупателей." };
 
 export default function TermsPage() {
   return (
     <LegalPage title="Условия использования" updated="16 ноября 2026">
       <p>
-        DukenAI — сервис, который помогает продавцу сделать каталог-ссылку, принимать заказы и получать их в WhatsApp и Telegram. Пользуясь сервисом, вы соглашаетесь с этими условиями.
+        Sөre — сервис, который помогает продавцу сделать каталог-ссылку, принимать заказы и получать их в WhatsApp и Telegram. Пользуясь сервисом, вы соглашаетесь с этими условиями.
       </p>
 
       <h2>1. Что делает сервис</h2>

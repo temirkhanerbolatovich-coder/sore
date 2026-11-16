@@ -14,7 +14,7 @@ import { getStats } from "@/lib/stats";
 import { PlusIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export const metadata = { title: "Кабинет — DukenAI" };
+export const metadata = { title: "Кабинет — Sөre" };
 
 const SAVED: Record<string, string> = {
   added: "Товар добавлен. Он уже на витрине.",

@@ -18,9 +18,11 @@ export async function renderOg({
   subtitle: string;
   badge: string;
 }) {
-  const [cyr, lat] = await Promise.all([
+  // cyrillic-ext нужен для казахских букв (ө, ү, қ…), в том числе в названии Sөre.
+  const [cyr, lat, ext] = await Promise.all([
     font("onest-cyrillic-700-normal.woff"),
     font("onest-latin-700-normal.woff"),
+    font("onest-cyrillic-ext-700-normal.woff"),
   ]);
 
   const tints = ["#f3d9c4", "#e8d5e6", "#d9e6d0", "#f6e3a8"];
@@ -37,12 +39,12 @@ export async function renderOg({
           background: "#fff8f0",
           color: "#2b2118",
           padding: 72,
-          fontFamily: "OnestLatin, Onest",
+          fontFamily: "OnestLatin, Onest, OnestExt",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontSize: 40 }}>
-            duken<span style={{ color: "#c73e1d" }}>.ai</span>
+            S<span style={{ color: "#c73e1d" }}>ө</span>re
           </div>
           <div
             style={{
@@ -89,6 +91,7 @@ export async function renderOg({
       fonts: [
         { name: "Onest", data: cyr, weight: 700, style: "normal" },
         { name: "OnestLatin", data: lat, weight: 700, style: "normal" },
+        { name: "OnestExt", data: ext, weight: 700, style: "normal" },
       ],
     },
   );

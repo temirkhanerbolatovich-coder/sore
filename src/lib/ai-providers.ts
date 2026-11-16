@@ -74,7 +74,7 @@ function openRouterSteps(): Step[] {
         {
           Authorization: `Bearer ${key}`,
           "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-          "X-Title": "DukenAI",
+          "X-Title": "Sore",
         },
         {
           model,

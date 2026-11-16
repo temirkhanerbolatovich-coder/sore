@@ -138,7 +138,7 @@ test("Telegram: привязка по ссылке и уведомление о 
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: "Подключить Telegram" }).click();
     const link = await page.getByRole("link", { name: "Открыть Telegram" }).getAttribute("href");
-    expect(link).toMatch(/^https:\/\/t\.me\/dukenai_e2e_bot\?start=[A-Za-z0-9_-]{8,}$/);
+    expect(link).toMatch(/^https:\/\/t\.me\/sore_e2e_bot\?start=[A-Za-z0-9_-]{8,}$/);
     const code = link!.split("start=")[1];
 
     // Без секрета webhook закрыт, с секретом /start привязывает чат.

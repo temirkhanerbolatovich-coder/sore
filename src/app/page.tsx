@@ -21,7 +21,7 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-5 pb-14 pt-6 sm:px-8">
       <header className="flex items-center justify-between gap-4">
         <div className="text-2xl font-extrabold tracking-tight">
-          duken<span className="text-accent">.ai</span>
+          S<span className="text-accent">ө</span>re
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <ThemeToggle />
@@ -65,7 +65,7 @@ export default function Home() {
             <div className="size-10 rounded-full bg-thumb" />
             <div>
               <div className="text-[15px] font-bold">Сладкий дом Алии</div>
-              <div className="text-xs text-muted">Алматы · duken.ai/aliya</div>
+              <div className="text-xs text-muted">Алматы · sore.kz/aliya</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
@@ -114,7 +114,7 @@ export default function Home() {
             <ul className="flex flex-col gap-2 text-muted">
               <li>До 15 товаров</li>
               <li>20 ИИ-генераций в день</li>
-              <li>Плашка «Сделано в DukenAI»</li>
+              <li>Плашка «Сделано в Sөre»</li>
             </ul>
             <Link href="/login" className="btn-accent mt-auto">
               Создать магазин
@@ -138,7 +138,7 @@ export default function Home() {
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-sm text-muted">
-        <div>© DukenAI · Сделано в Казахстане</div>
+        <div>© Sөre · Сделано в Казахстане</div>
         <nav aria-label="Юридическая информация" className="flex flex-wrap gap-x-5">
           <Link href="/terms" className="flex min-h-11 items-center underline">
             Условия

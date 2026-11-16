@@ -177,7 +177,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
         <p className="mt-8 text-center text-[13px] text-muted">
           {t.madeWith}{" "}
           <Link href="/" className="font-bold text-accent underline">
-            DukenAI
+            Sөre
           </Link>{" "}
           · {t.createOwn}
         </p>

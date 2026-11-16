@@ -14,7 +14,7 @@ async function notifyGlobalLimit(limit: number) {
   const chat = process.env.ADMIN_TELEGRAM_CHAT_ID;
   if (!chat || !process.env.TELEGRAM_BOT_TOKEN) return;
   if (await checkRateLimit("ai-global-limit:alert", 86_400, 1) !== 200) return;
-  const sent = await sendTelegram(chat, `DukenAI: исчерпан общий лимит ИИ за 24 часа (${limit}).`);
+  const sent = await sendTelegram(chat, `Sөre: исчерпан общий лимит ИИ за 24 часа (${limit}).`);
   if (!sent) console.error("AI quota alert delivery failed.");
 }
 

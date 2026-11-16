@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "DukenAI",
-    short_name: "DukenAI",
+    name: "Sөre",
+    short_name: "Sөre",
     description: "Магазин-ссылка за 2 минуты: фото, ИИ-карточка, заказ в WhatsApp.",
     start_url: "/dashboard",
     display: "standalone",

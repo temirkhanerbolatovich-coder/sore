@@ -4,7 +4,7 @@
 
 1. Создайте Supabase-проект. Примените все supabase/migrations/*.sql по порядку через SQL Editor либо `npx supabase link --project-ref <ref>` и `npx supabase db push`. Перед обновлением существующей БД сделайте резервную копию. Не выполняйте db reset на production.
 2. Миграции создают RLS, RPC и публичный бакет product-photos: 5 МБ, JPEG/PNG/WebP, запись в папку своего auth.uid().
-3. В Auth → Users создайте подтверждённого demo@duken.ai. Не применяйте local-user.sql к облачной БД. Укажите свой WhatsApp в seed.sql и выполните seed; повторный запуск пересоздаёт демо-товары, сохраняя снимки старых заказов.
+3. В Auth → Users создайте подтверждённого demo@sore.kz. Не применяйте local-user.sql к облачной БД. Укажите свой WhatsApp в seed.sql и выполните seed; повторный запуск пересоздаёт демо-товары, сохраняя снимки старых заказов.
 4. Auth → URL Configuration: Site URL https://<домен>; Redirect URLs https://<домен>/auth/callback. Для локального запуска http://localhost:3000/auth/callback. Добавляйте только нужные preview-адреса.
 5. Настройте SMTP, проверьте реальную доставку magic link. Ссылку открывают в том же браузере, где запросили вход (PKCE).
 
