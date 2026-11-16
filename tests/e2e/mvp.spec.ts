@@ -68,7 +68,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await page.getByRole("button", { name: "Выполнен", exact: true }).click();
     await expect(page.getByText("Выполнен", { exact: true })).toBeVisible();
     await page.goto("/dashboard");
-    await expect(page.getByText("Нажали «Заказать»").locator("..")).toContainText("1");
+    await expect(page.getByText("Нажали «Заказать»").filter({ visible: true }).locator("..")).toContainText("1");
     expect(errors).toEqual([]);
     await customer.close();
   } finally {

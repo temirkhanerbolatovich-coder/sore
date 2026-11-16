@@ -84,9 +84,9 @@ test("количество озвучивается, удаление после
     const increase = line.getByRole("button", { name: "Увеличить" });
     const decrease = line.getByRole("button", { name: "Уменьшить" });
     for (const button of [increase, decrease]) {
-      const box = await button.boundingBox();
-      expect(box?.width).toBeGreaterThanOrEqual(44);
-      expect(box?.height).toBeGreaterThanOrEqual(44);
+      await expect(button).toBeVisible();
+      await expect.poll(async () => (await button.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(44);
+      await expect.poll(async () => (await button.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
     await increase.click();
     await expect(line.locator('[aria-live="polite"], [role="status"]')).toContainText("2");
@@ -114,7 +114,7 @@ test("ошибка сети оставляет заказ в корзине и �
     await page.route("**/rest/v1/rpc/create_order", (route) => route.abort("failed"));
     await page.clock.fastForward(2_000);
     await page.getByRole("button", { name: /Заказать в WhatsApp/ }).click();
-    await expect(page.getByRole("alert")).toContainText("Не удалось оформить заказ");
+    await expect(page.locator("p[role=alert]")).toContainText("Не удалось оформить заказ");
     await expect(page.getByRole("button", { name: /Заказать в WhatsApp/ })).toBeEnabled();
     await expect(page.getByRole("listitem").filter({ hasText: "Пирог" })).toBeVisible();
   } finally {

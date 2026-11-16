@@ -5,7 +5,7 @@ import Link from "next/link";
 import { publicRpc } from "@/lib/public-rpc";
 import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
-import { buildOrderText, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
+import { buildOrderText, formatPhoneInput, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
 import { ProductPhoto } from "@/components/product-photo";
 
 import type { Product } from "@/lib/types";
@@ -63,6 +63,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   );
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
   const [sentText, setSentText] = useState("");
   const [sentNumber, setSentNumber] = useState<number | null>(null);
@@ -92,7 +93,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     setError("");
 
     const digits = normalizePhone(phone);
-    if (!/^[0-9]{10,15}$/.test(digits)) return setError(t.phoneError);
+    if (!/^[0-9]{10,15}$/.test(digits)) {
+      setPhoneError(t.phoneError);
+      document.getElementById("phone")?.focus();
+      return;
+    }
     if (delivery === "delivery" && !address.trim()) return setError(t.addressError);
     if (shop.leadDays > 0 && !neededDate) return setError(t.dateRequired);
     if (neededDate && neededDate < minDate) return setError(t.dateTooEarly);
@@ -223,7 +228,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
                   <button type="button" aria-label={t.decrease} onClick={() => { if (l.qty <= 1) setRemoved([l]); setQty(lineKey(l), l.qty - 1); }} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     −
                   </button>
-                  <span className="w-6 text-center font-bold">{l.qty}</span>
+                  <span aria-live="polite" className="w-6 text-center font-bold">{l.qty}</span>
                   <button type="button" aria-label={t.increase} onClick={() => setQty(lineKey(l), l.qty + 1)} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     +
                   </button>
@@ -245,7 +250,21 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
               <input id="name" required maxLength={80} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="input" />
             </Field>
             <Field label={t.phone} htmlFor="phone">
-              <input id="phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="+7 701 123 45 67" value={phone} onChange={(e) => setPhone(e.target.value)} className="input" />
+              <input
+                id="phone"
+                type="tel"
+                required
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder="+7 701 123 45 67"
+                value={phone}
+                aria-invalid={phoneError ? true : undefined}
+                aria-describedby={phoneError ? "phone-error" : undefined}
+                onChange={(e) => { setPhone(formatPhoneInput(e.target.value)); setPhoneError(""); }}
+                onBlur={() => setPhoneError(phone && !/^[0-9]{10,15}$/.test(normalizePhone(phone)) ? t.phoneError : "")}
+                className="input"
+              />
+              {phoneError && <p id="phone-error" className="text-sm font-semibold text-accent-dark">{phoneError}</p>}
             </Field>
             <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden />
 

@@ -135,6 +135,8 @@ body {
 
 /* Единственный видимый индикатор клавиатурного фокуса для всех элементов управления. */
 :is(a, button, [role="button"], summary, input, select, textarea):focus-visible,
+input[type="date"]:focus-within,
+input[type="time"]:focus-within,
 label:has(input.sr-only:focus-visible),
 input.sr-only:focus-visible + label,
 input.sr-only:focus-visible + span {

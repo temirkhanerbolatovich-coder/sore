@@ -27,6 +27,7 @@ test("тема сообщает состояние и сохраняет фок�
 
 /** Проходим до выхода из документа и проверяем каждую видимую отметку фокуса. */
 async function checkTabOrder(page: Page) {
+  await page.waitForLoadState("networkidle");
   const visited = new Set<string>();
   let last = "";
   let repeated = 0;
@@ -94,6 +95,7 @@ async function checkTabOrder(page: Page) {
 }
 
 async function checkSkipLink(page: Page) {
+  await page.waitForLoadState("networkidle");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "К содержимому" })).toBeFocused();
   await page.keyboard.press("Enter");
@@ -135,8 +137,11 @@ for (const theme of ["light", "dark"] as const) {
 
       await loginAs(page, request, email);
       await page.goto("/dashboard");
+      // Ждём настоящую страницу: пока виден скелет loading.tsx, у него тот же #main-content.
+      await expect(page.getByRole("heading", { name: /Товары/ })).toBeVisible();
       await checkSkipLink(page);
       await page.goto("/dashboard");
+      await expect(page.getByRole("heading", { name: /Товары/ })).toBeVisible();
       await checkTabOrder(page);
 
       // Форма также проверяет видимые подписи скрытых файловых и radio-полей.
