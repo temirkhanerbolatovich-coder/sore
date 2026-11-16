@@ -53,6 +53,24 @@
   color-scheme: dark;
 }
 
+/* Печать (плакат с QR): всегда светлая палитра, даже если на экране включена тёмная тема. */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --cream: #ffffff;
+    --surface: #ffffff;
+    --ink: #2b2118;
+    --muted: #6b5b4d;
+    --line: #eadfd2;
+    --field: #cdbba8;
+    --accent: #c73e1d;
+    --accent-dark: #8f2a12;
+    --accent-soft: #fce8e1;
+    --on-accent: #ffffff;
+    color-scheme: light;
+  }
+}
+
 @theme inline {
   --color-cream: var(--cream);
   --color-surface: var(--surface);
