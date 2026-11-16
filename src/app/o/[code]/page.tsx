@@ -17,7 +17,7 @@ const CODE_RE = /^[a-f0-9]{20}$/;
 
 const STATUS_STYLE = {
   new: "bg-accent-soft text-accent-dark",
-  done: "bg-[#e6f3ea] text-[#1d4d31]",
+  done: "bg-ok-bg text-ok-ink",
   cancelled: "bg-line text-muted",
 } as const;
 

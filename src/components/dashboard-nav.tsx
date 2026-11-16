@@ -8,7 +8,7 @@ const items = [
 
 export function DashboardNav({ active, newOrders = 0 }: { active: "products" | "orders" | "settings"; newOrders?: number }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-white" aria-label="Разделы кабинета">
+    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface" aria-label="Разделы кабинета">
       <div className="mx-auto grid h-[68px] max-w-md grid-cols-3 items-center text-center text-[13px] font-semibold">
         {items.map((i) => (
           <Link
@@ -19,7 +19,7 @@ export function DashboardNav({ active, newOrders = 0 }: { active: "products" | "
           >
             {i.label}
             {i.key === "orders" && newOrders > 0 && (
-              <span className="rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">
+              <span className="rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-bold leading-none text-on-accent">
                 {newOrders}
               </span>
             )}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const steps = [
   {
@@ -22,7 +23,8 @@ export default function Home() {
         <div className="text-2xl font-extrabold tracking-tight">
           duken<span className="text-accent">.ai</span>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <ThemeToggle />
           <Link href="/login" className="font-semibold">
             Войти
           </Link>
@@ -56,11 +58,11 @@ export default function Home() {
         </div>
 
         <div
-          className="mx-auto flex w-[300px] flex-none flex-col gap-3 rounded-[40px] border-8 border-ink bg-white p-4"
+          className="mx-auto flex w-[300px] flex-none flex-col gap-3 rounded-[40px] border-8 border-ink bg-surface p-4"
           aria-hidden="true"
         >
           <div className="flex items-center gap-2.5">
-            <div className="size-10 rounded-full bg-[#f3d9c4]" />
+            <div className="size-10 rounded-full bg-thumb" />
             <div>
               <div className="text-[15px] font-bold">Сладкий дом Алии</div>
               <div className="text-xs text-muted">Алматы · duken.ai/aliya</div>
@@ -78,7 +80,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="flex min-h-11 items-center justify-center rounded-xl bg-wa text-sm font-bold text-white">
+          <div className="flex min-h-11 items-center justify-center rounded-xl bg-wa text-sm font-bold text-on-accent">
             Заказать в WhatsApp · 21 000 ₸
           </div>
         </div>

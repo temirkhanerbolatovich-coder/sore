@@ -54,7 +54,7 @@ export function AddToCart({
   }
 
   return (
-    <div className="flex h-11 items-center justify-between rounded-xl border-[1.5px] border-ink bg-white px-1">
+    <div className="flex h-11 items-center justify-between rounded-xl border-[1.5px] border-ink bg-surface px-1">
       <button
         type="button"
         aria-label="Уменьшить количество"

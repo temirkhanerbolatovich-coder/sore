@@ -11,6 +11,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
+import { BackIcon } from "@/components/icons";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
@@ -191,11 +192,9 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   return (
     <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col">
-      <div className="flex items-center gap-2 border-b border-line bg-white px-3 py-4">
+      <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-4">
         <BackLink fallback={backHref} ariaLabel={t.back} className="flex size-11 items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
+          <BackIcon size={24} />
         </BackLink>
         <h1 className="text-xl font-extrabold">{t.yourOrder}</h1>
       </div>
@@ -291,7 +290,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-white p-5">
+        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-surface p-5">
           <div className="flex items-center justify-between">
             <span className="text-muted">{t.total}</span>
             <span className="text-2xl font-extrabold">{formatPrice(total)}</span>

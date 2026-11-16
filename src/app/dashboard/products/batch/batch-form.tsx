@@ -145,7 +145,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
             <input ref={fileRef} id="batch-files" type="file" accept="image/*" multiple className="sr-only" onChange={onFiles} disabled={working || items.length >= limit} />
             <label
               htmlFor="batch-files"
-              className="flex h-14 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-white text-base font-bold has-[:disabled]:opacity-50"
+              className="flex h-14 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-surface text-base font-bold has-[:disabled]:opacity-50"
             >
               {working ? "Обрабатываем фото…" : items.length > 0 ? "Добавить ещё фото" : "Выбрать фото"}
             </label>
@@ -161,7 +161,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
           {items.map((item, index) => (
             <li key={item.id} className="card flex flex-col gap-3 p-3">
               <div className="flex gap-3">
-                <div className="size-20 flex-none overflow-hidden rounded-xl bg-[#f3d9c4]">
+                <div className="size-20 flex-none overflow-hidden rounded-xl bg-thumb">
                   {item.photoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.photoUrl} alt={`Фото ${index + 1}`} className="size-full object-cover" />
@@ -249,7 +249,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
         )}
       </div>
 
-      <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-white p-5">
+      <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-surface p-5">
         <button type="submit" disabled={saving || working || items.length === 0 || invalid} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
           {saving ? "Сохраняем…" : items.length > 0 ? `Сохранить ${items.length} ${items.length === 1 ? "товар" : "товаров"}` : "Сохранить"}
         </button>

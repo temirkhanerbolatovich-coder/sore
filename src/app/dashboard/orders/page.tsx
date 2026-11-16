@@ -25,7 +25,7 @@ type OrderRow = {
 
 const STATUS = {
   new: { label: "Новый", cls: "bg-accent-soft text-accent-dark" },
-  done: { label: "Выполнен", cls: "bg-[#e6f3ea] text-[#1d4d31]" },
+  done: { label: "Выполнен", cls: "bg-ok-bg text-ok-ink" },
   cancelled: { label: "Отменён", cls: "bg-line text-muted" },
 } as const;
 
