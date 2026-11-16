@@ -1,0 +1,30 @@
+name: Задача по Telegram-боту
+description: Работа над ботом по контракту docs/BOT_CONTRACT.md
+labels: ["area:bot"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Перед началом прочитайте [docs/BOT_CONTRACT.md](https://github.com/temirkhanerbolatovich-coder/sore/blob/develop/docs/BOT_CONTRACT.md): какие таблицы, функции и маршруты уже есть.
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Сценарий
+      description: Что делает пользователь в чате и что должен ответить бот.
+    validations:
+      required: true
+  - type: textarea
+    id: app
+    attributes:
+      label: Что нужно изменить в приложении
+      description: Миграции, маршруты, функции из `src/lib`, таблицы.
+  - type: textarea
+    id: security
+    attributes:
+      label: Безопасность
+      description: Кто может выполнить действие (проверка владельца по `chat_id`), лимиты, защита от повторной доставки.
+  - type: textarea
+    id: tests
+    attributes:
+      label: Как проверим
+      placeholder: e2e на подставном Bot API (tests/e2e/telegram-mock.ts)

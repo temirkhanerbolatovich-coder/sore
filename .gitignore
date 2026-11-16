@@ -43,5 +43,7 @@ next-env.d.ts
 !.env.example
 /playwright-report/
 /test-results/
-/reports/
+/reports/*
+# Скриншоты и отчёты проверок, на которые ссылаются README и docs, хранятся в git
+!/reports/stage-3/
 /HANDOFF.md
