@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireShop } from "@/lib/shop";
+import { invalidateShop, invalidateSitemapShops } from "@/lib/shop-data";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type DeleteState = { error?: string };
@@ -20,6 +21,8 @@ export async function deleteAccount(_prev: DeleteState, form: FormData): Promise
   const { error } = await admin.auth.admin.deleteUser(user.id);
   if (error) return { error: "Не удалось удалить аккаунт. Попробуйте ещё раз или напишите нам." };
 
+  invalidateShop(shop.slug);
+  invalidateSitemapShops();
   await supabase.auth.signOut().catch(() => undefined);
   redirect("/?deleted=1");
 }

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireShop } from "@/lib/shop";
 import { ownedPhotoPath } from "@/lib/photos";
+import { invalidateShop } from "@/lib/shop-data";
 import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 
 export type BatchState = { error?: string };
@@ -56,7 +57,7 @@ export async function saveBatch(_prev: BatchState, formData: FormData): Promise<
   const { error } = await supabase.from("products").insert(rows);
   if (error) return { error: "Не удалось сохранить товары. Попробуйте ещё раз." };
 
+  invalidateShop(shop.slug);
   revalidatePath("/dashboard");
-  revalidatePath(`/${shop.slug}`);
   redirect(`/dashboard?saved=batch&n=${items.length}`);
 }

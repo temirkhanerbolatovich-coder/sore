@@ -5,6 +5,7 @@ import { requireShop } from "@/lib/shop";
 import { normalizePhone } from "@/lib/order";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { ownedPhotoPath } from "@/lib/photos";
+import { invalidateShop } from "@/lib/shop-data";
 
 export type SettingsState = { error?: string; success?: string };
 const schema = z.object({
@@ -21,12 +22,14 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
   if (d.avatar_url && !ownedPhotoPath(d.avatar_url, user.id)) return { error: "Загрузите своё фото магазина." };
   const { error } = await supabase.from("shops").update({ ...d, city: d.city || null, avatar_url: d.avatar_url || null }).eq("id", shop.id);
   if (error) return { error: "Не удалось сохранить настройки." };
+  invalidateShop(shop.slug);
   const old = ownedPhotoPath(shop.avatar_url, user.id);
   let warning = "";
   if (old && shop.avatar_url !== d.avatar_url) {
     try { await removeUnusedPhoto(supabase, shop.avatar_url, user.id); }
     catch { warning = " Старое фото не удалось удалить из хранилища."; }
   }
-  revalidatePath("/dashboard"); revalidatePath("/dashboard/settings"); revalidatePath(`/${shop.slug}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
   return { success: `Настройки сохранены.${warning}` };
 }

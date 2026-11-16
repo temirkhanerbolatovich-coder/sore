@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhone } from "@/lib/order";
 import { slugError } from "@/lib/slug";
+import { invalidateShop, invalidateSitemapShops } from "@/lib/shop-data";
 
 export type OnboardingState = {
   error?: string;
@@ -67,5 +68,7 @@ export async function createShop(_prev: OnboardingState, formData: FormData): Pr
     return { error: "Не удалось создать магазин. Попробуйте ещё раз.", values };
   }
 
+  invalidateShop(slug);
+  invalidateSitemapShops();
   redirect("/dashboard");
 }

@@ -7,11 +7,11 @@ const addToCart = (page: Page, title: string, label = "В корзину") =>
   page.getByRole("listitem").filter({ hasText: title }).getByRole("button", { name: label, exact: true }).click();
 
 test.describe("покупатель", () => {
-  test("перед открытием корзины цены и остатки сверяются с магазином", async ({ browser }) => {
+  test("перед открытием корзины цены и остатки сверяются с магазином", async ({ browser, page, request }) => {
     const s = stamp();
     const email = `price-${s}@example.test`;
     const slug = `price-${s}`;
-    const { shopId, products } = await seedShop(admin, {
+    const { products } = await seedShop(admin, {
       email,
       slug,
       products: [{ title: "Торт А", price: 5000 }, { title: "Торт Б", price: 3000 }],
@@ -24,8 +24,14 @@ test.describe("покупатель", () => {
       await addToCart(buyer, "Торт Б");
 
       // Продавец поменял цену А и снял Б с наличия, пока покупатель думал.
-      await admin.from("products").update({ price: 6000 }).eq("id", products[0].id).eq("shop_id", shopId);
-      await admin.from("products").update({ in_stock: false }).eq("id", products[1].id).eq("shop_id", shopId);
+      await loginAs(page, request, email);
+      await page.goto(`/dashboard/products/${products[0].id}/edit`);
+      await page.getByLabel("Цена, ₸", { exact: true }).fill("6000");
+      await page.getByRole("button", { name: "Сохранить товар" }).click();
+      await expect(page).toHaveURL(/dashboard\?saved=updated/);
+      const stock = page.getByRole("switch", { name: "В наличии: Торт Б" });
+      await stock.click();
+      await expect(stock).toHaveAttribute("aria-checked", "false");
 
       await buyer.goto(`${test.info().project.use.baseURL}/${slug}/cart`);
       await expect(buyer.getByRole("status")).toContainText("Корзина обновлена");

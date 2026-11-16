@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireShop } from "@/lib/shop";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { ownedPhotoPath } from "@/lib/photos";
+import { invalidateShop } from "@/lib/shop-data";
 import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 import { newVariantId } from "@/lib/variants";
 
@@ -84,16 +85,14 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
   };
 
   const id = String(formData.get("id") ?? "");
+  let replacedPhoto: string | null = null;
   if (id) {
     const { data: previous } = await supabase.from("products").select("photo_url").eq("id", id).eq("shop_id", shop.id).single();
     if (!previous) return { error: "Товар не найден." };
     if (d.photo_url && d.photo_url !== previous.photo_url && !ownedPhotoPath(d.photo_url, user.id)) return { error: "Загрузите своё фото товара." };
     const { error } = await supabase.from("products").update(row).eq("id", id).eq("shop_id", shop.id);
     if (error) return { error: "Не удалось сохранить товар. Попробуйте ещё раз." };
-    if (previous.photo_url !== row.photo_url) {
-      try { await removeUnusedPhoto(supabase, previous.photo_url, user.id); }
-      catch { return { error: "Товар сохранён, но старое фото не удалось удалить из Storage." }; }
-    }
+    if (previous.photo_url !== row.photo_url) replacedPhoto = previous.photo_url;
   } else {
     if (d.photo_url && !ownedPhotoPath(d.photo_url, user.id)) return { error: "Загрузите своё фото товара." };
     const { count } = await supabase
@@ -107,8 +106,12 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
     if (error) return { error: "Не удалось сохранить товар. Попробуйте ещё раз." };
   }
 
+  invalidateShop(shop.slug);
   revalidatePath("/dashboard");
-  revalidatePath(`/${shop.slug}`);
+  if (replacedPhoto) {
+    try { await removeUnusedPhoto(supabase, replacedPhoto, user.id); }
+    catch { return { error: "Товар сохранён, но старое фото не удалось удалить из Storage." }; }
+  }
   redirect(id ? "/dashboard?saved=updated" : "/dashboard?saved=added");
 }
 
@@ -118,8 +121,8 @@ export async function toggleStock(formData: FormData) {
   const { supabase, shop } = await requireShop();
   const { error } = await supabase.from("products").update({ in_stock: next }).eq("id", id).eq("shop_id", shop.id);
   if (error) throw new Error("Не удалось изменить наличие");
+  invalidateShop(shop.slug);
   revalidatePath("/dashboard");
-  revalidatePath(`/${shop.slug}`);
 }
 
 export async function deleteProduct(formData: FormData) {
@@ -128,9 +131,9 @@ export async function deleteProduct(formData: FormData) {
   const { data: product } = await supabase.from("products").select("photo_url").eq("id", id).eq("shop_id", shop.id).single();
   const { error } = await supabase.from("products").delete().eq("id", id).eq("shop_id", shop.id);
   if (error) throw new Error("Не удалось удалить товар");
-  await removeUnusedPhoto(supabase, product?.photo_url, shop.owner_id);
+  invalidateShop(shop.slug);
   revalidatePath("/dashboard");
-  revalidatePath(`/${shop.slug}`);
+  await removeUnusedPhoto(supabase, product?.photo_url, shop.owner_id);
   redirect("/dashboard?saved=deleted");
 }
 
@@ -138,5 +141,6 @@ export async function moveProduct(formData: FormData) {
   const { supabase, shop } = await requireShop();
   const { error } = await supabase.rpc("move_product", { p_shop: shop.id, p_product: String(formData.get("id")), p_direction: Number(formData.get("direction")) });
   if (error) throw new Error("Не удалось изменить порядок");
-  revalidatePath("/dashboard"); revalidatePath(`/${shop.slug}`);
+  invalidateShop(shop.slug);
+  revalidatePath("/dashboard");
 }

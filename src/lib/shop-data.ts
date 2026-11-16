@@ -1,16 +1,27 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
-import type { Product, Shop } from "@/lib/types";
+import { unstable_cache, updateTag } from "next/cache";
+import { SLUG_RE } from "@/lib/slug";
+import { createPublicClient } from "@/lib/supabase/public";
+import type { Shop } from "@/lib/types";
 
-export const getShopBySlug = cache(async (slug: string) => {
-  const supabase = await createClient();
+const SHOP_REVALIDATE_SECONDS = 240;
+const MAX_SHOP_AGE_MS = 300_000;
+const SITEMAP_SHOPS_TAG = "sitemap:shops";
+const sitemapPageSize = 1000;
+const shopTag = (slug: string) => `shop:${slug.toLowerCase()}`;
+
+class ShopNotFound extends Error {}
+
+async function readShop(slug: string) {
+  const supabase = createPublicClient();
   const { data: shop, error: shopError } = await supabase
     .from("shops")
     .select("*")
-    .eq("slug", slug.toLowerCase())
-    .maybeSingle<Shop>();
+    .eq("slug", slug)
+    .maybeSingle();
   if (shopError) throw new Error("Не удалось загрузить магазин");
-  if (!shop) return null;
+  // Only successful lookups belong in the Data Cache.
+  if (!shop) throw new ShopNotFound();
 
   const { data, error } = await supabase
     .from("products")
@@ -20,5 +31,52 @@ export const getShopBySlug = cache(async (slug: string) => {
     .order("created_at", { ascending: true });
 
   if (error) throw new Error("Не удалось загрузить товары");
-  return { shop, products: (data ?? []) as Product[] };
+  return { shop, products: data ?? [] };
+}
+
+export const getShopBySlug = cache(async (slug: string) => {
+  const normalizedSlug = slug.toLowerCase();
+  if (!SLUG_RE.test(normalizedSlug)) return null;
+
+  const getSnapshot = unstable_cache(
+    async (key: string) => ({ data: await readShop(key), loadedAt: Date.now() }),
+    ["public-shop"],
+    { tags: [shopTag(normalizedSlug)], revalidate: SHOP_REVALIDATE_SECONDS },
+  );
+  try {
+    const snapshot = await getSnapshot(normalizedSlug);
+    // Revalidation can serve one stale result. Enforce a hard age limit even then.
+    return Date.now() - snapshot.loadedAt < MAX_SHOP_AGE_MS ? snapshot.data : await readShop(normalizedSlug);
+  } catch (error) {
+    if (error instanceof ShopNotFound) return null;
+    throw error;
+  }
 });
+
+export const getSitemapShops = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const shops: Pick<Shop, "slug" | "created_at">[] = [];
+    for (let offset = 0; ; offset += sitemapPageSize) {
+      const { data, error } = await supabase
+        .from("shops")
+        .select("slug,created_at")
+        .order("id")
+        .range(offset, offset + sitemapPageSize - 1);
+      if (error) throw new Error("Не удалось построить sitemap");
+      shops.push(...data);
+      if (data.length < sitemapPageSize) return shops;
+    }
+  },
+  ["sitemap-shops"],
+  { tags: [SITEMAP_SHOPS_TAG], revalidate: SHOP_REVALIDATE_SECONDS },
+);
+
+export function invalidateShop(slug: string) {
+  updateTag(shopTag(slug));
+}
+
+/** The slug listing changes only on shop creation or deletion. */
+export function invalidateSitemapShops() {
+  updateTag(SITEMAP_SHOPS_TAG);
+}
