@@ -7,10 +7,10 @@ const items = [
   { key: "settings", label: "Магазин", href: "/dashboard/settings", Icon: ShopIcon },
 ] as const;
 
-export function DashboardNav({ active, newOrders = 0 }: { active: "products" | "orders" | "settings"; newOrders?: number }) {
+export function DashboardNav({ active, newOrders = 0, desktop = false }: { active: "products" | "orders" | "settings"; newOrders?: number; desktop?: boolean }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface" aria-label="Разделы кабинета">
-      <div className="mx-auto grid h-[68px] max-w-md grid-cols-3 items-center text-center text-[13px] font-semibold">
+    <nav className={desktop ? "hidden border-b border-line bg-surface lg:block" : "fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface lg:hidden"} aria-label="Разделы кабинета">
+      <div className="mx-auto grid h-[68px] max-w-md grid-cols-3 items-center text-center text-[13px] font-semibold lg:max-w-6xl lg:justify-start lg:gap-2">
         {items.map((i) => (
           <Link
             key={i.key}

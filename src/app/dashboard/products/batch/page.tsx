@@ -12,7 +12,7 @@ export default async function BatchPage() {
   const slots = Math.max(0, FREE_PRODUCT_LIMIT - (data?.length ?? 0));
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col">
       <FormHeader title="Несколько фото сразу" />
       <BatchForm slots={slots} categories={categories} />
     </main>

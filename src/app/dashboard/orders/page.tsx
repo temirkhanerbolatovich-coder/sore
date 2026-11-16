@@ -58,8 +58,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const newCount = orders.filter((o) => o.status === "new").length;
 
   return (
-    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24">
-      <div className="flex flex-col gap-1 px-5 pb-3 pt-6">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24 lg:max-w-6xl lg:pb-10">
+      <DashboardNav active="orders" desktop />
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-1 px-5 pb-3 pt-6">
         <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
         <p className="text-[15px] text-muted">
           Заказы сохраняются, даже если клиент не нажал «Отправить» в WhatsApp.

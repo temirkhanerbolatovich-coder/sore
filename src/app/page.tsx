@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AiIcon, CameraIcon, WhatsAppIcon } from "@/components/icons";
@@ -62,31 +63,29 @@ export default function Home() {
           <p className="text-[15px] text-muted">Бесплатно до 15 товаров · без сайта и программиста</p>
         </div>
 
-        <div
-          className="mx-auto flex w-[300px] flex-none flex-col gap-3 rounded-[40px] border-8 border-ink bg-surface p-4"
-          aria-hidden="true"
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="size-10 rounded-full bg-thumb" />
-            <div>
-              <div className="text-[15px] font-bold">Сладкий дом Алии</div>
-              <div className="text-xs text-muted">Алматы · пример витрины</div>
+        <div className="mx-auto grid w-full max-w-md grid-cols-2 items-start gap-3" aria-label="Пример работы SÖRE">
+          <figure className="card overflow-hidden p-2">
+            <div className="rounded-xl bg-thumb p-2">
+              <div className="grid grid-cols-2 gap-2 border-b-4 border-field pb-2">
+                {["prague", "cupcakes", "eclairs", "macarons"].map((image, index) => (
+                  <div key={image} className="relative overflow-hidden rounded-lg border-2 border-accent">
+                    <Image src={`/demo/${image}.svg`} alt="" width={600} height={600} className="aspect-square w-full object-cover" />
+                    <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-on-accent">{index + 1}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            {[
-              ["Торт «Прага»", "12 000 ₸", "bg-thumb"],
-              ["Капкейки, 6 шт", "4 500 ₸", "bg-accent-soft"],
-            ].map(([t, p, c]) => (
-              <div key={t} className="flex flex-col gap-1.5">
-                <div className={`h-24 rounded-xl ${c}`} />
-                <div className="text-[13px] font-semibold">{t}</div>
-                <div className="text-[13px] text-muted">{p}</div>
+            <figcaption className="px-1 pt-2 text-sm font-semibold">Пример полки с найденными товарами</figcaption>
+          </figure>
+          <div className="card flex flex-col gap-3 p-3">
+            <div className="text-sm font-bold">Витрина магазина</div>
+            {[["prague", "Торт «Прага»", "12 000 ₸"], ["cupcakes", "Капкейки", "4 500 ₸"]].map(([image, title, price]) => (
+              <div key={image} className="flex flex-col gap-1">
+                <Image src={`/demo/${image}.svg`} alt="" width={600} height={600} className="aspect-[4/3] w-full rounded-xl object-cover" />
+                <div className="text-sm font-semibold">{title}</div>
+                <div className="text-sm font-bold">{price}</div>
               </div>
             ))}
-          </div>
-          <div className="flex min-h-11 items-center justify-center rounded-xl bg-wa text-sm font-bold text-on-accent">
-            Заказать в WhatsApp · 21 000 ₸
           </div>
         </div>
       </section>
@@ -110,8 +109,8 @@ export default function Home() {
         <h2 id="plans" className="text-3xl font-extrabold tracking-tight">
           Начните бесплатно
         </h2>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div className="card flex flex-col gap-4 p-6">
+        <div className="grid gap-5">
+          <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-xl font-bold">Free</div>
               <div className="text-3xl font-extrabold">0 ₸</div>

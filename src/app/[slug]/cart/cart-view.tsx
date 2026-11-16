@@ -196,7 +196,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   }
 
   return (
-    <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
       <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-4">
         <BackLink fallback={backHref} ariaLabel={t.back} className="flex size-11 items-center justify-center">
           <BackIcon size={24} />
@@ -204,7 +204,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
         <h1 className="text-xl font-extrabold">{t.yourOrder}</h1>
       </div>
 
-      <form id="main-content" tabIndex={-1} onSubmit={submit} className="flex flex-1 flex-col">
+      <form id="main-content" tabIndex={-1} onSubmit={submit} className="flex flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_20rem] md:items-start md:gap-6">
         <div className="flex flex-1 flex-col gap-5 p-5">
           {notice && <p role="status">{t.updated}</p>}
           {undoToast}
@@ -295,7 +295,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-surface p-5">
+        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-surface p-5 md:top-4 md:bottom-auto md:mt-5 md:mr-5 md:rounded-2xl md:border">
           <div className="flex items-center justify-between">
             <span className="text-muted">{t.total}</span>
             <span className="text-2xl font-extrabold">{formatPrice(total)}</span>

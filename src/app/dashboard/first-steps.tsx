@@ -6,7 +6,7 @@ type Step = { done: boolean; title: string; text: string; href?: string; cta?: s
 export function FirstSteps({ hasProducts, shared, telegram }: { hasProducts: boolean; shared: boolean; telegram: "off" | "pending" | "done" }) {
   const steps: Step[] = [
     { done: hasProducts, title: "Добавьте первый товар", text: "Сфотографируйте его, ИИ составит описание.", href: "/dashboard/products/new", cta: "Добавить товар" },
-    { done: shared, title: "Поделитесь ссылкой", text: "Поставьте ссылку в био Instagram или отправьте клиентам. Скопируйте её выше." },
+    { done: shared, title: "Поделитесь ссылкой", text: "Поставьте ссылку в био Instagram или отправьте клиентам. Скопируйте её в карточке магазина." },
     ...(telegram === "off" ? [] : [{ done: telegram === "done", title: "Подключите Telegram", text: "Заказы будут приходить вам сообщением.", href: "/dashboard/settings", cta: "Подключить" }]),
   ];
   if (steps.every((s) => s.done)) return null;

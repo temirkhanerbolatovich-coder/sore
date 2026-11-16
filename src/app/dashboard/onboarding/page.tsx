@@ -17,7 +17,7 @@ export default async function OnboardingPage() {
   if (shop) redirect("/dashboard");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 py-4">
+    <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col gap-6 px-5 py-4">
       <div className="flex items-center justify-between">
         <Link href="/" className="flex min-h-11 items-center gap-1 font-semibold text-muted">
           <BackArrow /> На главную

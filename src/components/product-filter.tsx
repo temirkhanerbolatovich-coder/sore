@@ -47,7 +47,7 @@ export function ProductFilter({
           </button>
         </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">{shown.map((item) => item.node)}</ul>
+        <ul className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-4">{shown.map((item) => item.node)}</ul>
       )}
     </>
   );

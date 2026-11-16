@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { LegalPage, contactLine } from "@/components/legal-page";
 
-export const metadata: Metadata = { title: "Политика конфиденциальности — Sөre", description: "Какие данные собирает Sөre, зачем и кому передаёт." };
+export const metadata: Metadata = { title: "Политика конфиденциальности — SÖRE", description: "Какие данные собирает SÖRE, зачем и кому передаёт." };
 
 export default function PrivacyPage() {
   return (
     <LegalPage title="Политика конфиденциальности" updated="16 ноября 2026">
-      <p>Здесь описано, какие данные мы обрабатываем при работе сервиса Sөre, зачем и как вы можете ими управлять.</p>
+      <p>Здесь описано, какие данные мы обрабатываем при работе сервиса SÖRE, зачем и как вы можете ими управлять.</p>
 
       <h2>1. Какие данные мы получаем</h2>
       <ul>

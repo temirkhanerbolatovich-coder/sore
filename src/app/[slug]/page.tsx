@@ -63,10 +63,10 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const firstPhoto = visible.findIndex((product) => Boolean(product.photo_url));
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
       <DocumentLanguage lang={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <header className="flex flex-col gap-4 border-b border-line bg-surface px-5 pb-4 pt-6">
+      <header className="flex flex-col gap-4 border-b border-line bg-surface px-5 pb-4 pt-6 md:gap-3 md:py-4">
         <div className="flex items-center justify-between">
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
                     thumbnail
                     priority={i === firstPhoto}
                     eager={i < 4}
-                    className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}
+                    className={`aspect-[4/3] w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}
                   />
                   <div className="flex flex-col gap-1 p-3 pb-2">
                     <div className="text-[15px] font-semibold leading-tight">{p.title}</div>

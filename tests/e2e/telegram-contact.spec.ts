@@ -83,7 +83,7 @@ test("после заказа два канала: WhatsApp и Telegram с ко�
     await expect(popup).toHaveURL("https://t.me/aliya_sweets");
     await expect(buyer.getByText("Текст заказа скопирован")).toBeVisible();
     const copied = await buyer.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toContain("Здравствуйте! Заказ из Sөre (№1)");
+    expect(copied).toContain("Здравствуйте! Заказ из SÖRE (№1)");
     expect(copied).toContain("Торт × 1");
     expect(copied).toContain("Итого: 4 000 ₸");
     await popup.close();

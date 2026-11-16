@@ -1,18 +1,20 @@
 import { randomUUID } from "node:crypto";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { test, expect, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { cropShelfPhoto } from "../../src/lib/shelf-crops";
 import { adminClient, cleanupUser, loginAs, seedShop } from "./helpers";
 
 /**
- * Скриншоты ключевых экранов для отчёта (светлая и тёмная тема, 390 px) в reports/stage-3/.
- * Не входит в обычный прогон: E2E_SCREENSHOTS=1 npx playwright test tests/e2e/screenshots.spec.ts
+ * Скриншоты ключевых экранов в reports/ui-polish/: обе темы, 390/768/1440 CSS px.
+ * Только локальные тестовые данные; ИИ и внешние переходы подменены.
+ * PowerShell: $env:E2E_SCREENSHOTS="1"; npx playwright test tests/e2e/screenshots.spec.ts
  */
 test.skip(!process.env.E2E_SCREENSHOTS, "Скриншоты для отчёта: нужна переменная E2E_SCREENSHOTS=1");
 
 const admin = adminClient();
-const OUT = "reports/stage-3";
+const OUT = "reports/ui-polish";
+const MAX_IMAGE_BYTES = 300_000;
 const uniquePhone = () => `8701${String(Math.floor(Math.random() * 1e7)).padStart(7, "0")}`; // лимит create_order: 10 заказов в час на номер
 const stamp = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
@@ -37,13 +39,23 @@ async function shelfImage() {
   return sharp(Buffer.from(svg)).jpeg({ quality: 88 }).toBuffer();
 }
 
-async function shot(page: Page, name: string, theme: string, full = false) {
-  await page.waitForTimeout(500); // дать закончиться анимации появления
-  await page.screenshot({ path: `${OUT}/${name}-${theme}.jpg`, type: "jpeg", quality: 72, fullPage: full });
+async function shot(page: Page, name: string, theme: string, width: number) {
+  await page.evaluate(() => document.fonts.ready);
+  const png = await page.screenshot({ type: "png", fullPage: true, animations: "disabled", scale: "css" });
+  // Сохраняем исходную ширину: сначала уменьшаем качество, а не масштаб экрана.
+  for (let quality = 80; quality >= 20; quality -= 10) {
+    const jpeg = await sharp(png).jpeg({ quality, mozjpeg: true }).toBuffer();
+    if (jpeg.length < MAX_IMAGE_BYTES) {
+      await writeFile(`${OUT}/${name}-${theme}-${width}.jpg`, jpeg);
+      return;
+    }
+  }
+  throw new Error(`Скриншот ${name}-${theme}-${width} больше 300 КБ даже при минимальном качестве`);
 }
 
 for (const theme of ["light", "dark"] as const) {
-  test(`скриншоты: ${theme}`, async ({ browser, request }) => {
+  for (const width of [390, 768, 1440]) {
+  test(`скриншоты: ${theme}, ${width} px`, async ({ browser, request }) => {
     test.setTimeout(240_000);
     await mkdir(OUT, { recursive: true });
     const s = stamp();
@@ -51,7 +63,7 @@ for (const theme of ["light", "dark"] as const) {
     const slug = `shots-${theme}-${s}`;
     const { ownerId, shopId } = await seedShop(admin, { email, slug });
     await admin.from("shops").update({ name: "Сладкий дом Алии", city: "Алматы", telegram_username: "aliya_sweets", about: "Домашние сладости и продукты у дома." }).eq("id", shopId);
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, permissions: ["clipboard-read", "clipboard-write"] });
+    const ctx = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 900 }, deviceScaleFactor: 1, permissions: ["clipboard-read", "clipboard-write"] });
     await ctx.addInitScript((t) => localStorage.setItem("sore-theme", t), theme);
     await ctx.route("https://t.me/**", (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<title>Telegram</title>" }));
     await ctx.route("https://wa.me/**", (route) => route.fulfill({ status: 204 }));
@@ -60,12 +72,12 @@ for (const theme of ["light", "dark"] as const) {
       // 1. Лендинг
       await page.goto("/");
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await shot(page, "01-landing", theme);
+      await shot(page, "01-landing", theme, width);
 
       // 2. Фото полки: выбор, черновики
       await loginAs(page, request, email);
       await page.goto("/dashboard");
-      await shot(page, "02-dashboard-empty", theme);
+      await shot(page, "02-dashboard-empty", theme, width);
       await page.route("**/api/ai/shelf", async (route) => {
         const { photo_url } = route.request().postDataJSON() as { photo_url: string };
         const path = new URL(photo_url).pathname.split("/product-photos/")[1];
@@ -89,41 +101,40 @@ for (const theme of ["light", "dark"] as const) {
       });
       await page.goto("/dashboard/products/shelf");
       await page.waitForLoadState("networkidle");
-      await shot(page, "03-shelf-start", theme);
+      await shot(page, "03-shelf-start", theme, width);
       await page.locator("#shelf-file").setInputFiles({ name: "shelf.jpg", mimeType: "image/jpeg", buffer: await shelfImage() });
       await expect(page.getByLabel("Название 6")).toBeVisible({ timeout: 30_000 });
-      await shot(page, "04-shelf-frames", theme);
+      await shot(page, "04-shelf-frames", theme, width);
       await page.getByLabel("Название 1").scrollIntoViewIfNeeded();
       await page.getByLabel("Название 2").fill("Сок «Да-Да» яблочный 1 л");
       await page.getByRole("group", { name: "Цена 2" }).getByRole("button", { name: "Точная" }).click();
       await page.getByLabel("Цена 2, ₸").fill("600");
       await page.getByRole("checkbox", { name: "Выложить товар 6" }).scrollIntoViewIfNeeded();
-      await shot(page, "05-shelf-drafts", theme);
+      await shot(page, "05-shelf-drafts", theme, width);
       for (const n of [3, 5]) {
         await page.getByRole("group", { name: `Цена ${n}` }).getByRole("button", { name: "Точная" }).click();
         await page.getByLabel(`Цена ${n}, ₸`).fill(String(n * 300));
       }
       await page.getByRole("button", { name: /Опубликовать выбранные/ }).click();
       await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
-      await shot(page, "06-dashboard-products", theme);
+      await shot(page, "06-dashboard-products", theme, width);
 
       // 3. Импорт прайса с ошибками
       await page.goto("/dashboard/products/import");
       await page.waitForLoadState("networkidle");
-      await shot(page, "07-import-start", theme);
+      await shot(page, "07-import-start", theme, width);
       await page.locator("#import-file").setInputFiles({ name: "price.csv", mimeType: "text/csv", buffer: Buffer.from("Название;Цена;Артикул;Категория\nХлеб белый;250;BR-1;Выпечка\nСухари;180;BR-2;Выпечка\n;100;BR-3;\nМолоко 1 л;abc;MI-1;Молочное\nКефир;310;MI-2;Молочное\n", "utf8") });
       await page.getByRole("button", { name: "Загрузить прайс" }).click();
       await expect(page.getByRole("status", { name: "Итог загрузки" })).toContainText("Добавлено: 3");
-      await shot(page, "08-import-result", theme);
+      await shot(page, "08-import-result", theme, width);
 
       // 4. Витрина, карточка с полкой
       await page.goto(`/${slug}`);
       await expect(page.getByText("Вода «Тассай» 1 л")).toBeVisible();
-      await shot(page, "09-storefront", theme);
+      await shot(page, "09-storefront", theme, width);
       await page.getByText("Вода «Тассай» 1 л").click();
       await expect(page.getByText("Так товар выглядит на полке")).toBeVisible();
-      await page.locator("figure").scrollIntoViewIfNeeded();
-      await shot(page, "10-product-on-shelf", theme);
+      await shot(page, "10-product", theme, width);
 
       // 5. Заказ: WhatsApp и Telegram
       const buyer = await ctx.newPage();
@@ -134,13 +145,18 @@ for (const theme of ["light", "dark"] as const) {
       await buyer.getByLabel("Имя", { exact: true }).fill("Айгерим");
       await buyer.getByLabel("Телефон", { exact: true }).fill(uniquePhone());
       await buyer.getByLabel("Адрес", { exact: true }).fill("Абай 10");
+      await shot(buyer, "11-cart", theme, width);
       await buyer.clock.fastForward(2_000);
       await buyer.getByRole("button", { name: /Заказать в WhatsApp/ }).click();
       await expect(buyer.getByRole("heading", { name: /Заказ принят/ })).toBeVisible();
-      await shot(buyer, "11-order-done", theme);
+      await shot(buyer, "12-order-done", theme, width);
+      await buyer.getByRole("link", { name: "Следить за заказом" }).click();
+      await expect(buyer.getByRole("heading", { name: /Заказ №/ })).toBeVisible();
+      await shot(buyer, "13-order-status", theme, width);
     } finally {
       await ctx.close();
       await cleanupUser(admin, email);
     }
   });
+  }
 }

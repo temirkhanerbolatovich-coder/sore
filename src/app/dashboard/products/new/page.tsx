@@ -6,7 +6,7 @@ export const metadata = { title: "Новый товар — Sөre" };
 export default async function NewProductPage() {
   await requireShop();
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col">
       <FormHeader title="Новый товар" />
       <ProductForm />
     </main>
