@@ -104,8 +104,10 @@ export default async function ShopPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        {categories.length > 0 && (
-          <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
+      </header>
+      {categories.length > 0 && (
+        <div className="sticky top-0 z-20 border-b border-line bg-surface">
+          <nav className="flex gap-2 overflow-x-auto px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
             <Chip href={shopHref(base, lang)} active={!activeCat}>
               {t.all}
             </Chip>
@@ -115,8 +117,9 @@ export default async function ShopPage({ params, searchParams }: Props) {
               </Chip>
             ))}
           </nav>
-        )}
-      </header>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-surface to-transparent" />
+        </div>
+      )}
 
       <ShopAbout shop={shop} lang={lang} />
 
@@ -126,7 +129,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
         ) : (
           <ProductFilter
             minItems={SEARCH_MIN_PRODUCTS}
-            labels={{ placeholder: t.search, empty: t.searchEmpty, reset: t.searchReset }}
+            labels={{ placeholder: t.search, empty: t.searchEmpty, reset: t.searchReset, clear: t.searchClear, found: t.searchFound }}
             items={visible.map((p, i) => ({
               id: p.id,
               text: [p.title, p.category, p.description_ru, p.description_kz].filter(Boolean).join(" ").toLocaleLowerCase("ru"),

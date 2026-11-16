@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { SearchIcon } from "@/components/icons";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Item = { id: string; /** Уже в нижнем регистре: название, категория, описания. */ text: string; node: ReactNode };
 
@@ -16,7 +18,7 @@ export function ProductFilter({
   items: Item[];
   /** Поле поиска показывается, когда в списке не меньше стольких товаров. */
   minItems: number;
-  labels: { placeholder: string; empty: string; reset: string };
+  labels: { placeholder: string; empty: string; reset: string; clear: string; found: string };
 }) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLocaleLowerCase("ru");
@@ -25,27 +27,37 @@ export function ProductFilter({
   return (
     <>
       {items.length >= minItems && (
-        <div className="pb-3">
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={labels.placeholder}
-            aria-label={labels.placeholder}
-            enterKeyHint="search"
-            autoComplete="off"
-            maxLength={60}
-            className="input w-full"
-          />
+        <div className="flex flex-col gap-1.5 pb-3">
+          <div className="relative">
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={labels.placeholder}
+              aria-label={labels.placeholder}
+              enterKeyHint="search"
+              autoComplete="off"
+              maxLength={60}
+              className="input w-full pr-24 [&::-webkit-search-cancel-button]:hidden"
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery("")} className="absolute inset-y-0 right-1 min-h-11 px-3 text-sm font-semibold underline">
+                {labels.clear}
+              </button>
+            )}
+          </div>
+          <p role="status" aria-live="polite" className="min-h-5 text-sm text-muted">
+            {needle ? labels.found.replace("{n}", String(shown.length)) : ""}
+          </p>
         </div>
       )}
       {shown.length === 0 ? (
-        <div role="status" className="card flex flex-col gap-3 p-5 text-muted">
-          <p>{labels.empty}</p>
-          <button type="button" className="btn-outline h-11" onClick={() => setQuery("")}>
-            {labels.reset}
-          </button>
-        </div>
+        <EmptyState
+          icon={<SearchIcon size={24} />}
+          title={labels.empty}
+          description=""
+          action={<button type="button" className="btn-outline h-11" onClick={() => setQuery("")}>{labels.reset}</button>}
+        />
       ) : (
         <ul className="grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-4">{shown.map((item) => item.node)}</ul>
       )}

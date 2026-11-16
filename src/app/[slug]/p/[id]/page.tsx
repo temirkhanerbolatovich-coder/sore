@@ -11,6 +11,7 @@ import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
+import { PhotoViewer } from "@/components/photo-viewer";
 import { DocumentLanguage } from "@/components/document-language";
 import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
 import { BackIcon } from "@/components/icons";
@@ -69,7 +70,13 @@ export default async function ProductPage({ params, searchParams }: Props) {
       </div>
 
       <div className="md:grid md:grid-cols-2 md:items-start md:gap-6 md:px-5">
-        <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
+        {product.photo_url ? (
+          <PhotoViewer url={product.photo_url} alt={product.title} zoomLabel={t.zoomPhoto} closeLabel={t.closePhoto}>
+            <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
+          </PhotoViewer>
+        ) : (
+          <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
+        )}
 
         <div id="main-content" tabIndex={-1} className="flex min-w-0 flex-col gap-3 px-5 pt-5 md:px-0 md:pt-0">
           <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>

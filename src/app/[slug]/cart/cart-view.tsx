@@ -11,7 +11,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
-import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { BackIcon, CheckIcon, WhatsAppIcon } from "@/components/icons";
 import { Toast } from "@/components/ui/toast";
 import { TelegramContact } from "@/components/telegram-contact";
 
@@ -159,6 +159,9 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   if (sentUrl) {
     return (
       <main id="main-content" tabIndex={-1} lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+        <span aria-hidden="true" className="pop-in flex size-16 items-center justify-center rounded-full bg-ok-bg text-ok-ink">
+          <CheckIcon size={32} />
+        </span>
         <h1 className="text-2xl font-extrabold">
           {t.accepted}
           {sentNumber ? ` · №${sentNumber}` : ""}
