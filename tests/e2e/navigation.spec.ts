@@ -165,3 +165,36 @@ test("страница не найдена: есть «Назад», «На гл
   await expect(page.getByRole("link", { name: "На главную" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Создать магазин" })).toBeVisible();
 });
+
+test("вход по коду из письма работает без ссылки (письмо открыто в другом браузере)", async ({ page, request }) => {
+  const email = `nav-code-${stamp()}@example.test`;
+  try {
+    await page.goto("/login");
+    await page.waitForLoadState("networkidle");
+    await page.getByLabel("Электронная почта").fill(email);
+    await page.getByRole("button", { name: "Получить ссылку для входа" }).click();
+    await expect(page.getByText("Проверьте почту")).toBeVisible();
+
+    let code = "";
+    await expect
+      .poll(async () => {
+        const inbox = await (await request.get("http://127.0.0.1:54324/api/v1/messages")).json();
+        const message = inbox.messages?.find((m: { To: { Address: string }[] }) => m.To.some((to) => to.Address === email));
+        if (!message) return "";
+        const mail = await (await request.get(`http://127.0.0.1:54324/api/v1/message/${message.ID}`)).json();
+        code = mail.HTML.match(/letter-spacing:4px">(\d{6,8})</)?.[1] ?? "";
+        return code;
+      })
+      .not.toBe("");
+
+    // Неверный код отклоняется, верный пускает в кабинет. Ссылку из письма мы не открывали вовсе.
+    await page.getByLabel("Или введите код из письма").fill("000000");
+    await page.getByRole("button", { name: "Войти", exact: true }).click();
+    await expect(page.getByText("Код не подошёл")).toBeVisible();
+    await page.getByLabel("Или введите код из письма").fill(code);
+    await page.getByRole("button", { name: "Войти", exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboard/);
+  } finally {
+    await cleanupUser(admin, email);
+  }
+});

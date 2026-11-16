@@ -451,3 +451,13 @@ enable_confirmations = true
 
 [remotes.production.storage.vector]
 enabled = false
+
+# Письма содержат и ссылку, и код: ссылка с PKCE работает только в том браузере, где запрошен вход,
+# а код можно ввести на странице входа откуда угодно (например, если письмо открыли во встроенном браузере).
+[auth.email.template.magic_link]
+subject = "Вход в DukenAI"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Добро пожаловать в DukenAI"
+content_path = "./supabase/templates/confirmation.html"

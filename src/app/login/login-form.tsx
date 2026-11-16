@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm({ failed }: { failed: boolean }) {
@@ -12,7 +13,30 @@ export function LoginForm({ failed }: { failed: boolean }) {
     failed ? "Ссылка устарела или уже использована. Запросите новую." : "",
   );
 
+  const router = useRouter();
   const [cooldown, setCooldown] = useState(0);
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
+  async function onCode(e: React.FormEvent) {
+    e.preventDefault();
+    setCodeError("");
+    setVerifying(true);
+    try {
+      const { error } = await createClient().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
+      if (error) {
+        setCodeError("Код не подошёл или устарел. Проверьте письмо или отправьте новый.");
+        setVerifying(false);
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setCodeError("Не удалось связаться с сервером. Повторите попытку.");
+      setVerifying(false);
+    }
+  }
   useEffect(() => {
     if (cooldown <= 0) return;
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
@@ -50,6 +74,32 @@ export function LoginForm({ failed }: { failed: boolean }) {
           Мы отправили ссылку для входа на <b className="text-ink">{email}</b>. Откройте письмо на
           этом же телефоне.
         </p>
+        <form onSubmit={onCode} className="mt-2 flex flex-col gap-2 border-t border-line pt-3">
+          <label htmlFor="otp" className="text-sm font-semibold">
+            Или введите код из письма
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="otp"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6,8}"
+              maxLength={8}
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              className="input tracking-[0.2em]"
+            />
+            <button type="submit" disabled={verifying || code.length < 6} className="btn-dark flex-none disabled:opacity-60">
+              {verifying ? "…" : "Войти"}
+            </button>
+          </div>
+          {codeError && (
+            <p role="alert" className="text-sm font-semibold text-accent-dark">
+              {codeError}
+            </p>
+          )}
+        </form>
         <div className="mt-2 flex flex-wrap items-center gap-x-5">
           <button type="button" className="min-h-11 font-semibold text-accent underline" onClick={() => setStatus("idle")}>
             Указать другую почту
