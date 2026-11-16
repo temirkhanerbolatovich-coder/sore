@@ -6,6 +6,7 @@ import { T, parseLang, shopHref } from "@/lib/lang";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
 import { createPublicClient } from "@/lib/supabase/public";
 import { WhatsAppIcon } from "@/components/icons";
+import { TelegramContact } from "@/components/telegram-contact";
 
 // Ссылка с секретным кодом: страницу не индексируем и не кэшируем.
 export const metadata: Metadata = {
@@ -44,6 +45,8 @@ export default async function OrderStatusPage({
   const hint = { new: t.statusHintNew, done: t.statusHintDone, cancelled: t.statusHintCancelled }[status];
   const items = order.order_items as { title: string; qty: number; price: number }[];
   const question = `Здравствуйте! Вопрос по заказу №${order.order_number}.`;
+  // Ник Telegram продавца публичен (как и вся витрина); RPC статуса его не отдаёт, берём из публичных данных магазина.
+  const { data: seller } = await createPublicClient().from("shops").select("telegram_username").eq("slug", order.shop_slug).maybeSingle();
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
@@ -94,6 +97,9 @@ export default async function OrderStatusPage({
         <WhatsAppIcon />
         {t.writeSeller}
       </a>
+      {seller?.telegram_username && (
+        <TelegramContact username={seller.telegram_username} text={question} label={t.writeTelegram} copiedLabel={t.tgCopied} />
+      )}
       <Link href={shopHref(`/${order.shop_slug}`, lang)} className="btn-outline h-12 w-full">
         {t.back}
       </Link>

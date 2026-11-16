@@ -10,6 +10,8 @@ export const T = {
   ru: {
     accepted: "Заказ принят",
     openWa: "Открыть WhatsApp",
+    writeTelegram: "Написать в Telegram",
+    tgCopied: "Текст заказа скопирован. Вставьте его в чат с продавцом.",
     waHelp: "Если WhatsApp не открылся сам, нажмите кнопку и отправьте сообщение продавцу.",
     emptyCart: "Корзина пуста",
     choose: "Выберите товары в магазине",
@@ -93,6 +95,8 @@ export const T = {
   kz: {
     accepted: "Тапсырыс қабылданды",
     openWa: "WhatsApp ашу",
+    writeTelegram: "Telegram-да жазу",
+    tgCopied: "Тапсырыс мәтіні көшірілді. Оны сатушымен чатқа қойыңыз.",
     waHelp: "WhatsApp ашылмаса, батырманы басып, сатушыға хабарлама жіберіңіз.",
     emptyCart: "Себет бос",
     choose: "Дүкеннен тауар таңдаңыз",

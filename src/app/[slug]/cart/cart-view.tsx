@@ -12,10 +12,11 @@ import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
 import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
-type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; leadDays: number };
+type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number };
 
 export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang; products: Product[] }) {
   const t = T[lang];
@@ -63,6 +64,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
+  const [sentText, setSentText] = useState("");
   const [sentNumber, setSentNumber] = useState<number | null>(null);
   const [statusHref, setStatusHref] = useState("");
   const openedAt = useRef<number | null>(null);
@@ -143,6 +145,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     clear();
     setSentNumber(Number(row.order_number));
     setStatusHref(statusPath);
+    setSentText(text);
     setSentUrl(url);
     window.location.href = url;
     } catch { setError(t.orderError); } finally { setSending(false); }
@@ -165,6 +168,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           <WhatsAppIcon />
           {t.openWa}
         </a>
+        {shop.telegram && <TelegramContact username={shop.telegram} text={sentText} label={t.writeTelegram} copiedLabel={t.tgCopied} />}
         {statusHref && (
           <Link href={statusHref} className="btn-outline h-12 w-full">
             {t.trackOrder}

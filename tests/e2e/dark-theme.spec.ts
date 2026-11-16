@@ -85,7 +85,7 @@ for (const width of [360, 390]) {
       await checkDarkPage(page, "/dashboard/onboarding");
       await page.getByRole("button", { name: "Выйти" }).click();
       await loginAs(page, request, email);
-      for (const path of ["/dashboard", "/dashboard/orders", "/dashboard/settings", "/dashboard/products/new", "/dashboard/products/batch", "/dashboard/poster"]) {
+      for (const path of ["/dashboard", "/dashboard/orders", "/dashboard/settings", "/dashboard/products/new", "/dashboard/products/batch", "/dashboard/products/shelf", "/dashboard/products/import", "/dashboard/poster"]) {
         await checkDarkPage(page, path);
       }
       await page.waitForLoadState("networkidle");

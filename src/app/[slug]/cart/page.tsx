@@ -24,7 +24,7 @@ export default async function CartPage({
     <>
       <DocumentLanguage lang={lang} />
       <CartView
-        shop={{ id: shop.id, slug: shop.slug, name: shop.name, whatsapp: shop.whatsapp, leadDays: shop.lead_days }}
+        shop={{ id: shop.id, slug: shop.slug, name: shop.name, whatsapp: shop.whatsapp, telegram: shop.telegram_username, leadDays: shop.lead_days }}
         lang={lang}
         products={data.products}
       />
