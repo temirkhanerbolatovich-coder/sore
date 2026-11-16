@@ -6,6 +6,7 @@ import type { Shop } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
 import { Field } from "@/components/field";
+import Link from "next/link";
 import { CopyLink } from "../copy-link";
 import { saveSettings } from "./actions";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
@@ -60,6 +61,7 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
     </form>
     <a href={url} className="break-all underline">{url}</a><CopyLink url={url} />
     <canvas ref={canvas} aria-label="QR-код магазина" className="mx-auto" />
+    <Link href="/dashboard/poster" className="btn-outline">Плакат для печати</Link>
     <button className="btn-outline" onClick={() => { const a = document.createElement("a"); a.href = canvas.current!.toDataURL("image/png"); a.download = `${shop.slug}-qr.png`; a.click(); }}>Скачать QR-код PNG</button>
     <form action="/auth/signout" method="post" className="pt-2 text-center"><button type="submit" className="min-h-11 px-3 text-sm font-semibold text-muted underline">Выйти из аккаунта</button></form>
   </div>;

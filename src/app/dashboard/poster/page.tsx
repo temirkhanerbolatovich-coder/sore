@@ -1,0 +1,54 @@
+import QRCode from "qrcode";
+import { BackLink } from "@/components/back-link";
+import { requireShop } from "@/lib/shop";
+import { PrintButton } from "./print-button";
+
+export const metadata = { title: "Плакат с QR-кодом — DukenAI", robots: { index: false } };
+
+/** Страница для печати: название магазина, крупный QR-код на витрину и адрес ссылки. */
+export default async function PosterPage() {
+  const { shop } = await requireShop();
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const url = `${site}/${shop.slug}`;
+  // SVG строится из нашего же адреса: вставка безопасна и печатается чётко в любом размере.
+  const qr = await QRCode.toString(url, { type: "svg", margin: 1, errorCorrectionLevel: "M", color: { dark: "#2b2118", light: "#ffffff" } });
+
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-col gap-5 p-5 pb-10 print:max-w-none print:gap-8 print:p-0">
+      {/* Размер листа и поля при печати; остальное оформление берёт Tailwind. */}
+      <style>{"@media print { @page { size: A4 portrait; margin: 14mm; } body { background: #fff !important; } }"}</style>
+
+      <div className="flex items-center justify-between gap-3 print:hidden">
+        <BackLink fallback="/dashboard/settings" className="flex min-h-11 items-center gap-1 font-semibold">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+          Магазин
+        </BackLink>
+      </div>
+
+      <section
+        aria-label="Плакат"
+        className="flex flex-col items-center gap-5 rounded-3xl border-2 border-ink bg-white px-6 py-8 text-center print:min-h-[250mm] print:justify-center print:gap-10 print:rounded-none print:border-4"
+      >
+        <h1 className="text-3xl font-extrabold leading-tight tracking-tight print:text-6xl">{shop.name}</h1>
+        {shop.city && <p className="text-lg text-muted print:text-3xl">{shop.city}</p>}
+        <p className="text-xl font-bold print:text-4xl">Закажите в WhatsApp</p>
+        <div
+          role="img"
+          aria-label={`QR-код: ${url}`}
+          className="aspect-square w-full max-w-72 print:max-w-[130mm] [&>svg]:size-full"
+          dangerouslySetInnerHTML={{ __html: qr }}
+        />
+        <p className="text-base text-muted print:text-2xl">Наведите камеру телефона на QR-код</p>
+        <p className="break-all text-lg font-extrabold text-accent print:text-3xl">{url.replace(/^https?:\/\//, "")}</p>
+        <p className="text-sm text-muted print:text-lg">Сделано в DukenAI</p>
+      </section>
+
+      <div className="flex flex-col gap-2 print:hidden">
+        <PrintButton />
+        <p className="text-center text-sm text-muted">Откроется окно печати. Выберите размер A4 или A5 и принтер.</p>
+      </div>
+    </main>
+  );
+}

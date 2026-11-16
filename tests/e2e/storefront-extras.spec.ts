@@ -133,3 +133,33 @@ test("статус заказа для покупателя: ссылка в Wha
     await cleanupUser(admin, email);
   }
 });
+
+test("плакат с QR-кодом для печати", async ({ page, request }) => {
+  const s = stamp();
+  const email = `poster-${s}@example.test`;
+  const slug = `poster-${s}`;
+  await seedShop(admin, { email, slug });
+  try {
+    // Без входа плакат недоступен.
+    const anonymous = await request.get("/dashboard/poster", { maxRedirects: 0 });
+    expect([307, 308]).toContain(anonymous.status());
+
+    await loginAs(page, request, email);
+    await page.goto("/dashboard/settings");
+    await page.getByRole("link", { name: "Плакат для печати" }).click();
+    await expect(page).toHaveURL(/\/dashboard\/poster$/);
+    await expect(page.getByRole("heading", { name: "Регрессия" })).toBeVisible();
+    await expect(page.getByText(`/${slug}`, { exact: false }).first()).toBeVisible();
+    const qr = page.getByRole("img", { name: new RegExp(`QR-код: .*/${slug}$`) });
+    await expect(qr.locator("svg")).toBeVisible();
+
+    // При печати кнопки и подсказки скрыты, остаётся только плакат.
+    await expect(page.getByRole("button", { name: "Распечатать" })).toBeVisible();
+    await page.emulateMedia({ media: "print" });
+    await expect(page.getByRole("button", { name: "Распечатать" })).toBeHidden();
+    await expect(page.getByRole("heading", { name: "Регрессия" })).toBeVisible();
+    await expect(qr.locator("svg")).toBeVisible();
+  } finally {
+    await cleanupUser(admin, email);
+  }
+});
