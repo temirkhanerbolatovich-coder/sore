@@ -150,14 +150,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           ))}
         </ul>
 
-        {!full && (
-          <Link
-            href="/dashboard/products/new"
-            className="btn-accent fixed bottom-20 right-5 h-14 rounded-full pl-4 pr-5 shadow-lg md:right-[calc(50%-12rem)] lg:bottom-6 lg:right-6"
-          >
-            <PlusIcon size={22} />
-            Товар
-          </Link>
+        {!full && products.length > 0 && (
+          <div className="pointer-events-none sticky bottom-24 z-10 flex justify-end px-5 pb-2 pt-4 lg:bottom-6">
+            <Link href="/dashboard/products/new" className="btn-accent pointer-events-auto h-14 rounded-full pl-4 pr-5 shadow-lg">
+              <PlusIcon size={22} />
+              Товар
+            </Link>
+          </div>
         )}
 
         </div>

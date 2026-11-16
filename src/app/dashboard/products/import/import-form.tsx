@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { plural } from "@/lib/plural";
 import Link from "next/link";
 import { toCsv } from "@/lib/csv-export";
 import { CheckIcon, DownloadIcon, FileIcon, UploadIcon } from "@/components/icons";
@@ -21,12 +22,6 @@ function downloadReport(report: Report[]) {
   // Адрес освобождаем не сразу: под нагрузкой браузер может ещё читать файл (иначе скачивание обрывается).
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
-
-const plural = (n: number, one: string, few: string, many: string) => {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
-};
 
 /** Прайс из Excel или CSV: выбрать файл → загрузить → итог и отчёт об ошибках. */
 export function ImportForm({ slots }: { slots: number }) {
