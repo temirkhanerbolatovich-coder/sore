@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { unstable_cache, updateTag } from "next/cache";
+import { revalidateTag, unstable_cache, updateTag } from "next/cache";
 import { SLUG_RE } from "@/lib/slug";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Shop } from "@/lib/types";
@@ -74,6 +74,14 @@ export const getSitemapShops = unstable_cache(
 
 export function invalidateShop(slug: string) {
   updateTag(shopTag(slug));
+}
+
+/**
+ * То же, что invalidateShop, но для Route Handler: updateTag там запрещён, поэтому tag истекает сразу через
+ * { expire: 0 } (следующий запрос витрины читает базу, устаревшее не отдаётся).
+ */
+export function invalidateShopFromRoute(slug: string) {
+  revalidateTag(shopTag(slug), { expire: 0 });
 }
 
 /** The slug listing changes only on shop creation or deletion. */

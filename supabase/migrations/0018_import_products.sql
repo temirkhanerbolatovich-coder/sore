@@ -14,6 +14,7 @@ declare
   v_price integer;
   v_sku text;
   v_desc text;
+  v_desc_kz text;
   v_category text;
   v_in_stock boolean;
   v_id uuid;
@@ -41,6 +42,7 @@ begin
       v_price := (v_row->>'price')::integer;
       v_sku := nullif(btrim(coalesce(v_row->>'sku', '')), '');
       v_desc := nullif(btrim(coalesce(v_row->>'description', '')), '');
+      v_desc_kz := nullif(btrim(coalesce(v_row->>'description_kz', '')), '');
       v_category := nullif(btrim(coalesce(v_row->>'category', '')), '');
       v_in_stock := case jsonb_typeof(v_row->'in_stock') when 'boolean' then (v_row->>'in_stock')::boolean end;
       v_id := null;
@@ -50,6 +52,7 @@ begin
           price = v_price,
           price_mode = case when v_price = 0 then 'request' when p.price_mode = 'from' then 'from' else 'fixed' end,
           description_ru = coalesce(v_desc, p.description_ru),
+          description_kz = coalesce(v_desc_kz, p.description_kz),
           category = coalesce(v_category, p.category),
           in_stock = coalesce(v_in_stock, p.in_stock),
           price_needs_review = false
@@ -60,9 +63,9 @@ begin
       if v_id is not null then
         v_updated := v_updated + 1;
       else
-        insert into public.products (shop_id, title, price, price_mode, description_ru, category, in_stock, sku, sort)
+        insert into public.products (shop_id, title, price, price_mode, description_ru, description_kz, category, in_stock, sku, sort)
         values (p_shop, v_title, v_price, case when v_price = 0 then 'request' else 'fixed' end,
-                v_desc, v_category, coalesce(v_in_stock, true), v_sku, v_sort);
+                v_desc, v_desc_kz, v_category, coalesce(v_in_stock, true), v_sku, v_sort);
         v_sort := v_sort + 1;
         v_created := v_created + 1;
       end if;
