@@ -161,7 +161,7 @@ export function ShelfForm({ slots }: { slots: number }) {
   const working = phase === "upload" || phase === "ai";
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-1 flex-col">
+    <form id="main-content" tabIndex={-1} onSubmit={onSubmit} className="flex flex-1 flex-col">
       <input type="hidden" name="payload" value={payload} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (

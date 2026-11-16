@@ -58,7 +58,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const newCount = orders.filter((o) => o.status === "new").length;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24">
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24">
       <div className="flex flex-col gap-1 px-5 pb-3 pt-6">
         <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
         <p className="text-[15px] text-muted">

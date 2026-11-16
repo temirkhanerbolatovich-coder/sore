@@ -26,7 +26,7 @@ export default async function LoginPage({
           <BackArrow /> На главную
         </Link>
       </div>
-      <div className="mt-8 flex flex-col gap-3">
+      <div id="main-content" tabIndex={-1} className="mt-8 flex flex-col gap-3">
         <h1 className="text-3xl font-extrabold leading-tight tracking-tight">
           Войдите, чтобы создать магазин
         </h1>

@@ -49,7 +49,7 @@ export default async function OrderStatusPage({
   const { data: seller } = await createPublicClient().from("shops").select("telegram_username").eq("slug", order.shop_slug).maybeSingle();
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
       <DocumentLanguage lang={lang} />
       <div className="flex items-start justify-between gap-3">
         <div>

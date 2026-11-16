@@ -61,7 +61,7 @@ export function ImportForm({ slots }: { slots: number }) {
   const changed = result ? result.created + result.updated : 0;
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-1 flex-col">
+    <form id="main-content" tabIndex={-1} onSubmit={onSubmit} className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="card icon-host flex flex-col gap-3 p-5">
           <div className="flex items-center gap-3">

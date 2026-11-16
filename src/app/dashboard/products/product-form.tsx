@@ -98,7 +98,7 @@ export function ProductForm({ product }: { product?: Product }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div id="main-content" tabIndex={-1} className="flex flex-1 flex-col">
       <form onSubmit={onSubmit} onChange={() => setTouched(true)} className="flex flex-1 flex-col">
         {product && <input type="hidden" name="id" value={product.id} />}
         <input type="hidden" name="photo_url" value={photoUrl} />

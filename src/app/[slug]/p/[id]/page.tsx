@@ -70,7 +70,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
       <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full" />
 
-      <div className="flex flex-col gap-3 px-5 pt-5">
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-3 px-5 pt-5">
         <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>
         <div className="flex items-center justify-between gap-3">
           <div className="text-2xl font-extrabold">{priceLabel(product.price, product.price_mode, lang, variants.length > 0)}</div>

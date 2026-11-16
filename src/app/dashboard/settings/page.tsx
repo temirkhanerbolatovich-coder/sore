@@ -15,7 +15,7 @@ export default async function SettingsPage() {
     : { data: null };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-5 p-5 pb-24">
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-col gap-5 p-5 pb-24">
       <h1 className="text-2xl font-extrabold">Магазин</h1>
       {telegramConfigured() && <TelegramCard linked={Boolean(tg?.linked_at)} />}
       <SettingsForm shop={shop} url={url} />

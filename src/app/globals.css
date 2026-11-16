@@ -27,6 +27,7 @@
   --thumb-6: #f0d2c0;
   --switch-off: #8a7b6e;
   --shine: rgb(255 255 255 / 0.38);
+  --focus: #7442b3;
 
   /* Движение (используется в motion.css) */
   --ease-key: cubic-bezier(0.22, 0.8, 0.28, 1);
@@ -59,6 +60,7 @@
   --thumb-6: #3e2c24;
   --switch-off: #6d5f53;
   --shine: rgb(255 255 255 / 0.22);
+  --focus: #d2a8ff;
 
   color-scheme: dark;
 }
@@ -124,12 +126,41 @@ body {
     @apply inline-flex size-12 items-center justify-center rounded-xl border-[1.5px] border-line bg-surface text-ink transition-colors hover:border-ink;
   }
   .input {
-    @apply h-12 w-full rounded-xl border-[1.5px] border-field bg-surface px-4 text-base text-ink outline-none focus:border-ink;
+    @apply h-12 w-full rounded-xl border-[1.5px] border-field bg-surface px-4 text-base text-ink focus:border-ink;
   }
   .card {
     @apply rounded-2xl border border-line bg-surface;
   }
 }
+
+/* Единственный видимый индикатор клавиатурного фокуса для всех элементов управления. */
+:is(a, button, [role="button"], summary, input, select, textarea):focus-visible,
+label:has(input.sr-only:focus-visible),
+input.sr-only:focus-visible + label,
+input.sr-only:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Ссылки внутри карточек с обрезанными краями получают кольцо внутри карточки. */
+.card.overflow-hidden :is(a, button):focus-visible { outline-offset: -4px; }
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--ink);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible { transform: translateY(0); }
+.skip-link [lang="kk"] { display: none; }
+:lang(kk) .skip-link [lang="ru"] { display: none; }
+:lang(kk) .skip-link [lang="kk"] { display: inline; }
 
 button, a, input, select { touch-action: manipulation; }
 button { cursor: pointer; }

@@ -39,7 +39,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="flex flex-wrap items-center gap-14">
+      <section id="main-content" tabIndex={-1} className="flex flex-wrap items-center gap-14">
         <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-6">
           <span className="self-start rounded-full bg-accent-soft px-3.5 py-1.5 text-sm font-semibold text-accent-dark">
             Для продавцов из Instagram и WhatsApp

@@ -155,7 +155,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   if (sentUrl) {
     return (
-      <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <main id="main-content" tabIndex={-1} lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-2xl font-extrabold">
           {t.accepted}
           {sentNumber ? ` · №${sentNumber}` : ""}
@@ -183,7 +183,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   if (lines.length === 0) {
     return (
-      <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <main id="main-content" tabIndex={-1} lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-2xl font-extrabold">{t.emptyCart}</h1>
         {notice && <p role="status">{t.updated}</p>}
         {undoToast}
@@ -204,7 +204,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
         <h1 className="text-xl font-extrabold">{t.yourOrder}</h1>
       </div>
 
-      <form onSubmit={submit} className="flex flex-1 flex-col">
+      <form id="main-content" tabIndex={-1} onSubmit={submit} className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col gap-5 p-5">
           {notice && <p role="status">{t.updated}</p>}
           {undoToast}

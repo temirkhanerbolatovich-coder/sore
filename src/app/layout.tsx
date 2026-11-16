@@ -41,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="skip-link"><span lang="ru">К содержимому</span><span lang="kk">Негізгі мазмұнға өту</span></a>
         <ThemeInitializer />
         {children}
         <Analytics />

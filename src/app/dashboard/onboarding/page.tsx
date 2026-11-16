@@ -28,7 +28,7 @@ export default async function OnboardingPage() {
           </button>
         </form>
       </div>
-      <div className="flex flex-col gap-2">
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight">Создайте свой магазин</h1>
         <p className="text-[17px] leading-relaxed text-muted">Это займёт минуту. Всё можно поменять позже.</p>
       </div>

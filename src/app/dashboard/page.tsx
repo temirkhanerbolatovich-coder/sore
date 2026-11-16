@@ -62,7 +62,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </form>
         </div>
 
-        <div className="card flex items-center gap-2 p-1.5 pl-3.5">
+        <div id="main-content" tabIndex={-1} className="card flex items-center gap-2 p-1.5 pl-3.5">
           <div className="min-w-0 flex-1 truncate text-[15px] font-semibold">{shown}</div>
           <CopyLink url={fullUrl} />
         </div>

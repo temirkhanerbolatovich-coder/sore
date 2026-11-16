@@ -71,18 +71,18 @@ export default async function ShopPage({ params, searchParams }: Props) {
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex items-center gap-2">
           <ThemeToggle className="size-11" />
-          <div className="flex overflow-hidden rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
+          <div className="flex rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
             <Link
               href={shopHref(base, "ru", activeCat)}
               aria-current={lang === "ru" ? "true" : undefined}
-              className={`flex min-h-11 min-w-11 items-center justify-center px-3 ${lang === "ru" ? "bg-ink text-cream" : "text-muted"}`}
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-l-full px-3 ${lang === "ru" ? "bg-ink text-cream" : "text-muted"}`}
             >
               RU
             </Link>
             <Link
               href={shopHref(base, "kz", activeCat)}
               aria-current={lang === "kz" ? "true" : undefined}
-              className={`flex min-h-11 min-w-11 items-center justify-center px-3 ${lang === "kz" ? "bg-ink text-cream" : "text-muted"}`}
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-r-full px-3 ${lang === "kz" ? "bg-ink text-cream" : "text-muted"}`}
             >
               KZ
             </Link>
@@ -105,7 +105,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
         </div>
 
         {categories.length > 0 && (
-          <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
+          <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
             <Chip href={shopHref(base, lang)} active={!activeCat}>
               {t.all}
             </Chip>
@@ -120,7 +120,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
 
       <ShopAbout shop={shop} lang={lang} />
 
-      <section className="flex-1 px-4 pb-28 pt-4">
+      <section id="main-content" tabIndex={-1} className="flex-1 px-4 pb-28 pt-4">
         {visible.length === 0 ? (
           <p className="card p-5 text-muted">{t.empty}</p>
         ) : (

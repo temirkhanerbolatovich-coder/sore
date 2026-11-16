@@ -3,7 +3,7 @@ import { ReportClientError } from "@/components/report-client-error";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-5">
+    <main id="main-content" tabIndex={-1} className="mx-auto flex max-w-md flex-col gap-4 p-5">
       <ReportClientError error={error} />
       <h1 className="text-xl font-bold">Сервис временно недоступен</h1>
       <p role="alert">Не удалось загрузить данные. Проверьте соединение и попробуйте снова.</p>

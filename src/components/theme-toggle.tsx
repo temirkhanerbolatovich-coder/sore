@@ -2,7 +2,7 @@
 // Переключатель светлой и тёмной темы. Выбор хранится в localStorage («sore-theme»);
 // пока пользователь ничего не выбрал, тема следует за системой (и меняется вместе с ней).
 // Обе иконки всегда в разметке, видимую выбирает CSS по data-theme: нет расхождения при гидратации.
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { MoonIcon, SunIcon } from "./icons";
 
 export const THEME_STORAGE_KEY = "sore-theme";
@@ -25,6 +25,7 @@ export function ThemeInitializer() {
 }
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
+  const dark = useSyncExternalStore(subscribeToTheme, isDarkTheme, () => false);
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const followSystem = () => {
@@ -56,12 +57,23 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       className={`btn-icon theme-toggle ${className}`.trim()}
       onClick={toggle}
       aria-label="Светлая или тёмная тема"
+      aria-pressed={dark}
       title="Светлая или тёмная тема"
     >
       <SunIcon className="theme-toggle-sun" />
       <MoonIcon className="theme-toggle-moon" />
     </button>
   );
+}
+
+function subscribeToTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
+
+function isDarkTheme() {
+  return document.documentElement.dataset.theme === "dark";
 }
 
 function applyTheme(theme: "light" | "dark") {
