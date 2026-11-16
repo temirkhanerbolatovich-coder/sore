@@ -5,6 +5,7 @@ import { DocumentLanguage } from "@/components/document-language";
 import { T, parseLang, shopHref } from "@/lib/lang";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
 import { createPublicClient } from "@/lib/supabase/public";
+import { WhatsAppIcon } from "@/components/icons";
 
 // Ссылка с секретным кодом: страницу не индексируем и не кэшируем.
 export const metadata: Metadata = {
@@ -90,6 +91,7 @@ export default async function OrderStatusPage({
         rel="noopener noreferrer"
         className="btn-wa h-14 w-full text-lg"
       >
+        <WhatsAppIcon />
         {t.writeSeller}
       </a>
       <Link href={shopHref(`/${order.shop_slug}`, lang)} className="btn-outline h-12 w-full">

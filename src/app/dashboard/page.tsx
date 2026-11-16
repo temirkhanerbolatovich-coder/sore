@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { requireShop } from "@/lib/shop";
 import { priceLabel } from "@/lib/order";
 import { variantsOf } from "@/lib/variants";
@@ -110,8 +111,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <p className="leading-relaxed text-muted">Добавьте первый товар: сфотографируйте его и укажите цену.</p>
           </li>
         )}
-        {products.map((p) => (
-          <li key={p.id} className="card flex items-center gap-3 p-2.5">
+        {products.map((p, index) => (
+          <li key={p.id} className={`card flex items-center gap-3 p-2.5 ${index < 12 ? "rise-in" : ""}`} style={index < 12 ? { "--rise-index": index } as CSSProperties : undefined}>
             <Link href={`/dashboard/products/${p.id}/edit`} className="flex min-w-0 flex-1 items-center gap-3">
                 <ProductPhoto url={p.photo_url} alt="" thumbnail className="size-16 flex-none rounded-xl" />
               <div className="min-w-0 flex-1">

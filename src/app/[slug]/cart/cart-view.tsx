@@ -11,7 +11,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
-import { BackIcon } from "@/components/icons";
+import { BackIcon, WhatsAppIcon } from "@/components/icons";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
@@ -162,6 +162,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           {t.waHelp}
         </p>
         <a href={sentUrl} className="btn-wa h-14 w-full text-lg">
+          <WhatsAppIcon />
           {t.openWa}
         </a>
         {statusHref && (
@@ -296,6 +297,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             <span className="text-2xl font-extrabold">{formatPrice(total)}</span>
           </div>
           <button type="submit" disabled={sending} className="btn-wa h-14 text-lg disabled:opacity-60">
+            <WhatsAppIcon />
             {sending ? t.sending : t.order}
           </button>
           <p className="text-center text-[13px] text-muted">{t.orderHint}</p>

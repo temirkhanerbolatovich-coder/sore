@@ -1,17 +1,22 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AiIcon, CameraIcon, WhatsAppIcon } from "@/components/icons";
 
 const steps = [
   {
     title: "Сфотографируйте",
+    Icon: CameraIcon,
     text: "Снимите товары на телефон и добавьте фотографии в кабинет магазина.",
   },
   {
     title: "ИИ напишет карточку",
+    Icon: AiIcon,
     text: "ИИ предложит название, описание на русском и казахском и категорию. Проверьте их и укажите цену.",
   },
   {
     title: "Получите заказ в WhatsApp",
+    Icon: WhatsAppIcon,
     text: "Покупатель собирает корзину по ссылке и отправляет заказ вам в WhatsApp. При желании подключите уведомления в Telegram.",
   },
 ];
@@ -70,11 +75,11 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 gap-2.5">
             {[
-              ["Торт «Прага»", "12 000 ₸", "#f3d9c4"],
-              ["Капкейки, 6 шт", "4 500 ₸", "#e8d5e6"],
+              ["Торт «Прага»", "12 000 ₸", "bg-thumb"],
+              ["Капкейки, 6 шт", "4 500 ₸", "bg-accent-soft"],
             ].map(([t, p, c]) => (
               <div key={t} className="flex flex-col gap-1.5">
-                <div className="h-24 rounded-xl" style={{ background: c }} />
+                <div className={`h-24 rounded-xl ${c}`} />
                 <div className="text-[13px] font-semibold">{t}</div>
                 <div className="text-[13px] text-muted">{p}</div>
               </div>
@@ -90,9 +95,9 @@ export default function Home() {
         <h2 className="text-3xl font-extrabold tracking-tight">Три шага до первого заказа</h2>
         <div className="grid gap-5 sm:grid-cols-3">
           {steps.map((s, i) => (
-            <div key={s.title} className="card flex flex-col gap-2.5 p-6">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-accent-soft font-extrabold text-accent-dark">
-                {i + 1}
+            <div key={s.title} className="card icon-host flex flex-col gap-2.5 p-6" style={{ "--rise-index": i } as CSSProperties}>
+              <div className="icon-badge">
+                <s.Icon size={24} />
               </div>
               <div className="text-xl font-bold">{s.title}</div>
               <p className="leading-relaxed text-muted">{s.text}</p>

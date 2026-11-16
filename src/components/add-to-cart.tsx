@@ -4,6 +4,7 @@ import { lineKey, useCart, useShopLines } from "@/lib/cart";
 import { T, type Lang } from "@/lib/lang";
 import type { Product } from "@/lib/types";
 import type { Variant } from "@/lib/variants";
+import { CartIcon } from "@/components/icons";
 
 /** Кнопка «В корзину» и счётчик «− 1 +». Для товара с вариантами передаётся выбранный вариант. */
 export function AddToCart({
@@ -46,8 +47,9 @@ export function AddToCart({
             variantTitle: variant?.title ?? null,
           })
         }
-        className="flex h-11 w-full items-center justify-center rounded-xl bg-ink text-sm font-bold text-cream"
+        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-sm font-bold text-cream"
       >
+        <CartIcon size={18} />
         {t.add}
       </button>
     );

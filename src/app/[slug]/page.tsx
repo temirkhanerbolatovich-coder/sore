@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
@@ -132,7 +133,8 @@ export default async function ShopPage({ params, searchParams }: Props) {
               node: (
               <li
                 key={p.id}
-                className="card flex flex-col overflow-hidden"
+                className={`card flex flex-col overflow-hidden ${i < 12 ? "rise-in" : ""}`}
+                style={i < 12 ? { "--rise-index": i } as CSSProperties : undefined}
               >
                 <Link href={shopHref(`${base}/p/${p.id}`, lang)} className="flex flex-col">
                   <ProductPhoto
