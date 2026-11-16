@@ -14,6 +14,7 @@ import { FirstSteps } from "./first-steps";
 import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
 import { CameraIcon, PlusIcon } from "@/components/icons";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata = { title: "Кабинет — Sөre" };
@@ -107,9 +108,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
         <ul className="flex flex-col gap-2.5 px-5 pt-3 lg:grid lg:grid-cols-2">
           {products.length === 0 && (
-            <li className="card flex flex-col gap-1 p-5">
-              <div className="text-lg font-bold">Пока нет товаров</div>
-              <p className="leading-relaxed text-muted">Добавьте первый товар: сфотографируйте его и укажите цену.</p>
+            <li className="lg:col-span-2">
+              <EmptyState
+                icon={<CameraIcon size={24} />}
+                title="Пока нет товаров"
+                description="Добавьте первый товар: сфотографируйте его и укажите цену."
+                action={<Link href="/dashboard/products/new" className="btn-dark">Добавить товар вручную</Link>}
+              />
             </li>
           )}
           {products.map((p, index) => (

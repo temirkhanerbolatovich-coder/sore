@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { requireShop } from "@/lib/shop";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
@@ -5,6 +6,7 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { Field } from "@/components/field";
 import { applyOrderFilters, filterQuery, parseOrderFilters } from "@/lib/orders-query";
 import { StatusButton } from "./status-button";
+import { CartIcon } from "@/components/icons";
 
 export const metadata = { title: "Заказы — Sөre" };
 
@@ -85,11 +87,13 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       </form>
       <ul className="flex flex-col gap-3 px-5">
         {orders.length === 0 && (
-          <li className="card p-5">
-            <div className="text-lg font-bold">{filtered ? "Ничего не найдено" : "Пока нет заказов"}</div>
-            <p className="mt-1 leading-relaxed text-muted">
-              {filtered ? "Проверьте номер, имя или дату, либо сбросьте поиск." : "Отправьте ссылку на магазин клиентам или поставьте её в био Instagram."}
-            </p>
+          <li>
+            <EmptyState
+              icon={<CartIcon size={24} />}
+              title={filtered ? "Ничего не найдено" : "Пока нет заказов"}
+              description={filtered ? "Проверьте номер, имя или дату, либо сбросьте поиск." : "Отправьте ссылку на магазин клиентам или поставьте её в био Instagram."}
+              action={filtered ? undefined : <Link href="/dashboard" className="btn-outline">К ссылке магазина</Link>}
+            />
           </li>
         )}
         {orders.map((o) => {

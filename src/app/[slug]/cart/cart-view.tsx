@@ -12,6 +12,7 @@ import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
 import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { Toast } from "@/components/ui/toast";
 import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
@@ -29,11 +30,6 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   // Возврат удалённого: убранные позиции держим 8 секунд и даём кнопку «Вернуть».
   const [removed, setRemoved] = useState<StoredLine[]>([]);
-  useEffect(() => {
-    if (removed.length === 0) return;
-    const timer = setTimeout(() => setRemoved([]), 8000);
-    return () => clearTimeout(timer);
-  }, [removed]);
   function restore() {
     for (const line of removed) {
       add(shop.slug, { id: line.id, title: line.title, price: line.price, photo: line.photo, variantId: line.variantId ?? null, variantTitle: line.variantTitle ?? null });
@@ -42,12 +38,14 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     setRemoved([]);
   }
   const undoToast = removed.length > 0 && (
-    <div role="status" className="flex items-center justify-between gap-3 rounded-xl bg-ink px-4 py-2 text-sm text-cream">
-      <span>{t.removed}</span>
-      <button type="button" onClick={restore} className="min-h-11 px-2 font-bold underline">
-        {t.undo}
-      </button>
-    </div>
+    <Toast
+      message={t.removed}
+      closeLabel={t.close}
+      duration={8000}
+      bottomClassName="bottom-24 md:bottom-5"
+      onClose={() => setRemoved([])}
+      action={<button type="button" onClick={restore} className="min-h-11 px-2 font-bold underline">{t.undo}</button>}
+    />
   );
 
   const [name, setName] = useState("");
