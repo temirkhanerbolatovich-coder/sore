@@ -4,7 +4,8 @@ labels: ["area:bot"]
 body:
   - type: markdown
     attributes:
-      value: Перед началом прочитайте [docs/BOT_CONTRACT.md](https://github.com/temirkhanerbolatovich-coder/sore/blob/develop/docs/BOT_CONTRACT.md): какие таблицы, функции и маршруты уже есть.
+      value: >-
+        Перед началом прочитайте [docs/BOT_CONTRACT.md](https://github.com/temirkhanerbolatovich-coder/sore/blob/develop/docs/BOT_CONTRACT.md): какие таблицы, функции и маршруты уже есть.
   - type: textarea
     id: scenario
     attributes:
