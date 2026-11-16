@@ -3,7 +3,8 @@ import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
 import { T, description, parseLang, shopHref } from "@/lib/lang";
-import { formatPrice } from "@/lib/order";
+import { inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
+import { InquiryButton } from "@/components/inquiry-button";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getShopBySlug(slug);
   const product = data?.products.find((p) => p.id === id);
   if (!data || !product) return {};
-  const text = product.description_ru ?? `${formatPrice(product.price)} · ${data.shop.name}`;
+  const text = product.description_ru ?? `${priceLabel(product.price, product.price_mode)} · ${data.shop.name}`;
   return {
     title: `${product.title} — ${data.shop.name}`,
     description: text,
@@ -57,14 +58,26 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <div className="flex flex-col gap-3 px-5 pt-5">
         <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>
         <div className="flex items-center justify-between gap-3">
-          <div className="text-2xl font-extrabold">{formatPrice(product.price)}</div>
+          <div className="text-2xl font-extrabold">{priceLabel(product.price, product.price_mode, lang)}</div>
           <div className={`text-sm font-bold ${product.in_stock ? "text-wa" : "text-accent-dark"}`}>
             {product.in_stock ? t.inStock : t.out}
           </div>
         </div>
         {text && <p className="whitespace-pre-line text-[17px] leading-relaxed text-muted">{text}</p>}
         <div className="pt-2">
-          <AddToCart slug={shop.slug} product={product} lang={lang} />
+          {product.in_stock && isInquiry(product.price_mode) ? (
+            <div className="flex flex-col gap-2">
+              <InquiryButton
+                shopId={shop.id}
+                productId={product.id}
+                href={whatsappUrl(shop.whatsapp, inquiryText(product.title, product.price, product.price_mode, shop.name))}
+                label={t.ask}
+              />
+              <p className="text-center text-[13px] text-muted">{t.askHint}</p>
+            </div>
+          ) : (
+            <AddToCart slug={shop.slug} product={product} lang={lang} />
+          )}
         </div>
       </div>
 

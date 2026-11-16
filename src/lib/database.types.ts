@@ -85,14 +85,14 @@ isOneToOne: false
                   ]
                 },"products": {
                   Row: {
-                    "category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"shop_id": string,"sort": number,"title": string
+                    "category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"price_mode": string,"shop_id": string,"sort": number,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"shop_id": string,"sort"?: number,"title": string
+                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"shop_id": string,"sort"?: number,"title": string
                   }
                   Update: {
-                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"shop_id"?: string,"sort"?: number,"title"?: string
+                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"shop_id"?: string,"sort"?: number,"title"?: string
                   }
                   Relationships: [
                     {
@@ -133,6 +133,9 @@ isOneToOne: false
                            },
 "owns_shop":
 { Args: { "shop": string }; Returns: boolean
+                           },
+"record_inquiry":
+{ Args: { "p_client": string,"p_product": string,"p_shop": string }; Returns: undefined
                            },
 "record_view":
 { Args: { "p_client": string,"p_shop": string }; Returns: undefined

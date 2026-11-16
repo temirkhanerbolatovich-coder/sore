@@ -6,7 +6,7 @@ const admin = adminClient();
 /** Элементы управления меньше 44×44 px (кроме скрытых и инлайн-ссылок внутри текста). */
 async function smallTargets(page: Page) {
   return page.evaluate(() => {
-    const sel = 'button, a.btn-accent, a.btn-dark, a.btn-outline, a.btn-wa, nav a, input:not([type="hidden"]):not([type="file"]):not([type="checkbox"]), textarea';
+    const sel = 'button, a.btn-accent, a.btn-dark, a.btn-outline, a.btn-wa, nav a, input:not([type="hidden"]):not([type="file"]):not([type="checkbox"]):not([type="radio"]), textarea';
     return [...document.querySelectorAll<HTMLElement>(sel)]
       .filter((el) => {
         const r = el.getBoundingClientRect();

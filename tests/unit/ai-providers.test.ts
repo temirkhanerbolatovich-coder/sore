@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { aiConfigured, aiSteps, generateCard } from "@/lib/ai-providers";
-import { kzUsable } from "@/lib/ai-card";
+import { buildSystemPrompt, kzUsable } from "@/lib/ai-card";
 
 const card = { title: "Торт", description_ru: "Описание", description_kz: "Сипаттама", category: "Торты", tags: ["торт"] };
 const img = { base64: "AAAA", mime: "image/jpeg" };
@@ -128,4 +128,11 @@ it("если на фото не товар и оба описания пусты
   const result = await generateCard(img);
   expect(result.kzDropped).toBe(false);
   expect(result.card.title).toBe("Товар");
+});
+
+it("если единственная категория магазина не подходит, промпт разрешает выбрать из общего списка", () => {
+  const prompt = buildSystemPrompt(["Услуги"]);
+  expect(prompt).toContain("Услуги");
+  expect(prompt).toContain("Не подгоняй товар под неподходящую категорию");
+  expect(prompt).toContain("Торты");
 });

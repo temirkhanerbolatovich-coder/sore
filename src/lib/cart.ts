@@ -42,7 +42,7 @@ export const useCart = create<CartState>()(
         set((s) => {
           if (s.shopSlug !== slug) return s;
           const lines = s.lines.flatMap((line) => {
-            const product = products.find((p) => p.id === line.id && p.in_stock);
+            const product = products.find((p) => p.id === line.id && p.in_stock && p.price_mode === "fixed");
             if (!product) { changed = true; return []; }
             if (product.price !== line.price || product.title !== line.title) changed = true;
             return [{ ...line, price: product.price, title: product.title, photo: product.photo_url }];

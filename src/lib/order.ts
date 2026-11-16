@@ -48,3 +48,27 @@ export function buildOrderText(o: OrderInput): string {
 export function whatsappUrl(phone: string, text: string): string {
   return `https://wa.me/${normalizePhone(phone)}?text=${encodeURIComponent(text)}`;
 }
+
+export type PriceMode = "fixed" | "from" | "request";
+
+export function asPriceMode(value: string | null | undefined): PriceMode {
+  return value === "from" || value === "request" ? value : "fixed";
+}
+
+/** Позиции «от» и «по запросу» не кладутся в корзину: клиент пишет продавцу. */
+export const isInquiry = (mode: string | null | undefined) => asPriceMode(mode) !== "fixed";
+
+/** 15000 + «from» → «от 15 000 ₸»; «request» → «Цена по запросу». */
+export function priceLabel(price: number, mode: string | null | undefined, lang: "ru" | "kz" = "ru"): string {
+  const m = asPriceMode(mode);
+  if (m === "request") return lang === "kz" ? "Бағасы келісім бойынша" : "Цена по запросу";
+  if (m === "from") return lang === "kz" ? `${formatPrice(price)}-ден бастап` : `от ${formatPrice(price)}`;
+  return formatPrice(price);
+}
+
+/** Сообщение продавцу всегда на русском, даже если витрина на казахском. */
+export function inquiryText(title: string, price: number, mode: string | null | undefined, shopName: string): string {
+  const m = asPriceMode(mode);
+  const cost = m === "from" ? ` (${priceLabel(price, m)})` : "";
+  return `Здравствуйте! Пишу из магазина «${shopName}» в DukenAI. Интересует: ${title}${cost}. Подскажите, пожалуйста, детали и стоимость.`;
+}

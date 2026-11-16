@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
 import { T, parseLang, shopHref } from "@/lib/lang";
-import { formatPrice } from "@/lib/order";
+import { inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
+import { InquiryButton } from "@/components/inquiry-button";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
@@ -106,11 +107,20 @@ export default async function ShopPage({ params, searchParams }: Props) {
                   <ProductPhoto url={p.photo_url} alt={p.title} seed={i} className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`} />
                   <div className="flex flex-col gap-1 p-3 pb-2">
                     <div className="text-[15px] font-semibold leading-tight">{p.title}</div>
-                    <div className="text-base font-extrabold">{formatPrice(p.price)}</div>
+                    <div className="text-base font-extrabold">{priceLabel(p.price, p.price_mode, lang)}</div>
                   </div>
                 </Link>
                 <div className="mt-auto px-3 pb-3">
-                  <AddToCart slug={shop.slug} product={p} lang={lang} />
+                  {p.in_stock && isInquiry(p.price_mode) ? (
+                    <InquiryButton
+                      shopId={shop.id}
+                      productId={p.id}
+                      href={whatsappUrl(shop.whatsapp, inquiryText(p.title, p.price, p.price_mode, shop.name))}
+                      label={t.ask}
+                    />
+                  ) : (
+                    <AddToCart slug={shop.slug} product={p} lang={lang} />
+                  )}
                 </div>
               </li>
             ))}

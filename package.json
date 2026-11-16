@@ -12,7 +12,8 @@
     "test:rls": "supabase test db",
     "typecheck": "tsc --noEmit",
     "ai:check": "tsx scripts/ai-check.ts",
-    "ai:batch": "tsx scripts/ai-batch.ts"
+    "ai:batch": "tsx scripts/ai-batch.ts",
+    "seed:pilot": "tsx scripts/seed-pilot.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
@@ -36,6 +37,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "lighthouse": "^13.6.0",
+    "sharp": "^0.35.5",
     "supabase": "^3.1.0",
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",

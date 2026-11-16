@@ -17,7 +17,7 @@ const schema = z.object({
   description_ru: text(1000),
   description_kz: text(1000),
   category: text(60),
-  price: z.string().trim().min(1, "Укажите цену"),
+  price: z.string().trim(),
   photo_url: z.string().optional(),
 });
 
@@ -34,9 +34,15 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const d = parsed.data;
-  const price = /^\d+$/.test(d.price) ? Number(d.price) : NaN;
-  if (!Number.isInteger(price) || price <= 0 || price > 100_000_000) {
-    return { error: "Цена: целое число в тенге, например 12000" };
+  const rawMode = String(formData.get("price_mode") ?? "fixed");
+  const priceMode = rawMode === "from" || rawMode === "request" ? rawMode : "fixed";
+  // «По запросу»: цену не вводят (в базе 0). Для «точной» и «от» нужна положительная цена.
+  let price = 0;
+  if (priceMode !== "request") {
+    price = /^\d+$/.test(d.price) ? Number(d.price) : NaN;
+    if (!Number.isInteger(price) || price <= 0 || price > 100_000_000) {
+      return { error: "Цена: целое число в тенге, например 12000" };
+    }
   }
   const { supabase, shop, user } = await requireShop();
 
@@ -46,6 +52,7 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
     description_kz: d.description_kz || null,
     category: d.category || null,
     price,
+    price_mode: priceMode,
     photo_url: d.photo_url || null,
     in_stock: formData.get("in_stock") === "on",
   };

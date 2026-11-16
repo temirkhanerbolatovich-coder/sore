@@ -25,6 +25,9 @@ export function ProductForm({ product }: { product?: Product }) {
   const [descKz, setDescKz] = useState(product?.description_kz ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
   const [touched, setTouched] = useState(false);
+  const [priceMode, setPriceMode] = useState<"fixed" | "from" | "request">(
+    product?.price_mode === "from" || product?.price_mode === "request" ? product.price_mode : "fixed",
+  );
   const [aiBackup, setAiBackup] = useState<{ title: string; descRu: string; descKz: string; category: string } | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   useUnsavedGuard(touched && !pending);
@@ -205,21 +208,51 @@ export function ProductForm({ product }: { product?: Product }) {
             />
           </Field>
 
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="mb-1.5 text-sm font-semibold">Цена</legend>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  ["fixed", "Точная"],
+                  ["from", "От"],
+                  ["request", "По запросу"],
+                ] as const
+              ).map(([value, label]) => (
+                <label
+                  key={value}
+                  className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl text-sm font-bold has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink ${
+                    priceMode === value ? "bg-ink text-cream" : "border-[1.5px] border-field"
+                  }`}
+                >
+                  <input type="radio" name="price_mode" value={value} checked={priceMode === value} onChange={() => setPriceMode(value)} className="sr-only" />
+                  {label}
+                </label>
+              ))}
+            </div>
+            {priceMode !== "fixed" && (
+              <p className="text-[13px] leading-snug text-muted">
+                Такую позицию покупатель не добавляет в корзину: кнопка «Узнать цену» открывает ваш WhatsApp с готовым сообщением.
+              </p>
+            )}
+          </fieldset>
+
           <div className="grid grid-cols-2 gap-3">
             <Field label="Категория" htmlFor="category">
               <input id="category" name="category" maxLength={60} value={category} onChange={(e) => setCategory(e.target.value)} className="input" />
             </Field>
-            <Field label="Цена, ₸" htmlFor="price">
-              <input
-                id="price"
-                name="price"
-                required
-                inputMode="numeric"
-                placeholder="12000"
-                defaultValue={product?.price}
-                className="input"
-              />
-            </Field>
+            {priceMode !== "request" && (
+              <Field label={priceMode === "from" ? "Цена от, ₸" : "Цена, ₸"} htmlFor="price">
+                <input
+                  id="price"
+                  name="price"
+                  required
+                  inputMode="numeric"
+                  placeholder="12000"
+                  defaultValue={product && product.price > 0 ? product.price : undefined}
+                  className="input"
+                />
+              </Field>
+            )}
           </div>
 
           <label className="flex cursor-pointer items-center justify-between py-1 text-base font-semibold">

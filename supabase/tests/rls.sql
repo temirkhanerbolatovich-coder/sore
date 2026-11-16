@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(26);
+select plan(30);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -10,6 +10,9 @@ insert into public.products(id,shop_id,title,price,in_stock) values
 ('a0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000002','A',100,true),
 ('b0000000-0000-4000-8000-000000000003','b0000000-0000-4000-8000-000000000002','B',200,true),
 ('a0000000-0000-4000-8000-000000000004','a0000000-0000-4000-8000-000000000002','Sold out',100,false);
+insert into public.products(id,shop_id,title,price,price_mode) values
+('a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000002','Ask me',0,'request'),
+('a0000000-0000-4000-8000-000000000007','a0000000-0000-4000-8000-000000000002','From price',15000,'from');
 insert into public.ai_generations(shop_id) values('b0000000-0000-4000-8000-000000000002');
 set local role anon;
 select set_config('request.jwt.claim.sub','',true);
@@ -26,6 +29,8 @@ select throws_like($$select public.create_order('a0000000-0000-4000-8000-0000000
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77033333333','','')$$,'%items unavailable%','foreign product rejected');
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000004","qty":1}]','Buyer','77033333333','','')$$,'%items unavailable%','sold out rejected');
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','bad','','')$$,'%invalid phone%','bad phone rejected');
+select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000006","qty":1}]','Buyer','77033333333','','')$$,'%items unavailable%','price on request cannot be ordered');
+select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000007","qty":1}]','Buyer','77033333333','','')$$,'%items unavailable%','from-price item cannot be ordered');
 select throws_like($$insert into public.events(shop_id,type) values('a0000000-0000-4000-8000-000000000002','view')$$,'%row-level security%','direct events denied');
 reset role;
 select is((select total from public.orders where shop_id='b0000000-0000-4000-8000-000000000002'),400,'server computes total');
@@ -46,8 +51,10 @@ do $$begin for i in 1..20 loop perform public.record_view('a0000000-0000-4000-80
 select throws_like($$select public.record_view('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000005')$$,'%rate limit%','view quota enforced');
 do $$begin for i in 1..10 loop perform public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77044444444','',''); end loop; end $$;
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77044444444','','')$$,'%rate limit%','order quota enforced');
+select lives_ok($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000008')$$,'inquiry about a price-on-request item is recorded');
+select throws_like($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000008')$$,'%product unavailable%','inquiry rejected for a fixed-price item');
 reset role;
-insert into public.products(shop_id,title,price) select 'a0000000-0000-4000-8000-000000000002','Extra '||n,1 from generate_series(1,13) n;
+insert into public.products(shop_id,title,price) select 'a0000000-0000-4000-8000-000000000002','Extra '||n,1 from generate_series(1,11) n;
 select throws_like($$insert into public.products(shop_id,title,price) values('a0000000-0000-4000-8000-000000000002','Sixteenth',1)$$,'%free product limit%','SQL enforces 15 products');
 select * from finish();
 rollback;

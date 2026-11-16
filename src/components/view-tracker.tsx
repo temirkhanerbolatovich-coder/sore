@@ -18,7 +18,10 @@ export function ViewTracker({ shopId }: { shopId: string }) {
       client = localStorage.getItem("duken-client") || client;
       localStorage.setItem("duken-client", client);
     } catch { /* Storage may be disabled; the server still enforces the per-client quota. */ }
-    void createClient().rpc("record_view", { p_shop: shopId, p_client: client });
+    // Запрос Supabase выполняется только при .then(): простое `void` его не отправляло бы (просмотры всегда были 0).
+    createClient()
+      .rpc("record_view", { p_shop: shopId, p_client: client })
+      .then(() => undefined, () => undefined);
   }, [shopId]);
 
   return null;
