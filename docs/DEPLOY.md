@@ -75,3 +75,11 @@ src/proxy.ts обновляет сессию и перенаправляет г�
 Миграция `0010` включает расширение `pg_net`: оно нужно триггеру уведомлений о заказах. Триггер ничего не делает, пока `npm run telegram:setup` не сохранит в базе адрес уведомлений.
 
 Юридические страницы (`/terms`, `/privacy`) написаны как рабочий черновик на основе фактического поведения сервиса. Перед массовым запуском их стоит показать юристу.
+
+## Вход через Google: как настроено (16.11.2026)
+
+- Google Cloud, проект `dukenai`, клиент OAuth «DukenAI2» (Web). Origins: `https://dukenai.vercel.app`; redirect URI: `https://pcgvyxwueshxksoffodf.supabase.co/auth/v1/callback`.
+- Провайдер включён в Supabase через `config push` (`[remotes.production.auth.external.google]` в `supabase/config.toml`); Client ID и Secret подставляются из переменных `GOOGLE_CLIENT_ID` и `GOOGLE_CLIENT_SECRET` в момент push и в репозиторий не попадают. Кнопка включена `NEXT_PUBLIC_GOOGLE_LOGIN=1` в Vercel.
+- Приложение в режиме **Testing**: войти могут только Test users (Audience), до 100 человек. Опубликовать приложение Google не даёт, пока домен `*.vercel.app` не принадлежит вам: нужен свой домен (или подтверждение через Search Console).
+- Если вход ломается с `invalid_client`, секрет в Supabase не совпадает с действующим в Google. Google не показывает старые секреты: добавьте новый (Add secret → Download JSON), выполните `config push` с новыми `GOOGLE_*`, проверьте секрет запросом к `oauth2.googleapis.com/token` (ответ `invalid_grant` значит секрет верный, `invalid_client` неверный). Лимит Google: 2 секрета на клиент.
+
