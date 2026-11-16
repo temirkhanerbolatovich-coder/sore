@@ -3,10 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { aiConfigured, generateCard } from "@/lib/ai-providers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ownedPhotoPath, MAX_PHOTO_BYTES, PHOTO_TYPES } from "@/lib/photos";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { sendTelegram } from "@/lib/telegram";
 
 export const maxDuration = 60;
 
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status });
+
+async function notifyGlobalLimit(limit: number) {
+  const chat = process.env.ADMIN_TELEGRAM_CHAT_ID;
+  if (!chat || !process.env.TELEGRAM_BOT_TOKEN) return;
+  if (await checkRateLimit("ai-global-limit:alert", 86_400, 1) !== 200) return;
+  const sent = await sendTelegram(chat, `DukenAI: исчерпан общий лимит ИИ за 24 часа (${limit}).`);
+  if (!sent) console.error("AI quota alert delivery failed.");
+}
 
 export async function POST(request: Request) {
   if (!aiConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return fail(503, "ИИ пока не настроен. Заполните карточку вручную.");
@@ -29,23 +39,29 @@ export async function POST(request: Request) {
     return fail(400, "Выберите JPEG, PNG или WebP до 5 МБ из своих загруженных фото.");
   }
 
-  // Дневной лимит: считаем генерации за последние 24 часа.
+  // Число генераций магазина используется для подсказки об оставшейся квоте.
   const configuredLimit = Number(process.env.AI_DAILY_LIMIT ?? 20);
   const limit = Number.isInteger(configuredLimit) && configuredLimit > 0 && configuredLimit <= 1000 ? configuredLimit : 20;
+  const globalSetting = process.env.AI_GLOBAL_DAILY_LIMIT?.trim() ?? "";
+  const configuredGlobalLimit = Number(globalSetting);
+  const globalLimit = /^[1-9]\d*$/.test(globalSetting) && Number.isSafeInteger(configuredGlobalLimit) ? configuredGlobalLimit : 300;
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { count } = await supabase
     .from("ai_generations")
     .select("id", { count: "exact", head: true })
     .eq("shop_id", shop.id)
     .gte("created_at", since);
-  if ((count ?? 0) >= limit) {
+  // Под одной блокировкой БД проверяет обе квоты и резервирует попытку до обращения к провайдеру.
+  const admin = createAdminClient();
+  const { data: reserved, error: reserveError } = await admin.rpc("reserve_ai", { p_shop: shop.id, p_limit: limit, p_global_limit: globalLimit });
+  if (reserveError?.message === "ai global limit exceeded") {
+    await notifyGlobalLimit(globalLimit);
+    return fail(503, "ИИ сегодня перегружен, заполните карточку вручную.");
+  }
+  if (reserveError?.message === "ai limit exceeded") {
     return fail(429, `Лимит ИИ на сегодня исчерпан (${limit}). Заполните карточку вручную или попробуйте завтра.`);
   }
-
-  // Бронируем попытку до вызова, чтобы параллельные запросы не обошли лимит.
-  const admin = createAdminClient();
-  const { data: reserved, error: reserveError } = await admin.rpc("reserve_ai", { p_shop: shop.id, p_limit: limit });
-  if (reserveError) return fail(reserveError.message.includes("limit") ? 429 : 500, "Не удалось запустить ИИ: лимит исчерпан или сервис недоступен.");
+  if (reserveError || !reserved) return fail(500, "Не удалось запустить ИИ: сервис недоступен.");
 
   try {
     const bytes = Buffer.from(await photo.arrayBuffer());

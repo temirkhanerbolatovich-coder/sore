@@ -164,7 +164,7 @@ isOneToOne: true
 { Args: { "p_client": string,"p_shop": string }; Returns: undefined
                            },
 "reserve_ai":
-{ Args: { "p_limit": number,"p_shop": string }; Returns: string
+{ Args: { "p_global_limit"?: number,"p_limit": number,"p_shop": string }; Returns: string
                            },
 "set_notify_config":
 { Args: { "p_secret": string,"p_url": string }; Returns: undefined

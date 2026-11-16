@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(54);
+select plan(59);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -133,6 +133,20 @@ select results_eq(
   array['c0000000-0000-4000-8000-000000000004'], 'only AI usage older than 30 days is deleted');
 select is((select count(*)::integer from public.orders where
   shop_id = 'b0000000-0000-4000-8000-000000000002' and number = 1), 1, 'old orders are preserved');
+
+-- Общий предел учитывает попытки всех магазинов за последние 24 часа.
+select ok(not has_function_privilege('anon', 'public.reserve_ai(uuid,integer,bigint)', 'EXECUTE'), 'anonymous cannot reserve AI');
+select ok(not has_function_privilege('authenticated', 'public.reserve_ai(uuid,integer,bigint)', 'EXECUTE'), 'authenticated cannot reserve AI');
+set local role service_role;
+select set_config('dukenai.test_ai_limit', (
+  select (count(*) + 1)::text from public.ai_generations where created_at >= now() - interval '24 hours'
+), true);
+insert into public.ai_generations(shop_id, created_at)
+values ('a0000000-0000-4000-8000-000000000002', now() - interval '25 hours');
+select lives_ok($$select public.reserve_ai('a0000000-0000-4000-8000-000000000002',20,current_setting('dukenai.test_ai_limit')::bigint)$$, 'reservation ignores usage outside 24 hours');
+select throws_like($$select public.reserve_ai('b0000000-0000-4000-8000-000000000002',20,current_setting('dukenai.test_ai_limit')::bigint)$$, '%ai global limit exceeded%', 'reservations by different shops share a limit');
+select throws_like($$select public.reserve_ai('a0000000-0000-4000-8000-000000000002',1,current_setting('dukenai.test_ai_limit')::bigint + 1)$$, '%ai limit exceeded%', 'per-shop limit still applies');
+reset role;
 
 select * from finish();
 rollback;

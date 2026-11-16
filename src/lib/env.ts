@@ -19,6 +19,7 @@ export const serverEnvSchema = z.object({
   DEMO_SLUG: setting.optional(),
   CSP_ENFORCE: flag.optional(),
   AI_DAILY_LIMIT: positiveInteger.optional(),
+  AI_GLOBAL_DAILY_LIMIT: positiveInteger.optional(),
   AI_PROVIDERS: setting.optional(),
   AI_MODEL: setting.optional(),
   GEMINI_API_KEY: setting.optional(),
