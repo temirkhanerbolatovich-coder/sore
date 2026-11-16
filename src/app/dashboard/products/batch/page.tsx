@@ -3,7 +3,7 @@ import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 import { FormHeader } from "../product-form";
 import { BatchForm } from "./batch-form";
 
-export const metadata = { title: "Несколько фото — DukenAI" };
+export const metadata = { title: "Несколько фото — Sөre" };
 
 export default async function BatchPage() {
   const { supabase, shop } = await requireShop();

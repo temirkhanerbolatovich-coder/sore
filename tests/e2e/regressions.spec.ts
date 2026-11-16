@@ -67,9 +67,9 @@ test.describe("покупатель", () => {
       await expect(buyer.getByRole("heading", { name: "Тапсырыс қабылданды" })).toBeVisible();
       await expect(buyer.getByRole("link", { name: "WhatsApp ашу" })).toBeVisible();
       // Сообщение продавцу всегда на русском, даже если витрина на казахском.
-      expect(new URL(whatsapp).searchParams.get("text")).toContain("Здравствуйте! Заказ из DukenAI (№1)");
+      expect(new URL(whatsapp).searchParams.get("text")).toContain("Здравствуйте! Заказ из Sөre (№1)");
 
-      expect(JSON.parse((await buyer.evaluate(() => localStorage.getItem("duken-customer"))) || "{}")).toMatchObject({ name: "Айгерим", phone: "77015550011" });
+      expect(JSON.parse((await buyer.evaluate(() => localStorage.getItem("sore-customer"))) || "{}")).toMatchObject({ name: "Айгерим", phone: "77015550011" });
 
       // Новая покупка: контакты подставляются сами, кнопка «Өшіру» их стирает.
       await buyer.goto(`${base}/${slug}?lang=kz`);
@@ -78,7 +78,7 @@ test.describe("покупатель", () => {
       await expect(buyer.getByLabel("Аты", { exact: true })).toHaveValue("Айгерим");
       await buyer.getByRole("button", { name: "Сақталған ат пен телефонды өшіру" }).click();
       await expect(buyer.getByLabel("Аты", { exact: true })).toHaveValue("");
-      expect(await buyer.evaluate(() => localStorage.getItem("duken-customer"))).toBeNull();
+      expect(await buyer.evaluate(() => localStorage.getItem("sore-customer"))).toBeNull();
     } finally {
       await ctx.close();
       await cleanupUser(admin, email);

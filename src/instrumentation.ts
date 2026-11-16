@@ -3,7 +3,7 @@ import { invalidEnvironmentNames } from "@/lib/env";
 
 export function register() {
   const names = invalidEnvironmentNames(process.env);
-  if (names.length) console.warn(`[DukenAI] Не заданы или некорректны переменные окружения: ${names.join(", ")}`);
+  if (names.length) console.warn(`[Sore] Не заданы или некорректны переменные окружения: ${names.join(", ")}`);
 }
 
 /** Все необработанные ошибки сервера (страницы, действия, маршруты) попадают сюда и уходят владельцу в Telegram. */
