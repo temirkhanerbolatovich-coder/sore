@@ -65,14 +65,14 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "address": string | null,"comment": string | null,"created_at": string,"customer_name": string,"customer_phone": string,"id": string,"items": NonNullable<Json>,"needed_date": string | null,"needed_time": string | null,"number": number,"shop_id": string,"status": string,"total": number
+                    "address": string | null,"comment": string | null,"created_at": string,"customer_name": string,"customer_phone": string,"id": string,"items": NonNullable<Json>,"needed_date": string | null,"needed_time": string | null,"number": number,"public_code": string,"shop_id": string,"status": string,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name": string,"customer_phone": string,"id"?: string,"items": NonNullable<Json>,"needed_date"?: string | null,"needed_time"?: string | null,"number": number,"shop_id": string,"status"?: string,"total": number
+                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name": string,"customer_phone": string,"id"?: string,"items": NonNullable<Json>,"needed_date"?: string | null,"needed_time"?: string | null,"number": number,"public_code"?: string,"shop_id": string,"status"?: string,"total": number
                   }
                   Update: {
-                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name"?: string,"customer_phone"?: string,"id"?: string,"items"?: NonNullable<Json>,"needed_date"?: string | null,"needed_time"?: string | null,"number"?: number,"shop_id"?: string,"status"?: string,"total"?: number
+                    "address"?: string | null,"comment"?: string | null,"created_at"?: string,"customer_name"?: string,"customer_phone"?: string,"id"?: string,"items"?: NonNullable<Json>,"needed_date"?: string | null,"needed_time"?: string | null,"number"?: number,"public_code"?: string,"shop_id"?: string,"status"?: string,"total"?: number
                   }
                   Relationships: [
                     {
@@ -125,14 +125,14 @@ isOneToOne: true
                   ]
                 },"shops": {
                   Row: {
-                    "avatar_url": string | null,"city": string | null,"created_at": string,"id": string,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"whatsapp": string
+                    "about": string | null,"address": string | null,"avatar_url": string | null,"city": string | null,"created_at": string,"hours": string | null,"id": string,"instagram": string | null,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"whatsapp": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"id"?: string,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"whatsapp": string
+                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"whatsapp": string
                   }
                   Update: {
-                    "avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"id"?: string,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"whatsapp"?: string
+                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"whatsapp"?: string
                   }
                   Relationships: [
                     
@@ -145,7 +145,12 @@ isOneToOne: true
           Functions: {
             "create_order":
 { Args: { "p_address": string,"p_comment": string,"p_items": Json,"p_name": string,"p_needed_date"?: string,"p_needed_time"?: string,"p_phone": string,"p_shop": string }; Returns: {
-              "order_items": Json,"order_number": number,"order_total": number
+              "order_code": string,"order_items": Json,"order_number": number,"order_total": number
+            }[]
+                           },
+"get_order_status":
+{ Args: { "p_code": string }; Returns: {
+              "order_created_at": string,"order_items": Json,"order_needed_date": string,"order_needed_time": string,"order_number": number,"order_status": string,"order_total": number,"shop_name": string,"shop_slug": string,"shop_whatsapp": string
             }[]
                            },
 "move_product":

@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(59);
+select plan(75);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -146,6 +146,38 @@ values ('a0000000-0000-4000-8000-000000000002', now() - interval '25 hours');
 select lives_ok($$select public.reserve_ai('a0000000-0000-4000-8000-000000000002',20,current_setting('dukenai.test_ai_limit')::bigint)$$, 'reservation ignores usage outside 24 hours');
 select throws_like($$select public.reserve_ai('b0000000-0000-4000-8000-000000000002',20,current_setting('dukenai.test_ai_limit')::bigint)$$, '%ai global limit exceeded%', 'reservations by different shops share a limit');
 select throws_like($$select public.reserve_ai('a0000000-0000-4000-8000-000000000002',1,current_setting('dukenai.test_ai_limit')::bigint + 1)$$, '%ai limit exceeded%', 'per-shop limit still applies');
+reset role;
+
+-- «О магазине»: поля меняет только владелец, значения проверяются ограничениями базы.
+set local role authenticated;
+select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
+select lives_ok($$update public.shops set about='Печём торты', address='левый берег', hours='9:00–20:00', instagram='aliya.sweets' where id='a0000000-0000-4000-8000-000000000002'$$, 'owner updates shop info');
+select is((select instagram from public.shops where id='a0000000-0000-4000-8000-000000000002'), 'aliya.sweets', 'shop info is saved');
+select throws_like($$update public.shops set instagram='bad handle!' where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_instagram_check%', 'invalid Instagram handle rejected');
+select throws_like($$update public.shops set about=repeat('x',301) where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_about_check%', 'about over 300 characters rejected');
+select lives_ok($$update public.shops set about='hijack' where id='b0000000-0000-4000-8000-000000000002'$$, 'update of a foreign shop is silently ignored');
+reset role;
+select is((select about from public.shops where id='b0000000-0000-4000-8000-000000000002'), null, 'foreign shop info is unchanged');
+
+-- Статус заказа по коду: покупатель видит только безопасные поля.
+set local role anon;
+select set_config('request.jwt.claim.sub','',true);
+select is((select count(*)::integer from public.orders where public_code is not null), 0, 'anonymous cannot read order codes');
+select set_config('dukenai.status_code', (select order_code from public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Status Buyer','77055555556','','',(now() at time zone 'Asia/Almaty')::date + 30)), true);
+select is(length(current_setting('dukenai.status_code')), 20, 'create_order returns a 20-character order code');
+select is((select order_total from public.get_order_status(current_setting('dukenai.status_code'))), 200, 'status page shows the server total');
+select is((select order_status from public.get_order_status(current_setting('dukenai.status_code'))), 'new', 'new order has status new');
+select ok((select to_jsonb(s)::text from public.get_order_status(current_setting('dukenai.status_code')) s) not like '%77055555556%', 'status never contains the customer phone');
+select is((select count(*)::integer from public.get_order_status('not-a-code')), 0, 'malformed code returns nothing');
+select is((select count(*)::integer from public.get_order_status('0123456789abcdef0123')), 0, 'unknown code returns nothing');
+select throws_like($$select count(*) from (select public.get_order_status(lpad(i::text, 20, '0')) from generate_series(1, 150) i) s$$, '%rate limit exceeded%', 'guessing codes hits the shared limit');
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','b0000000-0000-4000-8000-000000000001',true);
+select lives_ok($$update public.orders set status='done' where public_code=current_setting('dukenai.status_code')$$, 'seller marks the order done');
+reset role;
+set local role anon;
+select is((select order_status from public.get_order_status(current_setting('dukenai.status_code'))), 'done', 'buyer sees the new status');
 reset role;
 
 select * from finish();

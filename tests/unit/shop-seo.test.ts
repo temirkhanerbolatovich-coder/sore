@@ -26,6 +26,18 @@ describe("метаданные витрины", () => {
     expect(JSON.parse(encoded)).toMatchObject({ "@type": "Store", description, address: { addressLocality: "Астана" } });
   });
 
+  it("добавляет адрес и Instagram магазина", () => {
+    const store = storeJsonLd(
+      { name: "Магазин", city: "Астана", whatsapp: "77010000000", avatar_url: null, address: "левый берег", instagram: "aliya.sweets" },
+      url,
+      "Описание",
+    );
+    expect(JSON.parse(serializeJsonLd(store))).toMatchObject({
+      address: { streetAddress: "левый берег", addressLocality: "Астана", addressCountry: "KZ" },
+      sameAs: ["https://www.instagram.com/aliya.sweets/"],
+    });
+  });
+
   it("публикует точную цену и наличие с абсолютным URL фото", () => {
     expect(productJsonLd(product, url, "Описание")).toMatchObject({
       "@type": "Product", image: "https://shop.example/demo/cake.svg",

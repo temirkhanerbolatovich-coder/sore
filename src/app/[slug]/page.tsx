@@ -13,12 +13,17 @@ import { ViewTracker } from "@/components/view-tracker";
 import { ShareButton } from "@/components/share-button";
 import { DocumentLanguage } from "@/components/document-language";
 import { publicAlternates, publicUrl, serializeJsonLd, shopTitle, storeJsonLd } from "@/lib/shop-seo";
+import { shopDescription } from "@/lib/shop-info";
+import { ShopAbout } from "@/components/shop-about";
+import { ProductFilter } from "@/components/product-filter";
 
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ lang?: string; cat?: string }>;
 };
 
+/** Поиск по витрине появляется, когда товаров столько, что листать неудобно. */
+const SEARCH_MIN_PRODUCTS = 8;
 const catalogDescription = (count: number) => `Каталог и заказ в WhatsApp: ${count} товаров`;
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
@@ -29,7 +34,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { shop, products } = data;
   const image = products.find((p) => p.photo_url)?.photo_url ?? undefined;
   const title = shopTitle(shop.name, shop.city);
-  const description = catalogDescription(products.length);
+  const description = shopDescription(shop, catalogDescription(products.length));
   return {
     title,
     description,
@@ -49,7 +54,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const { shop, products } = data;
 
   const base = `/${shop.slug}`;
-  const jsonLd = storeJsonLd(shop, publicUrl(shopHref(base, lang)), catalogDescription(products.length));
+  const jsonLd = storeJsonLd(shop, publicUrl(shopHref(base, lang)), shopDescription(shop, catalogDescription(products.length)));
   const categories = [...new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))];
   const activeCat = sp.cat && categories.includes(sp.cat) ? sp.cat : undefined;
   const visible = activeCat ? products.filter((p) => p.category === activeCat) : products;
@@ -108,12 +113,19 @@ export default async function ShopPage({ params, searchParams }: Props) {
         )}
       </header>
 
+      <ShopAbout shop={shop} lang={lang} />
+
       <section className="flex-1 px-4 pb-28 pt-4">
         {visible.length === 0 ? (
           <p className="card p-5 text-muted">{t.empty}</p>
         ) : (
-          <ul className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
-            {visible.map((p, i) => (
+          <ProductFilter
+            minItems={SEARCH_MIN_PRODUCTS}
+            labels={{ placeholder: t.search, empty: t.searchEmpty, reset: t.searchReset }}
+            items={visible.map((p, i) => ({
+              id: p.id,
+              text: [p.title, p.category, p.description_ru, p.description_kz].filter(Boolean).join(" ").toLocaleLowerCase("ru"),
+              node: (
               <li
                 key={p.id}
                 className="card flex flex-col overflow-hidden"
@@ -153,8 +165,9 @@ export default async function ShopPage({ params, searchParams }: Props) {
                   )}
                 </div>
               </li>
-            ))}
-          </ul>
+              ),
+            }))}
+          />
         )}
 
         <p className="mt-8 text-center text-[13px] text-muted">

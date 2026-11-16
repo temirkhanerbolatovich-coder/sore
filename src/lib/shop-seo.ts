@@ -1,5 +1,6 @@
 import { shopHref, type Lang } from "@/lib/lang";
 import { asPriceMode } from "@/lib/order";
+import { instagramUrl } from "@/lib/shop-info";
 import type { Product, Shop } from "@/lib/types";
 
 const schema = "https://schema.org";
@@ -27,7 +28,9 @@ function imageUrl(photo: string | null, base: string) {
   return ["http:", "https:"].includes(url.protocol) ? url.href : undefined;
 }
 
-export function storeJsonLd(shop: Pick<Shop, "name" | "city" | "whatsapp" | "avatar_url">, url: string, description: string) {
+type StoreFields = Pick<Shop, "name" | "city" | "whatsapp" | "avatar_url"> & Partial<Pick<Shop, "address" | "instagram">>;
+
+export function storeJsonLd(shop: StoreFields, url: string, description: string) {
   return {
     "@context": schema,
     "@type": "Store",
@@ -35,7 +38,10 @@ export function storeJsonLd(shop: Pick<Shop, "name" | "city" | "whatsapp" | "ava
     url,
     description,
     telephone: `+${shop.whatsapp}`,
-    address: shop.city ? { "@type": "PostalAddress", addressLocality: shop.city, addressCountry: "KZ" } : undefined,
+    address: shop.city || shop.address
+      ? { "@type": "PostalAddress", streetAddress: shop.address || undefined, addressLocality: shop.city || undefined, addressCountry: "KZ" }
+      : undefined,
+    sameAs: shop.instagram ? [instagramUrl(shop.instagram)] : undefined,
     image: imageUrl(shop.avatar_url, url),
   };
 }

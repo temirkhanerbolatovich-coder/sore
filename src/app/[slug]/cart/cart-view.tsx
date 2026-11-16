@@ -63,6 +63,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const [error, setError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
   const [sentNumber, setSentNumber] = useState<number | null>(null);
+  const [statusHref, setStatusHref] = useState("");
   const openedAt = useRef<number | null>(null);
 
   useEffect(() => {
@@ -123,8 +124,10 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     const serverLines: CartLine[] = (row.order_items as { id: string; title: string; price: number; qty: number }[]).map(
       (i) => ({ id: i.id, title: i.title, price: i.price, qty: i.qty }),
     );
+    const statusPath = `/o/${row.order_code}${lang === "kz" ? "?lang=kz" : ""}`;
     const text = buildOrderText({
       number: row.order_number,
+      statusUrl: `${window.location.origin}${statusPath}`,
       lines: serverLines,
       name: name.trim(),
       delivery,
@@ -138,6 +141,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     try { localStorage.setItem("duken-customer", JSON.stringify({ name: name.trim(), phone: digits })); } catch { /* Optional storage. */ }
     clear();
     setSentNumber(Number(row.order_number));
+    setStatusHref(statusPath);
     setSentUrl(url);
     window.location.href = url;
     } catch { setError(t.orderError); } finally { setSending(false); }
@@ -159,6 +163,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
         <a href={sentUrl} className="btn-wa h-14 w-full text-lg">
           {t.openWa}
         </a>
+        {statusHref && (
+          <Link href={statusHref} className="btn-outline h-12 w-full">
+            {t.trackOrder}
+          </Link>
+        )}
         <Link href={backHref} className="btn-outline h-12 w-full">
           {t.newOrder}
         </Link>

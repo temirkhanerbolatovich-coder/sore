@@ -9,6 +9,8 @@ export type OrderInput = {
   comment?: string;
   neededDate?: string | null;
   neededTime?: string | null;
+  /** Ссылка покупателя на статус заказа (остаётся у него в переписке с продавцом). */
+  statusUrl?: string;
 };
 
 const nf = new Intl.NumberFormat("ru-RU");
@@ -45,6 +47,7 @@ export function buildOrderText(o: OrderInput): string {
   ];
   if (o.neededDate) parts.push(`Когда: ${formatNeeded(o.neededDate, o.neededTime)}`);
   if (o.comment) parts.push(`Комментарий: ${o.comment}`);
+  if (o.statusUrl) parts.push("", `Статус заказа: ${o.statusUrl}`);
   return parts.join("\n");
 }
 
@@ -77,10 +80,10 @@ export function inquiryText(title: string, price: number, mode: string | null | 
 }
 
 /** «2026-11-20» + «18:00» → «20 ноября, 18:00» (дата без часового пояса). */
-export function formatNeeded(date: string, time?: string | null): string {
+export function formatNeeded(date: string, time?: string | null, lang: "ru" | "kz" = "ru"): string {
   const d = new Date(`${date}T00:00:00Z`);
   const day = Number.isNaN(d.getTime())
     ? date
-    : new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", timeZone: "UTC" }).format(d);
+    : new Intl.DateTimeFormat(lang === "kz" ? "kk-KZ" : "ru-RU", { day: "numeric", month: "long", timeZone: "UTC" }).format(d);
   return time ? `${day}, ${time}` : day;
 }

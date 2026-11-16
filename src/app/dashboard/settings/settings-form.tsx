@@ -42,7 +42,14 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
       <Field label="Город" htmlFor="city"><input id="city" name="city" className="input" maxLength={60} defaultValue={shop.city || ""} /></Field>
       <Field label="WhatsApp" htmlFor="whatsapp"><input id="whatsapp" name="whatsapp" type="tel" className="input" required defaultValue={shop.whatsapp} /></Field>
       <Field label="Предзаказ: за сколько дней принимать заказы (0 = в любой день)" htmlFor="lead_days"><input id="lead_days" name="lead_days" type="number" inputMode="numeric" min={0} max={60} className="input" defaultValue={shop.lead_days} /></Field>
-      <Field label="Адрес (не меняется)" htmlFor="slug"><input id="slug" className="input" readOnly value={shop.slug} /></Field>
+      <fieldset className="flex min-w-0 flex-col gap-4 rounded-2xl border border-line p-4">
+        <legend className="px-1 text-sm font-bold">О магазине (видно покупателям)</legend>
+        <Field label="Коротко о вас (до 300 символов)" htmlFor="about"><textarea id="about" name="about" className="input min-h-24 py-3" maxLength={300} rows={3} defaultValue={shop.about || ""} /></Field>
+        <Field label="Адрес или район" htmlFor="shop-address"><input id="shop-address" name="address" className="input" maxLength={120} placeholder="Астана, левый берег" defaultValue={shop.address || ""} /></Field>
+        <Field label="График работы" htmlFor="hours"><input id="hours" name="hours" className="input" maxLength={120} placeholder="Ежедневно 9:00–20:00" defaultValue={shop.hours || ""} /></Field>
+        <Field label="Instagram (ник или ссылка)" htmlFor="instagram"><input id="instagram" name="instagram" className="input" maxLength={120} autoCapitalize="none" autoCorrect="off" placeholder="@aliya.sweets" defaultValue={shop.instagram ? `@${shop.instagram}` : ""} /></Field>
+      </fieldset>
+      <Field label="Адрес ссылки (не меняется)" htmlFor="slug"><input id="slug" className="input" readOnly value={shop.slug} /></Field>
       <input type="hidden" name="avatar_url" value={avatar} />
       {avatar && <button type="button" className="min-h-11 self-start text-sm font-semibold text-accent-dark underline" onClick={() => { setAvatar(""); setDirtyFor(state); }}>Убрать фото магазина</button>}
       {avatar && <img src={avatar} alt="Фото магазина" width={96} height={96} className="size-24 rounded-full object-cover" /> /* eslint-disable-line @next/next/no-img-element */}

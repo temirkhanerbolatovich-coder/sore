@@ -6,6 +6,7 @@ import { normalizePhone } from "@/lib/order";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { ownedPhotoPath } from "@/lib/photos";
 import { invalidateShop } from "@/lib/shop-data";
+import { normalizeInstagram } from "@/lib/shop-info";
 
 export type SettingsState = { error?: string; success?: string };
 const schema = z.object({
@@ -13,14 +14,28 @@ const schema = z.object({
   whatsapp: z.string().transform(normalizePhone).pipe(z.string().regex(/^\d{10,15}$/)),
   avatar_url: z.string().max(2000),
   lead_days: z.coerce.number().int().min(0).max(60),
+  about: z.string().trim().max(300).default(""),
+  address: z.string().trim().max(120).default(""),
+  hours: z.string().trim().max(120).default(""),
+  instagram: z.string().trim().max(120).default(""),
 });
 export async function saveSettings(_prev: SettingsState, form: FormData): Promise<SettingsState> {
   const parsed = schema.safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { error: "Проверьте название (2–60 символов), город и номер WhatsApp." };
+  if (!parsed.success) return { error: "Проверьте название (2–60 символов), город, номер WhatsApp и длину текстов «О магазине»." };
   const { supabase, user, shop } = await requireShop();
   const d = parsed.data;
+  const instagram = normalizeInstagram(d.instagram);
+  if (d.instagram && !instagram) return { error: "Instagram: укажите ник (латиница, цифры, точка, подчёркивание) или ссылку на профиль." };
   if (d.avatar_url && !ownedPhotoPath(d.avatar_url, user.id)) return { error: "Загрузите своё фото магазина." };
-  const { error } = await supabase.from("shops").update({ ...d, city: d.city || null, avatar_url: d.avatar_url || null }).eq("id", shop.id);
+  const { error } = await supabase.from("shops").update({
+    ...d,
+    city: d.city || null,
+    avatar_url: d.avatar_url || null,
+    about: d.about || null,
+    address: d.address || null,
+    hours: d.hours || null,
+    instagram,
+  }).eq("id", shop.id);
   if (error) return { error: "Не удалось сохранить настройки." };
   invalidateShop(shop.slug);
   const old = ownedPhotoPath(shop.avatar_url, user.id);

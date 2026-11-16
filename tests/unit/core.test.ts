@@ -57,3 +57,16 @@ it("варианты одного товара лежат в корзине от
   expect(changed).toBe(true);
   expect(useCart.getState().lines.map((l) => [l.variantId, l.price])).toEqual([["k2", 25000]]);
 });
+
+describe("ссылка на статус заказа", () => {
+  const base = { number: 7, lines: [{ id: "a", title: "Торт", price: 1000, qty: 1 }], name: "Айгерим", delivery: "pickup" as const };
+
+  it("добавляется последней строкой, когда передана", () => {
+    const text = buildOrderText({ ...base, statusUrl: "https://shop.example/o/0123456789abcdef0123" });
+    expect(text.split("\n").slice(-2)).toEqual(["", "Статус заказа: https://shop.example/o/0123456789abcdef0123"]);
+  });
+
+  it("не появляется без ссылки", () => {
+    expect(buildOrderText(base)).not.toContain("Статус заказа");
+  });
+});
