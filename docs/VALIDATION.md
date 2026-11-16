@@ -16,7 +16,8 @@
 | Lighthouse `/demo`, mobile | Performance 94, Accessibility 100, Best Practices 100, SEO 100 |
 | Lighthouse `/demo/cart`, mobile | Performance 100, Accessibility 100, Best Practices 100, SEO 63 (см. ниже) |
 | Нет горизонтального скролла и кнопок меньше 44 px на 360×640 и 390×844 | PASS (автотест `tests/e2e/layout.spec.ts`: кабинет, товары, заказы, настройки, витрина, корзина) |
-| Живые ИИ-провайдеры (Gemini, OpenRouter, Anthropic) | НЕ проверены, нет ключей; цепочка проверена unit-тестами с подменой `fetch`/SDK. Проверка ключей: `npm run ai:check -- фото.jpg` |
+| Gemini на живом ключе | PASS: `gemini-3.1-flash-lite` (~2 с), `gemini-3.5-flash-lite`, `gemini-3.6-flash` отвечают, русский и казахский текст разумный (проверено на иллюстрации торта, не на реальной фотографии); `gemini-2.5-*` дают 404 |
+| OpenRouter и Anthropic | НЕ проверены, нет ключей; цепочка проверена unit-тестами с подменой `fetch`/SDK. Проверка: `npm run ai:check -- фото.jpg` |
 | Vercel / облачный Supabase / DNS / SMTP | НЕ развёрнуты и НЕ проверены |
 | GitHub Actions | Workflow написан, удалённо НЕ запускался |
 

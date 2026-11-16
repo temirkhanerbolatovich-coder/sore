@@ -24,7 +24,7 @@ it("без ключей ИИ не настроен", () => {
 
 it("порядок по умолчанию: Gemini, затем OpenRouter; отдельные ключи включают только свои шаги", () => {
   expect(aiSteps().map((s) => s.label)).toEqual([
-    "gemini:gemini-2.5-flash", "gemini:gemini-3.5-flash-lite",
+    "gemini:gemini-3.1-flash-lite", "gemini:gemini-3.5-flash-lite", "gemini:gemini-3.6-flash",
     "openrouter:google/gemma-4-31b-it:free", "openrouter:nvidia/nemotron-3.5-super-vl:free", "openrouter:openrouter/free",
   ]);
   vi.stubEnv("GEMINI_API_KEY", "");
@@ -40,7 +40,7 @@ it("Gemini получает фото в inline_data и ключ в заголо�
   const fetchMock = vi.fn().mockImplementation(() => reply(200, geminiOk));
   vi.stubGlobal("fetch", fetchMock);
   const result = await generateCard(img);
-  expect(result.provider).toBe("gemini:gemini-2.5-flash");
+  expect(result.provider).toBe("gemini:gemini-3.1-flash-lite");
   expect(result.card.title).toBe("Торт");
   const [url, init] = fetchMock.mock.calls[0];
   expect(String(url)).not.toContain("g-key");
@@ -52,12 +52,13 @@ it("при лимите 429 у Gemini переходит к следующей �
   const fetchMock = vi.fn()
     .mockImplementationOnce(() => reply(429))
     .mockImplementationOnce(() => reply(503))
+    .mockImplementationOnce(() => reply(503))
     .mockImplementationOnce(() => reply(200, routerOk("```json\n" + JSON.stringify(card) + "\n```")));
   vi.stubGlobal("fetch", fetchMock);
   const result = await generateCard(img);
   expect(result.provider).toBe("openrouter:google/gemma-4-31b-it:free");
-  expect(fetchMock).toHaveBeenCalledTimes(3);
-  const body = JSON.parse(fetchMock.mock.calls[2][1].body);
+  expect(fetchMock).toHaveBeenCalledTimes(4);
+  const body = JSON.parse(fetchMock.mock.calls[3][1].body);
   expect(body.messages[1].content[1].image_url.url).toBe("data:image/jpeg;base64,AAAA");
 });
 
@@ -72,5 +73,5 @@ it("нечитаемый ответ считается неудачей и це�
 
 it("если не ответил никто, бросает ошибку со списком причин", async () => {
   vi.stubGlobal("fetch", vi.fn().mockImplementation(() => reply(500)));
-  await expect(generateCard(img)).rejects.toThrow(/gemini:gemini-2.5-flash: HTTP 500.*openrouter/);
+  await expect(generateCard(img)).rejects.toThrow(/gemini:gemini-3.1-flash-lite: HTTP 500.*openrouter/);
 });

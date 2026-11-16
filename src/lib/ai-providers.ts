@@ -7,7 +7,8 @@ import { AI_SYSTEM_PROMPT, parseCard, type AiCard } from "@/lib/ai-card";
  * при ошибке, лимите (429) или нечитаемом ответе берётся следующий.
  *
  * Бесплатные варианты (проверено 16.11.2026):
- * - Google Gemini API: ключ из AI Studio, модели gemini-2.5-flash / gemini-3.5-flash-lite бесплатны.
+ * - Google Gemini API: ключ из AI Studio. Живая проверка 16.11.2026: gemini-3.1-flash-lite (~2 с), gemini-3.5-flash-lite (~8 с),
+ *   gemini-3.6-flash (~10 с) отвечают; gemini-2.5-* дают 404, алиасы *-latest нестабильны (таймаут/503).
  *   Внимание: на бесплатном тарифе Google может использовать запросы для улучшения своих продуктов.
  * - OpenRouter: модели с суффиксом :free (gemma-4, nemotron-3.5-super-vl и др.), лимиты дневные и по минутам.
  */
@@ -37,7 +38,7 @@ async function postJson(url: string, headers: Record<string, string>, body: unkn
 function geminiSteps(): Step[] {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return [];
-  return list(process.env.GEMINI_MODELS, "gemini-2.5-flash,gemini-3.5-flash-lite").map((model) => ({
+  return list(process.env.GEMINI_MODELS, "gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.6-flash").map((model) => ({
     label: `gemini:${model}`,
     run: async (img) => {
       const json = (await postJson(
