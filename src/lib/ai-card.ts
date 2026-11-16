@@ -3,15 +3,20 @@ import { z } from "zod";
 const DEFAULT_CATEGORIES =
   "Торты, Пироги и выпечка, Печенье и кексы, Десерты, Закуски и салаты, Горячие блюда, Полуфабрикаты, Цветы, Хендмейд, Одежда, Косметика, Услуги, Другое";
 
+/** Правило выбора категории: сначала свои категории магазина, потом общий список. */
+export function categoryRuleFor(categories: string[], defaults: string): string {
+  const own = categories.map((c) => c.trim()).filter(Boolean).slice(0, 20);
+  return own.length
+    ? `выбери ОДНУ подходящую по смыслу. Сначала смотри категории этого магазина: ${own.join(", ")}. Если ни одна из них не подходит по смыслу (например, магазин «Услуги», а на фото торт), выбери из общего списка: ${defaults}. Не подгоняй товар под неподходящую категорию.`
+    : `выбери одну из: ${defaults}.`;
+}
+
 /**
  * Системный промпт карточки. categories: уже существующие категории магазина, чтобы ИИ не плодил новые
  * («Выпечка», «Пироги», «Торты и пироги» для однотипных товаров).
  */
 export function buildSystemPrompt(categories: string[] = []): string {
-  const own = categories.map((c) => c.trim()).filter(Boolean).slice(0, 20);
-  const categoryRule = own.length
-    ? `выбери ОДНУ подходящую по смыслу. Сначала смотри категории этого магазина: ${own.join(", ")}. Если ни одна из них не подходит по смыслу (например, магазин «Услуги», а на фото торт), выбери из общего списка: ${DEFAULT_CATEGORIES}. Не подгоняй товар под неподходящую категорию.`
-    : `выбери одну из: ${DEFAULT_CATEGORIES}.`;
+  const categoryRule = categoryRuleFor(categories, DEFAULT_CATEGORIES);
   return `Ты помогаешь продавцу из Казахстана оформить карточку товара по фото.
 Верни ТОЛЬКО JSON без пояснений и без markdown, ровно с такими полями:
 {"title": string, "description_ru": string, "description_kz": string, "category": string, "tags": string[]}

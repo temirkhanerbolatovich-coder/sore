@@ -7,6 +7,7 @@ import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { ownedPhotoPath } from "@/lib/photos";
 import { invalidateShop } from "@/lib/shop-data";
 import { normalizeInstagram } from "@/lib/shop-info";
+import { normalizeTelegramUsername } from "@/lib/telegram-username";
 
 export type SettingsState = { error?: string; success?: string };
 const schema = z.object({
@@ -18,6 +19,7 @@ const schema = z.object({
   address: z.string().trim().max(120).default(""),
   hours: z.string().trim().max(120).default(""),
   instagram: z.string().trim().max(120).default(""),
+  telegram: z.string().trim().max(120).default(""),
 });
 export async function saveSettings(_prev: SettingsState, form: FormData): Promise<SettingsState> {
   const parsed = schema.safeParse(Object.fromEntries(form));
@@ -26,15 +28,20 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
   const d = parsed.data;
   const instagram = normalizeInstagram(d.instagram);
   if (d.instagram && !instagram) return { error: "Instagram: укажите ник (латиница, цифры, точка, подчёркивание) или ссылку на профиль." };
+  const telegram = normalizeTelegramUsername(d.telegram);
+  if (d.telegram && !telegram) return { error: "Telegram: укажите ник (5–32 символа: латиница, цифры, подчёркивание) или ссылку вида t.me/ник." };
   if (d.avatar_url && !ownedPhotoPath(d.avatar_url, user.id)) return { error: "Загрузите своё фото магазина." };
+  const { telegram: _telegram, ...rest } = d;
+  void _telegram;
   const { error } = await supabase.from("shops").update({
-    ...d,
+    ...rest,
     city: d.city || null,
     avatar_url: d.avatar_url || null,
     about: d.about || null,
     address: d.address || null,
     hours: d.hours || null,
     instagram,
+    telegram_username: telegram,
   }).eq("id", shop.id);
   if (error) return { error: "Не удалось сохранить настройки." };
   invalidateShop(shop.slug);

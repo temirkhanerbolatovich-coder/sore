@@ -20,6 +20,11 @@
   --ok-line: #b7dcc3;
   --ok-ink: #1d4d31;
   --thumb: #f3d9c4; /* заглушка вместо фото */
+  --thumb-2: #e8d5e6;
+  --thumb-3: #d9e6d0;
+  --thumb-4: #f6e3a8;
+  --thumb-5: #d6e4f0;
+  --thumb-6: #f0d2c0;
   --switch-off: #8a7b6e;
   --shine: rgb(255 255 255 / 0.38);
 
@@ -47,6 +52,11 @@
   --ok-line: #2b5a3d;
   --ok-ink: #9ad9b0;
   --thumb: #3b2e23;
+  --thumb-2: #3b293a;
+  --thumb-3: #2d3a29;
+  --thumb-4: #3c3520;
+  --thumb-5: #293744;
+  --thumb-6: #3e2c24;
   --switch-off: #6d5f53;
   --shine: rgb(255 255 255 / 0.22);
 

@@ -5,6 +5,8 @@ import {
   ArrowLeft,
   Camera,
   Check,
+  Download,
+  FileSpreadsheet,
   ChevronLeft,
   MessageCircle,
   Minus,
@@ -20,6 +22,7 @@ import {
   Store,
   Sun,
   Trash2,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 
@@ -62,3 +65,6 @@ export const ShopIcon = iconFrom(Store, "bounce");
 export const BoxIcon = iconFrom(Package, "bounce");
 export const SunIcon = iconFrom(Sun, "spin");
 export const MoonIcon = iconFrom(Moon, "swing");
+export const FileIcon = iconFrom(FileSpreadsheet, "bounce");
+export const DownloadIcon = iconFrom(Download, "bounce");
+export const UploadIcon = iconFrom(Upload, "nudge");

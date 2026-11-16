@@ -1,6 +1,7 @@
 "use client";
 
 import { publicRpc } from "@/lib/public-rpc";
+import { WhatsAppIcon } from "@/components/icons";
 
 /**
  * «Узнать цену» для позиций «от» и «по запросу»: обычная ссылка на WhatsApp с готовым текстом
@@ -34,8 +35,9 @@ export function InquiryButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={record}
-      className="flex h-11 w-full items-center justify-center rounded-xl bg-wa px-3 text-sm font-bold text-on-accent"
+      className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-wa px-3 text-sm font-bold text-on-accent"
     >
+      <WhatsAppIcon size={18} />
       {label}
     </a>
   );

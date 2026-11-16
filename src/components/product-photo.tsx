@@ -1,7 +1,7 @@
 import { ThumbnailImage } from "@/components/thumbnail-image";
 import { thumbUrl } from "@/lib/photos";
 
-const TINTS = ["#f3d9c4", "#e8d5e6", "#d9e6d0", "#f6e3a8", "#d6e4f0", "#f0d2c0"];
+const TINTS = ["var(--thumb)", "var(--thumb-2)", "var(--thumb-3)", "var(--thumb-4)", "var(--thumb-5)", "var(--thumb-6)"];
 
 /** Фото товара или цветная заглушка с первой буквой названия, если фото нет. */
 export function ProductPhoto({
@@ -45,7 +45,7 @@ export function ProductPhoto({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt={alt} {...imageProps} />
       ) : letter && (
-        <span aria-hidden="true" className="select-none text-[clamp(1.5rem,32%,3.5rem)] font-extrabold leading-none text-ink/25">
+        <span aria-hidden="true" className="select-none text-[clamp(1.5rem,32%,3.5rem)] font-extrabold leading-none text-ink/70">
           {letter}
         </span>
       )}

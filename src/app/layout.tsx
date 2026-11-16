@@ -5,6 +5,7 @@ import "@fontsource/onest/700.css";
 import "@fontsource/onest/800.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ThemeInitializer } from "@/components/theme-toggle";
 import "./globals.css";
 import "./motion.css";
 
@@ -12,9 +13,9 @@ import "./motion.css";
 export const metadata: Metadata = {
   icons: { apple: "/apple-touch-icon.png" },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "Sөre — магазин-ссылка за 2 минуты",
+  title: "Sөre — ваша полка в интернете",
   description:
-    "Сфотографируйте товар, ИИ напишет карточку, а заказы придут в WhatsApp уже собранными.",
+    "Одно фото полки или прайс из Excel, карточки с помощью ИИ и витрина по ссылке с заказами в WhatsApp и Telegram.",
 };
 
 export const viewport: Viewport = {
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
+        <ThemeInitializer />
         {children}
         <Analytics />
         <SpeedInsights />

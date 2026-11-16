@@ -85,14 +85,14 @@ isOneToOne: false
                   ]
                 },"products": {
                   Row: {
-                    "category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"price_mode": string,"shop_id": string,"sort": number,"title": string,"variants": NonNullable<Json>
+                    "bbox": Json | null,"category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"price_mode": string,"price_needs_review": boolean,"shop_id": string,"sku": string | null,"sort": number,"source_photo_url": string | null,"title": string,"variants": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"shop_id": string,"sort"?: number,"title": string,"variants"?: NonNullable<Json>
+                    "bbox"?: Json | null,"category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"price_needs_review"?: boolean,"shop_id": string,"sku"?: string | null,"sort"?: number,"source_photo_url"?: string | null,"title": string,"variants"?: NonNullable<Json>
                   }
                   Update: {
-                    "category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"shop_id"?: string,"sort"?: number,"title"?: string,"variants"?: NonNullable<Json>
+                    "bbox"?: Json | null,"category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"price_needs_review"?: boolean,"shop_id"?: string,"sku"?: string | null,"sort"?: number,"source_photo_url"?: string | null,"title"?: string,"variants"?: NonNullable<Json>
                   }
                   Relationships: [
                     {
@@ -125,14 +125,14 @@ isOneToOne: true
                   ]
                 },"shops": {
                   Row: {
-                    "about": string | null,"address": string | null,"avatar_url": string | null,"city": string | null,"created_at": string,"hours": string | null,"id": string,"instagram": string | null,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"whatsapp": string
+                    "about": string | null,"address": string | null,"avatar_url": string | null,"city": string | null,"created_at": string,"hours": string | null,"id": string,"instagram": string | null,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"telegram_username": string | null,"whatsapp": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"whatsapp": string
+                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"telegram_username"?: string | null,"whatsapp": string
                   }
                   Update: {
-                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"whatsapp"?: string
+                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"telegram_username"?: string | null,"whatsapp"?: string
                   }
                   Relationships: [
                     
@@ -152,6 +152,9 @@ isOneToOne: true
 { Args: { "p_code": string }; Returns: {
               "order_created_at": string,"order_items": Json,"order_needed_date": string,"order_needed_time": string,"order_number": number,"order_status": string,"order_total": number,"shop_name": string,"shop_slug": string,"shop_whatsapp": string
             }[]
+                           },
+"import_products":
+{ Args: { "p_rows": Json,"p_shop": string }; Returns: Json
                            },
 "move_product":
 { Args: { "p_direction": number,"p_product": string,"p_shop": string }; Returns: undefined
@@ -173,6 +176,9 @@ isOneToOne: true
                            },
 "set_notify_config":
 { Args: { "p_secret": string,"p_url": string }; Returns: undefined
+                           },
+"valid_bbox":
+{ Args: { "b": Json }; Returns: boolean
                            },
 "valid_variants":
 { Args: { "v": Json }; Returns: boolean

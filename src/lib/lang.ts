@@ -10,6 +10,8 @@ export const T = {
   ru: {
     accepted: "Заказ принят",
     openWa: "Открыть WhatsApp",
+    writeTelegram: "Написать в Telegram",
+    tgCopied: "Текст заказа скопирован. Вставьте его в чат с продавцом.",
     waHelp: "Если WhatsApp не открылся сам, нажмите кнопку и отправьте сообщение продавцу.",
     emptyCart: "Корзина пуста",
     choose: "Выберите товары в магазине",
@@ -44,6 +46,7 @@ export const T = {
     add: "В корзину",
     out: "Нет в наличии",
     inStock: "В наличии",
+    onShelf: "Так товар выглядит на полке",
     cart: "Корзина",
     madeWith: "Сделано в",
     createOwn: "Создать свой магазин",
@@ -92,6 +95,8 @@ export const T = {
   kz: {
     accepted: "Тапсырыс қабылданды",
     openWa: "WhatsApp ашу",
+    writeTelegram: "Telegram-да жазу",
+    tgCopied: "Тапсырыс мәтіні көшірілді. Оны сатушымен чатқа қойыңыз.",
     waHelp: "WhatsApp ашылмаса, батырманы басып, сатушыға хабарлама жіберіңіз.",
     emptyCart: "Себет бос",
     choose: "Дүкеннен тауар таңдаңыз",
@@ -126,6 +131,7 @@ export const T = {
     add: "Себетке",
     out: "Қалмады",
     inStock: "Бар",
+    onShelf: "Тауар сөреде осылай көрінеді",
     cart: "Себет",
     madeWith: "Жасалған:",
     createOwn: "Өз дүкеніңізді ашу",
