@@ -4,6 +4,7 @@
 import { Bot, InputFile, type Api, type Context } from "grammy";
 import type { UserFromGetMe } from "grammy/types";
 import QRCode from "qrcode";
+import { botAvatarPng } from "@/lib/brand";
 import { catalogTemplateXlsx } from "@/lib/catalog-template";
 import { importCatalogFromBot, precheckCatalog } from "@/lib/bot/catalog";
 import { draftKeyboard, orderActionData, parseAction, type InlineKeyboard } from "@/lib/bot/drafts";
@@ -140,7 +141,8 @@ export function createSoreBot(token: string, options: SoreBotOptions = {}): Bot 
       );
       return;
     }
-    await ctx.reply(WELCOME_TEXT, { parse_mode: "HTML" });
+    // Приветствие с логотипом SÖRE (05 «Связь»); подпись к фото до 1024 символов, текст в неё укладывается.
+    await ctx.replyWithPhoto(new InputFile(await botAvatarPng(), "sore.png"), { caption: WELCOME_TEXT, parse_mode: "HTML" });
     const shop = await findLinkedShop(db, ctx.chat.id);
     if (shop) await sendShop(ctx, shop);
     else await ctx.reply(NOT_LINKED_TEXT, { reply_markup: cabinetButton("/dashboard/settings", "Открыть кабинет") });

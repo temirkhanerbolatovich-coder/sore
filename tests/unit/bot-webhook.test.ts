@@ -153,6 +153,11 @@ describe("webhook бота SÖRE", () => {
     expect(calls.find((c) => c.method === "answerCallbackQuery")?.body.text).toBe("Заказ №7 выполнен ✅");
   });
 
+  it("/start без кода присылает логотип с приветствием", async () => {
+    await send(msg("/start"));
+    expect(calls[0].method).toBe("sendPhoto");
+  });
+
   it("/shop присылает QR-код фото", async () => {
     db.linkedChat = 555;
     await send(msg("/shop"));

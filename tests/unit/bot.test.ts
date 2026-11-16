@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { asDraftPayload, draftKeyboard, draftToProduct, orderActionData, parseAction, type DraftItem } from "@/lib/bot/drafts";
 import { formatDraft, formatOrdersList, pluralProducts, renderProgressText } from "@/lib/bot/texts";
 import { buildOrderNotification } from "@/lib/telegram";
+import { WELCOME_TEXT } from "@/lib/bot/texts";
 
 const ID = "6f1c2c1e-1b7a-4c55-9d1e-2a3b4c5d6e7f";
 const box = { x1: 0.1, y1: 0.1, x2: 0.5, y2: 0.6 };
@@ -69,6 +70,10 @@ describe("черновик фото полки", () => {
 });
 
 describe("тексты бота", () => {
+  it("приветствие помещается в подпись к фото (1024 символа)", () => {
+    expect(WELCOME_TEXT.replace(/<[^>]+>/g, "").length).toBeLessThanOrEqual(1024);
+  });
+
   it("склоняет «товар» и рисует прогресс", () => {
     expect([1, 2, 5, 11, 21, 22].map(pluralProducts)).toEqual(["товар", "товара", "товаров", "товаров", "товар", "товара"]);
     expect(renderProgressText(1)).toContain("✅ Получил фото\n⏳ <b>ИИ ищет товары…</b>\n▫️ Вырезаю фото товаров");
