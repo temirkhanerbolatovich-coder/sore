@@ -425,3 +425,29 @@ enabled = true
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
 
+
+# Облачный проект (production): адреса возврата для входа по ссылке из письма.
+# Применяется командой `npx supabase config push --project-ref pcgvyxwueshxksoffodf`.
+[remotes.production]
+project_id = "pcgvyxwueshxksoffodf"
+
+[remotes.production.auth]
+site_url = "https://dukenai.vercel.app"
+additional_redirect_urls = ["https://dukenai.vercel.app/auth/callback"]
+
+# Остальные значения совпадают с тем, что уже стоит в облаке, чтобы push менял только адреса возврата,
+# а не ослаблял защиту (частота писем, подтверждение почты, MFA).
+[remotes.production.auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+[remotes.production.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.production.auth.sms]
+enable_confirmations = true
+
+[remotes.production.storage.vector]
+enabled = false
