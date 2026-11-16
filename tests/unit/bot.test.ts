@@ -3,6 +3,7 @@ import { asDraftPayload, draftKeyboard, draftToProduct, orderActionData, parseAc
 import { formatDraft, formatOrdersList, pluralProducts, renderProgressText } from "@/lib/bot/texts";
 import { buildOrderNotification } from "@/lib/telegram";
 import { WELCOME_TEXT } from "@/lib/bot/texts";
+import { staticBotInfo } from "@/lib/bot/sore-bot";
 
 const ID = "6f1c2c1e-1b7a-4c55-9d1e-2a3b4c5d6e7f";
 const box = { x1: 0.1, y1: 0.1, x2: 0.5, y2: 0.6 };
@@ -96,5 +97,13 @@ describe("тексты бота", () => {
       { kind: "order", orderId: ID, status: "cancelled" },
     ]);
     expect(buildOrderNotification({ ...order, id: undefined }, "Магазин", "https://sore.kz").actions).toEqual([]);
+  });
+});
+
+describe("данные бота без getMe", () => {
+  it("id из токена, а тестовый токен без id не ломает бота", () => {
+    expect(staticBotInfo("123456:ABC", "sore_kz_bot")).toMatchObject({ id: 123456, username: "sore_kz_bot", is_bot: true });
+    expect(staticBotInfo("e2e-token", "sore_e2e_bot")).toMatchObject({ id: 0, username: "sore_e2e_bot" });
+    expect(staticBotInfo("123456:ABC", "")).toBeUndefined();
   });
 });

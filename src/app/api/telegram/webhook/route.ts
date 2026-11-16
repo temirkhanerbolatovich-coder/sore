@@ -55,7 +55,10 @@ export async function POST(request: Request) {
   if (!(await firstDelivery(update.update_id))) return NextResponse.json({ ok: true, duplicate: true });
 
   try {
-    await getBot(token).handleUpdate(update);
+    const instance = getBot(token);
+    // Без TELEGRAM_BOT_USERNAME данных о боте нет: один раз спрашиваем их у Telegram (getMe).
+    if (!instance.isInited()) await instance.init();
+    await instance.handleUpdate(update);
   } catch (error) {
     console.error("[bot] handleUpdate failed:", error instanceof Error ? error.message : error);
   }

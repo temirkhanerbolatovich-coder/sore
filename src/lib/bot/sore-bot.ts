@@ -44,11 +44,14 @@ const runDetached = (task: () => Promise<void>) => {
 const command = (name: string) => new RegExp(`^/${name}(?:@\\w+)?(?:\\s+([\\s\\S]*))?$`, "i");
 const LINK_CODE = /^[A-Za-z0-9_-]{8,64}$/;
 
-/** Без getMe при каждом холодном старте: данные бота известны из настроек. */
-function staticBotInfo(token: string): UserFromGetMe | undefined {
-  const username = process.env.TELEGRAM_BOT_USERNAME;
-  const id = Number(token.split(":")[0]);
-  if (!username || !Number.isSafeInteger(id)) return undefined;
+/**
+ * Без getMe при каждом холодном старте: данные бота известны из настроек.
+ * id берётся из токена («123456:ABC…»); у тестового токена его нет, тогда 0 — боту он не нужен.
+ */
+export function staticBotInfo(token: string, username = process.env.TELEGRAM_BOT_USERNAME): UserFromGetMe | undefined {
+  if (!username) return undefined;
+  const prefix = token.split(":")[0];
+  const id = /^\d+$/.test(prefix) && Number.isSafeInteger(Number(prefix)) ? Number(prefix) : 0;
   return {
     id,
     is_bot: true,
