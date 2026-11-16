@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { useStatefulAction } from "@/lib/use-stateful-action";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { compressImage } from "@/lib/image";
-import { ownedPhotoPath } from "@/lib/photos";
+import { uploadProductPhoto } from "@/lib/image";
+import { ownedPhotoPath, thumbPath } from "@/lib/photos";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { saveBatch, type BatchState } from "./actions";
 
@@ -68,11 +68,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
         const target = created[index];
         try {
           if (!user) throw new Error("no user");
-          const blob = await compressImage(files[index]);
-          const path = `${user.id}/${crypto.randomUUID()}.jpg`;
-          const up = await supabase.storage.from("product-photos").upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
-          if (up.error) throw up.error;
-          const photoUrl = supabase.storage.from("product-photos").getPublicUrl(path).data.publicUrl;
+          const photoUrl = await uploadProductPhoto(supabase, user.id, files[index]);
           patch(target.id, { photoUrl });
 
           try {
@@ -107,8 +103,17 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
 
   async function remove(item: Item) {
     setItems((list) => list.filter((i) => i.id !== item.id));
-    const path = item.photoUrl ? ownedPhotoPath(item.photoUrl, (await createClient().auth.getUser()).data.user?.id ?? "") : null;
-    if (path) void createClient().storage.from("product-photos").remove([path]).then(() => undefined, () => undefined);
+    if (!item.photoUrl) return;
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      const path = user && ownedPhotoPath(item.photoUrl, user.id);
+      if (!path) throw new Error("photo ownership unavailable");
+      const { error } = await supabase.storage.from("product-photos").remove([...new Set([path, thumbPath(path)])]);
+      if (error) throw error;
+    } catch {
+      setMessage("Карточка убрана, но фото не удалось удалить.");
+    }
   }
 
   const invalid = items.some((i) => !i.photoUrl || !i.title.trim() || (i.mode === "fixed" && !(Number(i.price) > 0)));
@@ -192,7 +197,8 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
                   type="button"
                   aria-label={`Убрать карточку ${index + 1}`}
                   onClick={() => void remove(item)}
-                  className="min-h-11 min-w-11 flex-none self-start rounded-xl text-xl font-bold text-muted"
+                  disabled={item.status === "working" && !item.photoUrl}
+                  className="min-h-11 min-w-11 flex-none self-start rounded-xl text-xl font-bold text-muted disabled:opacity-50"
                 >
                   ×
                 </button>

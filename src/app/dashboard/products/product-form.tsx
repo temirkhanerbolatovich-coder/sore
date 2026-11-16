@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useStatefulAction } from "@/lib/use-stateful-action";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { compressImage } from "@/lib/image";
+import { uploadProductPhoto } from "@/lib/image";
 import type { Product } from "@/lib/types";
 import { deleteProduct, saveProduct, type ProductState } from "./actions";
 
@@ -86,15 +86,7 @@ export function ProductForm({ product }: { product?: Product }) {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("no user");
 
-      const blob = await compressImage(file);
-      const path = `${user.id}/${crypto.randomUUID()}.jpg`;
-      const { error } = await supabase.storage
-        .from("product-photos")
-        .upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
-      if (error) throw error;
-
-      const { data } = supabase.storage.from("product-photos").getPublicUrl(path);
-      setPhotoUrl(data.publicUrl);
+      setPhotoUrl(await uploadProductPhoto(supabase, user.id, file));
       setTouched(true);
     } catch {
       setPhotoError("Не удалось загрузить фото. Попробуйте другое или проверьте интернет.");

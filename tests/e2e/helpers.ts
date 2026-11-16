@@ -48,8 +48,9 @@ export async function cleanupUser(admin: Admin, email: string) {
 }
 
 export async function storedFiles(admin: Admin, ownerId: string): Promise<string[]> {
-  const { data } = await admin.storage.from("product-photos").list(ownerId);
-  return (data ?? []).map((f) => f.name);
+  const { data, error } = await admin.storage.from("product-photos").list(ownerId);
+  if (error) throw new Error(`storage list: ${error.message}`);
+  return data.map((file) => file.name);
 }
 
 /** Вход продавца через настоящую форму magic link и локальную почту Mailpit. */

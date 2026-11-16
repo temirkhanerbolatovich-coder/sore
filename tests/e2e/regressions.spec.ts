@@ -109,29 +109,58 @@ test.describe("продавец", () => {
     }
   });
 
-  test("Storage очищается при замене фото и удалении товара", async ({ page, request }) => {
+  test("миниатюра на витрине и в кабинете, оригинал в карточке; Storage очищается при замене и удалении", async ({ page, request, browser }) => {
     const s = stamp();
     const email = `photo-${s}@example.test`;
-    const { ownerId } = await seedShop(admin, { email, slug: `photo-${s}` });
+    const slug = `photo-${s}`;
+    const { ownerId } = await seedShop(admin, { email, slug });
     try {
       await loginAs(page, request, email);
       await page.goto("/dashboard/products/new");
       await page.getByLabel("Название", { exact: true }).fill("Фото-товар");
       await page.getByLabel("Цена, ₸").fill("2500");
-      await page.locator('input[type="file"]').setInputFiles("public/icon-192.png");
-      await expect(page.getByAltText("Фото товара")).toBeVisible();
-      await page.getByRole("button", { name: "Сохранить товар" }).click();
-      await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
-      expect(await storedFiles(admin, ownerId)).toHaveLength(1);
-      const [first] = await storedFiles(admin, ownerId);
-
-      await page.getByRole("link", { name: /Фото-товар/ }).click();
       await page.locator('input[type="file"]').setInputFiles("public/icon-512.png");
       await expect(page.getByAltText("Фото товара")).toBeVisible();
       await page.getByRole("button", { name: "Сохранить товар" }).click();
       await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
-      await expect.poll(() => storedFiles(admin, ownerId)).toHaveLength(1);
-      expect(await storedFiles(admin, ownerId)).not.toContain(first);
+      const first = await storedFiles(admin, ownerId);
+      expect(first).toHaveLength(2);
+      const original = first.find((name) => !name.endsWith("_s.jpg"))!;
+      const thumbnail = original.replace(/\.jpg$/, "_s.jpg");
+      expect(first).toContain(thumbnail);
+      const storage = admin.storage.from("product-photos");
+      const originalUrl = storage.getPublicUrl(`${ownerId}/${original}`).data.publicUrl;
+      const thumbnailUrl = storage.getPublicUrl(`${ownerId}/${thumbnail}`).data.publicUrl;
+      await expect(page.getByRole("link", { name: /Фото-товар/ }).locator("img")).toHaveAttribute("src", thumbnailUrl);
+
+      await page.goto(`/${slug}`);
+      const tile = page.getByAltText("Фото-товар", { exact: true });
+      await expect(tile).toHaveAttribute("src", thumbnailUrl);
+      await expect(tile).toHaveAttribute("fetchpriority", "high");
+      await expect.poll(() => tile.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(480);
+      await page.getByRole("link", { name: /Фото-товар/ }).click();
+      await expect(page.getByAltText("Фото-товар", { exact: true })).toHaveAttribute("src", originalUrl);
+
+      const legacy = await browser.newPage({ baseURL: test.info().project.use.baseURL });
+      try {
+        await legacy.route(thumbnailUrl, (route) => route.fulfill({ status: 404 }));
+        await legacy.goto(`/${slug}`);
+        const photo = legacy.getByAltText("Фото-товар", { exact: true });
+        await expect(photo).toHaveAttribute("src", originalUrl);
+        await expect.poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(512);
+      } finally {
+        await legacy.close();
+      }
+
+      await page.goto("/dashboard");
+      await page.getByRole("link", { name: /Фото-товар/ }).click();
+      await page.locator('input[type="file"]').setInputFiles("public/icon-192.png");
+      await expect(page.getByAltText("Фото товара")).not.toHaveAttribute("src", originalUrl);
+      await page.getByRole("button", { name: "Сохранить товар" }).click();
+      await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
+      const replacement = await storedFiles(admin, ownerId);
+      expect(replacement).toHaveLength(2);
+      expect(replacement.filter((name) => first.includes(name))).toEqual([]);
 
       await page.getByRole("link", { name: /Фото-товар/ }).click();
       page.once("dialog", (d) => void d.accept());

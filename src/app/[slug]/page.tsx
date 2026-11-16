@@ -114,6 +114,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
                     url={p.photo_url}
                     alt={p.title}
                     seed={i}
+                    thumbnail
                     priority={i === firstPhoto}
                     eager={i < 4}
                     className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}

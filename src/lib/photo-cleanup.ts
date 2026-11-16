@@ -1,16 +1,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ownedPhotoPath } from "@/lib/photos";
+import { ownedPhotoPath, thumbPath, thumbUrl } from "@/lib/photos";
 
 /** A file may be reused by another product/avatar. Delete only unreferenced owner files. */
 export async function removeUnusedPhoto(supabase: SupabaseClient, url: string | null | undefined, owner: string) {
   const path = ownedPhotoPath(url, owner);
   if (!path || !url) return;
+  const smallPath = thumbPath(path);
+  const smallUrl = thumbUrl(url);
+  const urls = [...new Set([url, smallUrl])];
   const [products, shops] = await Promise.all([
-    supabase.from("products").select("id", { count: "exact", head: true }).eq("photo_url", url),
-    supabase.from("shops").select("id", { count: "exact", head: true }).eq("avatar_url", url),
+    supabase.from("products").select("photo_url").in("photo_url", urls),
+    supabase.from("shops").select("avatar_url").in("avatar_url", urls),
   ]);
   if (products.error || shops.error) throw new Error("Не удалось проверить использование фото");
-  if (products.count || shops.count) return;
-  const { error } = await supabase.storage.from("product-photos").remove([path]);
+
+  const used = new Set([...products.data.map((product) => product.photo_url), ...shops.data.map((shop) => shop.avatar_url)]);
+  if (used.has(url)) return;
+  const paths = smallPath !== path && !used.has(smallUrl) ? [path, smallPath] : [path];
+  const { error } = await supabase.storage.from("product-photos").remove(paths);
   if (error) throw new Error("Не удалось удалить старое фото");
 }

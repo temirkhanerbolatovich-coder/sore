@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { adminClient, cleanupUser, loginAs, seedShop } from "./helpers";
+import { adminClient, cleanupUser, loginAs, seedShop, storedFiles } from "./helpers";
 import { ADMIN_CHAT, NOTIFY_SECRET, TELEGRAM_MOCK_PORT, WEBHOOK_SECRET, startTelegramMock } from "./telegram-mock";
 
 const admin = adminClient();
@@ -214,6 +214,17 @@ test("удаление магазина и аккаунта: нужно ввес
   const { ownerId, shopId } = await seedShop(admin, { email, slug, products: [{ title: "Удалится", price: 1000 }] });
   try {
     await loginAs(page, request, email);
+    await page.goto("/dashboard/products/new");
+    await page.getByLabel("Название", { exact: true }).fill("Фото при удалении аккаунта");
+    await page.getByLabel("Цена, ₸").fill("2500");
+    await page.locator('input[type="file"]').setInputFiles("public/icon-192.png");
+    await expect(page.getByAltText("Фото товара")).toBeVisible();
+    await page.getByRole("button", { name: "Сохранить товар" }).click();
+    await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
+    const photos = await storedFiles(admin, ownerId);
+    expect(photos).toHaveLength(2);
+    expect(photos.some((name) => name.endsWith("_s.jpg"))).toBe(true);
+
     await page.goto("/dashboard/settings");
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: "Удалить магазин и аккаунт" }).click();
@@ -228,6 +239,7 @@ test("удаление магазина и аккаунта: нужно ввес
     expect((await admin.from("shops").select("id").eq("id", shopId).maybeSingle()).data).toBeNull();
     expect((await admin.from("products").select("id").eq("shop_id", shopId)).data).toHaveLength(0);
     expect((await admin.auth.admin.getUserById(ownerId)).data.user).toBeNull();
+    expect(await storedFiles(admin, ownerId)).toEqual([]);
   } finally {
     await cleanupUser(admin, email);
   }

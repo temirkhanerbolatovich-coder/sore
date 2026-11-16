@@ -4,6 +4,7 @@ import { priceLabel } from "@/lib/order";
 import { variantsOf } from "@/lib/variants";
 import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
 import { ActionForm } from "@/components/action-form";
+import { ProductPhoto } from "@/components/product-photo";
 import { toggleStock, moveProduct } from "./products/actions";
 import { CopyLink } from "./copy-link";
 import { DashboardNav } from "@/components/dashboard-nav";
@@ -109,12 +110,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         {products.map((p) => (
           <li key={p.id} className="card flex items-center gap-3 p-2.5">
             <Link href={`/dashboard/products/${p.id}/edit`} className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="size-16 flex-none overflow-hidden rounded-xl bg-[#f3d9c4]">
-                {p.photo_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.photo_url} alt="" className="size-full object-cover" />
-                )}
-              </div>
+                <ProductPhoto url={p.photo_url} alt="" thumbnail className="size-16 flex-none rounded-xl" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-base font-semibold">{p.title}</div>
                 <div className="text-[15px] text-muted">{priceLabel(p.price, p.price_mode, "ru", variantsOf(p).length > 0)}</div>
