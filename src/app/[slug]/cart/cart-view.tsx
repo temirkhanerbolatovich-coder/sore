@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { publicRpc } from "@/lib/public-rpc";
 import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
@@ -11,6 +11,8 @@ import { ProductPhoto } from "@/components/product-photo";
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
+
+const MIN_ORDER_FORM_AGE_MS = 2000;
 
 type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; leadDays: number };
 
@@ -61,6 +63,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const [error, setError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
   const [sentNumber, setSentNumber] = useState<number | null>(null);
+  const openedAt = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (hydrated) openedAt.current = performance.now();
+  }, [hydrated, shop.slug]);
 
   useEffect(() => {
     // Hydration synchronizes the persisted browser cart and contact details with server data.
@@ -76,7 +83,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   const backHref = shopHref(`/${shop.slug}`, lang);
   const total = orderTotal(lines);
 
-  async function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -85,6 +92,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     if (delivery === "delivery" && !address.trim()) return setError(t.addressError);
     if (shop.leadDays > 0 && !neededDate) return setError(t.dateRequired);
     if (neededDate && neededDate < minDate) return setError(t.dateTooEarly);
+
+    if (new FormData(e.currentTarget).get("website")) return setError(t.orderError);
+    if (openedAt.current === null || performance.now() - openedAt.current < MIN_ORDER_FORM_AGE_MS) {
+      return setError(t.orderTooSoon);
+    }
 
     setSending(true);
     try {
@@ -222,6 +234,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             <Field label={t.phone} htmlFor="phone">
               <input id="phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="+7 701 123 45 67" value={phone} onChange={(e) => setPhone(e.target.value)} className="input" />
             </Field>
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden />
 
             <p className="text-sm text-muted">{t.savedHint}</p>
             <button type="button" className="min-h-11 text-sm underline" onClick={() => { try { localStorage.removeItem("duken-customer"); } catch {} setName(""); setPhone(""); }}>{t.clearDetails}</button>

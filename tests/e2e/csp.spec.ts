@@ -52,6 +52,7 @@ test("витрина, заказ, загрузка фото и кабинет р
     await page.waitForLoadState("networkidle");
 
     const buyer = await context.newPage();
+    await buyer.clock.install();
     await collectViolations(buyer, violations);
     await buyer.goto(`/${slug}`);
     await buyer.getByRole("link", { name: new RegExp(title) }).click();
@@ -64,6 +65,7 @@ test("витрина, заказ, загрузка фото и кабинет р
     await buyer.getByLabel("Адрес", { exact: true }).fill("ул. Абая 10");
     let order = "";
     await buyer.route("https://wa.me/**", (route) => { order = route.request().url(); return route.abort(); });
+    await buyer.clock.fastForward(2_000);
     await buyer.getByRole("button", { name: "Заказать в WhatsApp" }).click();
     await expect.poll(() => order).toContain("wa.me/77011234567");
     await buyer.waitForLoadState("networkidle");

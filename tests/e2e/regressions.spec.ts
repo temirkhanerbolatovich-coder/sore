@@ -50,6 +50,7 @@ test.describe("покупатель", () => {
     await seedShop(admin, { email, slug, products: [{ title: "Торт KZ", price: 4000 }] });
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const buyer = await ctx.newPage();
+    await buyer.clock.install();
     const base = test.info().project.use.baseURL;
     try {
       await buyer.goto(`${base}/${slug}?lang=kz`);
@@ -61,6 +62,7 @@ test.describe("покупатель", () => {
       // 204 оставляет страницу на месте (abort показал бы страницу ошибки браузера), так видно экран «Тапсырыс қабылданды».
       let whatsapp = "";
       await buyer.route("https://wa.me/**", (route) => { whatsapp = route.request().url(); return route.fulfill({ status: 204 }); });
+      await buyer.clock.fastForward(2_000);
       await buyer.getByRole("button", { name: "WhatsApp арқылы тапсырыс беру" }).click();
       await expect(buyer.getByRole("heading", { name: "Тапсырыс қабылданды" })).toBeVisible();
       await expect(buyer.getByRole("link", { name: "WhatsApp ашу" })).toBeVisible();

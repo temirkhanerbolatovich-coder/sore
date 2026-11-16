@@ -31,6 +31,7 @@ test("варианты по весу и дата заказа: от выбора
 
     // Покупатель: на карточке «Выбрать», на странице товара выбирает 2 кг.
     const buyer = await ctx.newPage();
+    await buyer.clock.install();
     const base = test.info().project.use.baseURL;
     await buyer.goto(`${base}/${slug}`);
     await buyer.waitForLoadState("networkidle");
@@ -55,7 +56,15 @@ test("варианты по весу и дата заказа: от выбора
 
     await buyer.getByLabel("Когда нужно").fill(almatyDate(3));
     await buyer.getByLabel("Время").fill("18:00");
-    await buyer.getByRole("button", { name: "Заказать в WhatsApp" }).click();
+    await buyer.clock.fastForward(2_000);
+    const submit = buyer.getByRole("button", { name: "Заказать в WhatsApp" });
+    const honeypot = buyer.locator('input[name="website"]');
+    await honeypot.evaluate((input: HTMLInputElement) => { input.value = "spam"; });
+    await submit.click();
+    await expect(buyer.getByRole("alert")).toContainText("Не удалось оформить заказ");
+    expect(whatsapp).toBe("");
+    await honeypot.evaluate((input: HTMLInputElement) => { input.value = ""; });
+    await submit.click();
     await expect.poll(() => whatsapp).toContain("wa.me/77011234567");
     const text = decodeURIComponent(whatsapp.split("text=")[1]);
     expect(text).toContain("Торт Прага · 2 кг × 1 — 22 000 ₸");
@@ -144,6 +153,7 @@ test("Telegram: привязка по ссылке и уведомление о 
 
     // Покупатель оформляет заказ, продавцу приходит сообщение.
     const buyer = await ctx.newPage();
+    await buyer.clock.install();
     await buyer.goto(`${base}/${slug}`);
     await buyer.waitForLoadState("networkidle");
     await buyer.getByRole("button", { name: "В корзину", exact: true }).click();
@@ -152,6 +162,7 @@ test("Telegram: привязка по ссылке и уведомление о 
     await buyer.getByLabel("Телефон", { exact: true }).fill("87015550777");
     await buyer.getByLabel("Адрес", { exact: true }).fill("Самал-2, 14");
     await buyer.route("https://wa.me/**", (route) => route.fulfill({ status: 204 }));
+    await buyer.clock.fastForward(2_000);
     await buyer.getByRole("button", { name: "Заказать в WhatsApp" }).click();
 
     await expect.poll(() => mock.messages.find((m) => m.text.includes("Новый заказ")), { timeout: 30_000 }).toBeTruthy();

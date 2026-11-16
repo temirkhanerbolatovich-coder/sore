@@ -49,6 +49,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await expect(page.locator("canvas")).toBeVisible();
     const customer = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const buyer = await customer.newPage();
+    await buyer.clock.install();
     buyer.on("pageerror", (e) => errors.push(e.message));
     await buyer.goto(`${test.info().project.use.baseURL}/${slug}`);
     await buyer.getByRole("button", { name: "В корзину", exact: true }).click();
@@ -58,6 +59,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await buyer.getByLabel("Адрес", { exact: true }).fill("ул. Абая 10");
     let whatsapp = "";
     await buyer.route("https://wa.me/**", (route) => { whatsapp = route.request().url(); return route.abort(); });
+    await buyer.clock.fastForward(2_000);
     await buyer.getByRole("button", { name: "Заказать в WhatsApp" }).click();
     await expect.poll(() => whatsapp).toContain("wa.me/77011234567");
     expect(new URL(whatsapp).searchParams.get("text")).toContain("(№1)");

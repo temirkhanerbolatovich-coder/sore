@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(41);
+select plan(44);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -51,6 +51,16 @@ do $$begin for i in 1..20 loop perform public.record_view('a0000000-0000-4000-80
 select throws_like($$select public.record_view('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000005')$$,'%rate limit%','view quota enforced');
 do $$begin for i in 1..10 loop perform public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77044444444','',''); end loop; end $$;
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77044444444','','')$$,'%rate limit%','order quota enforced');
+select lives_ok($test$
+  do $body$ begin
+    for i in 1..20 loop
+      perform public.create_order('a0000000-0000-4000-8000-000000000002',
+        '[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]', 'Buyer', '7704000' || lpad(i::text, 4, '0'), '', '');
+    end loop;
+  end; $body$
+$test$, 'shop accepts 30 orders in the hour');
+select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000021','','')$$,'%rate limit exceeded%','shop rejects order 31 even with a fresh phone');
+select lives_ok($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000021','','')$$,'shop quota does not affect other shops');
 select lives_ok($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000008')$$,'inquiry about a price-on-request item is recorded');
 select throws_like($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000008')$$,'%product unavailable%','inquiry rejected for a fixed-price item');
 reset role;
