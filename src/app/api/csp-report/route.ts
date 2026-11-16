@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { reportError } from "@/lib/monitoring";
 import { readReportBody } from "@/lib/report-body";
+import { checkRateLimit, checkReportQuota, hashedRateKey } from "@/lib/rate-limit";
 
 const reportSchema = z.object({
   "csp-report": z.object({
@@ -13,9 +14,6 @@ const reportSchema = z.object({
 });
 
 const extensionUrl = /^(?:chrome-extension|moz-extension|safari-extension|safari-web-extension):\/\//i;
-const recent = new Map<string, number>();
-const DEDUP_WINDOW_MS = 60_000;
-const MAX_RECENT = 200;
 
 function sourceLabel(value = "") {
   if (URL.canParse(value)) {
@@ -32,6 +30,9 @@ export async function POST(request: Request) {
   const parsed = reportSchema.safeParse(body.data);
   if (!parsed.success) return new Response(null, { status: 400 });
 
+  const quota = await checkReportQuota(request);
+  if (quota !== 200) return new Response(null, { status: quota });
+
   const report = parsed.data["csp-report"];
   if ([report["blocked-uri"], report["source-file"], report["document-uri"]].some((uri) => extensionUrl.test(uri ?? ""))) {
     return new Response(null, { status: 204 });
@@ -43,15 +44,8 @@ export async function POST(request: Request) {
   // Full URLs and CSP samples may carry private data. Only forward the directive and origins.
   const message = `CSP ${directive}: ${sourceLabel(report["blocked-uri"])}`;
   const context = sourceLabel(report["document-uri"]);
-  const key = `${context}|${message}`;
-  const now = Date.now();
-  for (const [entry, expires] of recent) {
-    if (expires > now) break;
-    recent.delete(entry);
-  }
-  if (!recent.has(key) && recent.size < MAX_RECENT) {
-    recent.set(key, now + DEDUP_WINDOW_MS);
-    await reportError("client", message, context);
-  }
+  const dedup = await checkRateLimit(hashedRateKey("csp-violation", JSON.stringify([context, message])), 60, 1);
+  if (dedup === 503) return new Response(null, { status: dedup });
+  if (dedup === 200) await reportError("client", message, context);
   return new Response(null, { status: 204 });
 }

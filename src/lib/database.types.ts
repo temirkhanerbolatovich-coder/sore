@@ -154,6 +154,9 @@ isOneToOne: true
 "owns_shop":
 { Args: { "shop": string }; Returns: boolean
                            },
+"rate_limit_hit":
+{ Args: { "p_key": string,"p_limit": number,"p_seconds": number }; Returns: boolean
+                           },
 "record_inquiry":
 { Args: { "p_client": string,"p_product": string,"p_shop": string }; Returns: undefined
                            },

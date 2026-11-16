@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(44);
+select plan(49);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -89,6 +89,24 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
 select is((select count(*)::integer from public.shop_telegram),1,'owner sees only own Telegram link status');
+reset role;
+
+-- Открытые маршруты вызывают лимитер через service_role, обход через RPC запрещён.
+select ok(not exists (
+  select 1 from pg_proc p
+  cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
+  where p.oid = 'public.rate_limit_hit(text,integer,integer)'::regprocedure
+    and a.grantee = 0 and a.privilege_type = 'EXECUTE'
+), 'PUBLIC has no execute grant for rate limiter');
+set local role anon;
+select throws_like($$select public.rate_limit_hit('rls-report',60,1)$$,'%permission denied%','anonymous cannot use rate limiter');
+reset role;
+set local role authenticated;
+select throws_like($$select public.rate_limit_hit('rls-report',60,1)$$,'%permission denied%','authenticated cannot use rate limiter');
+reset role;
+set local role service_role;
+select is(public.rate_limit_hit('rls-report',60,1),true,'service role can start window');
+select is(public.rate_limit_hit('rls-report',60,1),false,'rate limiter returns false after allowance');
 reset role;
 select * from finish();
 rollback;

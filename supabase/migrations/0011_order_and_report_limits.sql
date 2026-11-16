@@ -61,3 +61,21 @@ begin
   insert into public.events(shop_id, type) values (p_shop, 'order_click');
   return query select v_number, v_total::integer, v_items;
 end $$;
+
+-- Единственная публичная точка доступа к приватному лимитеру для серверных маршрутов.
+create function public.rate_limit_hit(p_key text, p_seconds integer, p_limit integer) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if p_key is null or char_length(p_key) not between 1 and 200
+    or p_seconds is null or p_seconds not between 1 and 86400
+    or p_limit is null or p_limit <= 0 then
+    raise exception 'invalid rate limit arguments' using errcode = '22023';
+  end if;
+  perform private.consume_rate(p_key, p_seconds, p_limit);
+  return true;
+exception when raise_exception then
+  if sqlerrm <> 'rate limit exceeded' then raise; end if;
+  return false;
+end $$;
+revoke all on function public.rate_limit_hit(text, integer, integer) from public, anon, authenticated;
+grant execute on function public.rate_limit_hit(text, integer, integer) to service_role;
