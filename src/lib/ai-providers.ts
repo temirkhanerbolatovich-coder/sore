@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { AI_SYSTEM_PROMPT, kzUsable, parseCard, type AiCard } from "@/lib/ai-card";
+import { buildSystemPrompt, kzUsable, parseCard, type AiCard } from "@/lib/ai-card";
 
 /**
  * Цепочка ИИ-провайдеров для карточки товара по фото. Порядок задаёт AI_PROVIDERS
@@ -14,12 +14,15 @@ import { AI_SYSTEM_PROMPT, kzUsable, parseCard, type AiCard } from "@/lib/ai-car
  *   нужен max_tokens 4096), gemma-4-* временами дают 429 «rate-limited upstream», ling-3.2-flash слишком медленный (~60 с).
  */
 
-export type ImageInput = { base64: string; mime: string };
+/** categories: уже существующие категории магазина (для единообразия карточек). */
+export type ImageInput = { base64: string; mime: string; categories?: string[] };
 export type AiResult = { card: AiCard; provider: string; kzDropped: boolean };
 
 const STEP_TIMEOUT_MS = 25_000;
 /** Общий бюджет цепочки: маршрут живёт не дольше 60 с, поэтому после 50 с новые модели не запускаем. */
 const TOTAL_BUDGET_MS = 50_000;
+/** Если модель не ответила за 8 с, параллельно стартует следующая (у бесплатных моделей бывают хвосты 25+ с). */
+const HEDGE_MS = 8_000;
 const PROMPT = "Составь карточку товара по этому фото.";
 
 type Step = { label: string; run: (img: ImageInput, timeoutMs: number) => Promise<string> };
@@ -48,7 +51,7 @@ function geminiSteps(): Step[] {
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         { "x-goog-api-key": key },
         {
-          systemInstruction: { parts: [{ text: AI_SYSTEM_PROMPT }] },
+          systemInstruction: { parts: [{ text: buildSystemPrompt(img.categories) }] },
           contents: [{ role: "user", parts: [{ inline_data: { mime_type: img.mime, data: img.base64 } }, { text: PROMPT }] }],
           generationConfig: { responseMimeType: "application/json", temperature: 0.4, maxOutputTokens: 4096 },
         },
@@ -79,7 +82,7 @@ function openRouterSteps(): Step[] {
           max_tokens: 4096,
           temperature: 0.4,
           messages: [
-            { role: "system", content: AI_SYSTEM_PROMPT },
+            { role: "system", content: buildSystemPrompt(img.categories) },
             {
               role: "user",
               content: [
@@ -108,7 +111,7 @@ function anthropicSteps(): Step[] {
         const message = await client.messages.create({
           model: process.env.AI_MODEL ?? "claude-sonnet-5-5",
           max_tokens: 1024,
-          system: AI_SYSTEM_PROMPT,
+          system: buildSystemPrompt(img.categories),
           messages: [
             {
               role: "user",
@@ -134,27 +137,60 @@ export function aiSteps(): Step[] {
 
 export const aiConfigured = () => aiSteps().length > 0;
 
-/** Пробует провайдеров по очереди; бросает ошибку, только если не вышло ни у одного. */
-export async function generateCard(img: ImageInput): Promise<AiResult> {
+/**
+ * Запрашивает модели по цепочке и отдаёт первый разобранный ответ. Следующая модель стартует, когда предыдущая
+ * упала или молчит дольше HEDGE_MS, поэтому медленный ответ одной модели не растягивает ожидание продавца.
+ * Бросает ошибку, только если не получилось ни у одной.
+ */
+export function generateCard(img: ImageInput): Promise<AiResult> {
+  const steps = aiSteps();
+  if (steps.length === 0) return Promise.reject(new Error("no provider"));
+
   const started = Date.now();
-  const failures: string[] = [];
-  for (const step of aiSteps()) {
-    const remaining = TOTAL_BUDGET_MS - (Date.now() - started);
-    if (remaining < 4_000) {
-      failures.push(`${step.label}: не хватило времени`);
-      break;
-    }
-    try {
-      const card = parseCard(await step.run(img, Math.min(STEP_TIMEOUT_MS, remaining)));
-      if (card && card.title) {
-        // Слабая модель могла ответить «казахским» латиницей: лучше пустое поле, чем мусор.
-        const kzDropped = !kzUsable(card.description_kz);
-        return { card: kzDropped ? { ...card, description_kz: "" } : card, provider: step.label, kzDropped };
+  return new Promise<AiResult>((resolve, reject) => {
+    const failures: string[] = [];
+    let next = 0;
+    let pending = 0;
+    let settled = false;
+    let hedgeTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const launch = () => {
+      clearTimeout(hedgeTimer);
+      if (settled) return;
+      const remaining = TOTAL_BUDGET_MS - (Date.now() - started);
+      if (next >= steps.length || remaining < 4_000) {
+        if (next < steps.length) failures.push(`${steps[next].label}: не хватило времени`);
+        if (pending === 0) {
+          settled = true;
+          reject(new Error(failures.join("; ") || "no provider"));
+        }
+        return;
       }
-      failures.push(`${step.label}: нечитаемый ответ`);
-    } catch (e) {
-      failures.push(`${step.label}: ${e instanceof Error ? e.message : "ошибка"}`);
-    }
-  }
-  throw new Error(failures.join("; ") || "no provider");
+      const step = steps[next++];
+      pending++;
+      hedgeTimer = setTimeout(launch, HEDGE_MS);
+
+      step
+        .run(img, Math.min(STEP_TIMEOUT_MS, remaining))
+        .then((text) => {
+          const card = parseCard(text);
+          if (!card || !card.title) throw new Error("нечитаемый ответ");
+          if (settled) return;
+          settled = true;
+          clearTimeout(hedgeTimer);
+          // Слабая модель могла ответить «казахским» латиницей: лучше пустое поле, чем мусор.
+          const kzDropped = card.description_ru !== "" && !kzUsable(card.description_kz);
+          resolve({ card: kzDropped ? { ...card, description_kz: "" } : card, provider: step.label, kzDropped });
+        })
+        .catch((e) => {
+          failures.push(`${step.label}: ${e instanceof Error ? e.message : "ошибка"}`);
+        })
+        .finally(() => {
+          pending--;
+          if (!settled) launch(); // эта модель закончилась неудачей: сразу берём следующую
+        });
+    };
+
+    launch();
+  });
 }

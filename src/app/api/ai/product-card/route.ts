@@ -49,7 +49,15 @@ export async function POST(request: Request) {
 
   try {
     const bytes = Buffer.from(await photo.arrayBuffer());
-    const { card, provider, kzDropped } = await generateCard({ base64: bytes.toString("base64"), mime: photo.type });
+    // Категории, уже заведённые в магазине: ИИ выбирает из них, чтобы товары не расползались по похожим названиям.
+    let categories: string[] = [];
+    try {
+      const { data } = await supabase.from("products").select("category").eq("shop_id", shop.id);
+      categories = [...new Set((data ?? []).map((p: { category: string | null }) => p.category).filter((c): c is string => Boolean(c)))];
+    } catch {
+      /* категории необязательны */
+    }
+    const { card, provider, kzDropped } = await generateCard({ base64: bytes.toString("base64"), mime: photo.type, categories });
     console.info("ai-card ok", provider);
 
     return NextResponse.json({ card, provider: provider.split(":")[0], kzDropped, remaining: Math.max(0, limit - (count ?? 0) - 1) });

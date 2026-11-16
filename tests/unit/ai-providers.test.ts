@@ -92,3 +92,40 @@ it("нормальный казахский на кириллице сохран
   expect(kzUsable("Shokoladty tort kesimi")).toBe(false);
   expect(kzUsable("")).toBe(false);
 });
+
+it("медленная модель не задерживает ответ: через 8 с стартует следующая", async () => {
+  vi.useFakeTimers();
+  try {
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => new Promise(() => {})) // первая модель молчит
+      .mockImplementationOnce(() => reply(200, geminiOk));
+    vi.stubGlobal("fetch", fetchMock);
+    const promise = generateCard(img);
+    await vi.advanceTimersByTimeAsync(8_000);
+    const result = await promise;
+    expect(result.provider).toBe("gemini:gemini-3.5-flash-lite");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("категории магазина попадают в промпт, а правила запрещают выдумки", async () => {
+  const fetchMock = vi.fn().mockImplementation(() => reply(200, geminiOk));
+  vi.stubGlobal("fetch", fetchMock);
+  await generateCard({ ...img, categories: ["Торты", "Печенье и кексы"] });
+  const prompt = JSON.parse(fetchMock.mock.calls[0][1].body).systemInstruction.parts[0].text as string;
+  expect(prompt).toContain("Торты, Печенье и кексы");
+  expect(prompt).toContain("температуру подачи");
+  expect(prompt).toContain("Никогда не переписывай с фото телефоны");
+});
+
+it("если на фото не товар и оба описания пусты, это не считается потерей казахского", async () => {
+  vi.stubEnv("OPENROUTER_API_KEY", "");
+  const empty = { ...card, title: "Товар", description_ru: "", description_kz: "", category: "Другое" };
+  vi.stubGlobal("fetch", vi.fn().mockImplementation(() => reply(200, { candidates: [{ content: { parts: [{ text: JSON.stringify(empty) }] } }] })));
+  const result = await generateCard(img);
+  expect(result.kzDropped).toBe(false);
+  expect(result.card.title).toBe("Товар");
+});

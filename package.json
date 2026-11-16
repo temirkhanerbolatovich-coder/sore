@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "test:rls": "supabase test db",
     "typecheck": "tsc --noEmit",
-    "ai:check": "tsx scripts/ai-check.ts"
+    "ai:check": "tsx scripts/ai-check.ts",
+    "ai:batch": "tsx scripts/ai-batch.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
