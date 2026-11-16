@@ -100,7 +100,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="flex flex-col gap-2 px-5 pt-2">
           <Link href="/dashboard/products/shelf" className="btn-dark h-12 min-h-12 w-full text-[15px]">
             <CameraIcon />
-            Фото полки — сразу несколько товаров
+            Добавить по фото полки
           </Link>
           <div className="grid grid-cols-2 gap-2">
             <Link href="/dashboard/products/batch" className="btn-outline h-11 min-h-11 px-2 text-sm">

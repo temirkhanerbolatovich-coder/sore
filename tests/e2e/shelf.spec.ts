@@ -28,7 +28,7 @@ test("фото полки: черновики, правка, публикаци�
     await loginAs(page, request, email);
     const calls = await mockShelf(page);
     await page.goto("/dashboard");
-    await expect(page.getByRole("link", { name: /Фото полки/ })).toHaveAttribute("href", "/dashboard/products/shelf");
+    await expect(page.getByRole("link", { name: "Добавить по фото полки" })).toHaveAttribute("href", "/dashboard/products/shelf");
     await page.goto("/dashboard/products/shelf");
     await page.waitForLoadState("networkidle");
     await page.locator("#shelf-file").setInputFiles("public/icon-512.png");

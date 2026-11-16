@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Sөre",
     short_name: "Sөre",
-    description: "Полка в интернете: фото товаров, ИИ-карточки и заказ в WhatsApp.",
+    description: "Полка в интернете: фото полки или прайс, ИИ-карточки и заказ в WhatsApp и Telegram.",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#fff8f0",

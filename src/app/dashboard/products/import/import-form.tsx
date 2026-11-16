@@ -18,7 +18,8 @@ function downloadReport(report: Report[]) {
   a.href = url;
   a.download = "sore-import-errors.csv";
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  // Адрес освобождаем не сразу: под нагрузкой браузер может ещё читать файл (иначе скачивание обрывается).
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 const plural = (n: number, one: string, few: string, many: string) => {

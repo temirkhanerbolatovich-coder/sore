@@ -3,6 +3,7 @@ import { adminClient, cleanupUser, loginAs, seedShop } from "./helpers";
 
 const admin = adminClient();
 const stamp = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+const uniquePhone = () => `8701${String(Math.floor(Math.random() * 1e7)).padStart(7, "0")}`; // у create_order лимит 10 заказов в час на номер, поэтому номер у каждого заказа свой
 const addToCart = (page: Page, title: string, label = "В корзину") =>
   page.getByRole("listitem").filter({ hasText: title }).getByRole("button", { name: label, exact: true }).click();
 
@@ -11,7 +12,7 @@ async function placeOrder(page: Page, base: string, slug: string) {
   await addToCart(page, "Торт");
   await page.getByRole("link", { name: /Корзина/ }).click();
   await page.getByLabel("Имя", { exact: true }).fill("Айгерим");
-  await page.getByLabel("Телефон", { exact: true }).fill("87015550011");
+  await page.getByLabel("Телефон", { exact: true }).fill(uniquePhone());
   await page.getByLabel("Адрес", { exact: true }).fill("Абай 10");
   // 204 оставляет страницу на месте (иначе браузер ушёл бы на wa.me), так виден экран «Заказ принят».
   await page.route("https://wa.me/**", (route) => route.fulfill({ status: 204 }));
