@@ -11,6 +11,10 @@ export const RESERVED_SLUGS = new Set([
 
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]{2,29}$/;
 
+/** Адреса демо-магазинов SÖRE (scripts/seed-demo-shops.ts): не индексируются, продавцу недоступны. */
+export const DEMO_SLUG_PREFIX = "demo-";
+export const isDemoSlug = (slug: string) => slug.startsWith(DEMO_SLUG_PREFIX);
+
 /** «Сладкий дом Алии» → «sladkiy-dom-alii» */
 export function slugify(input: string): string {
   const latin = input
@@ -27,6 +31,6 @@ export function slugify(input: string): string {
 
 export function slugError(slug: string): string | null {
   if (!SLUG_RE.test(slug)) return "Адрес: 3–30 символов, латиница, цифры и дефис";
-  if (RESERVED_SLUGS.has(slug)) return "Этот адрес зарезервирован, выберите другой";
+  if (RESERVED_SLUGS.has(slug) || isDemoSlug(slug)) return "Этот адрес зарезервирован, выберите другой";
   return null;
 }

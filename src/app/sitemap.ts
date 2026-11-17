@@ -2,10 +2,12 @@ import type { MetadataRoute } from "next";
 import { connection } from "next/server";
 import { getShopBySlug, getSitemapShops } from "@/lib/shop-data";
 import { publicUrl } from "@/lib/shop-seo";
+import { isDemoSlug } from "@/lib/slug";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection();
-  const shops = await getSitemapShops();
+  // Демо-магазины вымышленные: в поиск их не отдаём.
+  const shops = (await getSitemapShops()).filter(({ slug }) => !isDemoSlug(slug));
   const result: MetadataRoute.Sitemap = [{ url: publicUrl("/"), priority: 1 }, { url: publicUrl("/terms") }, { url: publicUrl("/privacy") }];
   // Ограничиваем число одновременных чтений при холодном кэше.
   const concurrentShops = 20;

@@ -14,6 +14,7 @@ import { ViewTracker } from "@/components/view-tracker";
 import { ShareButton } from "@/components/share-button";
 import { DocumentLanguage } from "@/components/document-language";
 import { publicAlternates, publicUrl, serializeJsonLd, shopTitle, storeJsonLd } from "@/lib/shop-seo";
+import { isDemoSlug } from "@/lib/slug";
 import { shopDescription } from "@/lib/shop-info";
 import { ShopAbout } from "@/components/shop-about";
 import { ProductFilter } from "@/components/product-filter";
@@ -41,6 +42,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title,
     description,
     alternates: publicAlternates(`/${shop.slug}`, lang),
+    robots: isDemoSlug(shop.slug) ? { index: false } : undefined,
     openGraph: { title, description, images: image ? [image] : undefined, type: "website" },
   };
 }

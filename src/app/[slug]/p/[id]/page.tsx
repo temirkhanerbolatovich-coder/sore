@@ -14,6 +14,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import { PhotoViewer } from "@/components/photo-viewer";
 import { DocumentLanguage } from "@/components/document-language";
 import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
+import { isDemoSlug } from "@/lib/slug";
 import { BackIcon } from "@/components/icons";
 import { ShelfFrames } from "@/components/shelf-frames";
 import { asBBox } from "@/lib/bbox";
@@ -34,6 +35,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title: `${product.title} — ${data.shop.name}`,
     description: text,
     alternates: publicAlternates(`/${data.shop.slug}/p/${id}`, lang),
+    robots: isDemoSlug(data.shop.slug) ? { index: false } : undefined,
     openGraph: {
       title: product.title,
       description: text,
