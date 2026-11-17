@@ -23,6 +23,7 @@ export function ProductForm({ product }: { product?: Product }) {
   const [photoError, setPhotoError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [price, setPrice] = useState(product && product.price > 0 ? String(product.price) : "");
   const [title, setTitle] = useState(product?.title ?? "");
   const [descRu, setDescRu] = useState(product?.description_ru ?? "");
   const [descKz, setDescKz] = useState(product?.description_kz ?? "");
@@ -98,13 +99,14 @@ export function ProductForm({ product }: { product?: Product }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div id="main-content" tabIndex={-1} className="flex flex-1 flex-col">
       <form onSubmit={onSubmit} onChange={() => setTouched(true)} className="flex flex-1 flex-col">
         {product && <input type="hidden" name="id" value={product.id} />}
         <input type="hidden" name="photo_url" value={photoUrl} />
         <input type="hidden" name="variants" value={JSON.stringify(variants)} />
 
         <div className="flex flex-1 flex-col gap-4 p-5">
+          <h2 className="text-lg font-bold">Основное</h2>
           <div className="flex items-center gap-3.5">
             <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-thumb text-center text-[13px] text-muted">
               {photoUrl ? (
@@ -182,6 +184,8 @@ export function ProductForm({ product }: { product?: Product }) {
             <input id="title" name="title" required maxLength={120} value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
           </Field>
 
+          <p className="text-sm text-muted">Название: {title.length}/120</p>
+          <h2 className="text-lg font-bold">Описание</h2>
           <Field label="Описание · RU" htmlFor="description_ru">
             <textarea
               id="description_ru"
@@ -206,6 +210,8 @@ export function ProductForm({ product }: { product?: Product }) {
             />
           </Field>
 
+          <p className="text-sm text-muted">RU: {descRu.length}/1000 · KZ: {descKz.length}/1000</p>
+          <h2 className="text-lg font-bold">Цена</h2>
           <fieldset className="flex min-w-0 flex-col gap-1.5">
             <legend className="mb-1.5 text-sm font-semibold">Цена</legend>
             <div className="grid grid-cols-3 gap-2">
@@ -243,13 +249,14 @@ export function ProductForm({ product }: { product?: Product }) {
             </Field>
             {priceMode !== "request" && variants.length === 0 && (
               <Field label={priceMode === "from" ? "Цена от, ₸" : "Цена, ₸"} htmlFor="price">
+                <input type="hidden" name="price" value={price} />
                 <input
                   id="price"
-                  name="price"
+                  value={price.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
+                  onChange={(event) => setPrice(event.target.value.replace(/\D/g, ""))}
                   required
                   inputMode="numeric"
                   placeholder="12000"
-                  defaultValue={product && product.price > 0 ? product.price : undefined}
                   className="input"
                 />
               </Field>
@@ -319,6 +326,7 @@ export function ProductForm({ product }: { product?: Product }) {
             </fieldset>
           )}
 
+          <h2 className="text-lg font-bold">Дополнительно</h2>
           <label className="flex cursor-pointer items-center justify-between py-1 text-base font-semibold">
             В наличии
             <input

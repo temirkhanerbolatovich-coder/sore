@@ -11,12 +11,16 @@ export function ShelfFrames({
   alt,
   frames,
   lazy = false,
+  onSelect,
+  highlighted,
   className = "",
 }: {
   src: string;
   alt: string;
   frames: ShelfFrame[];
   lazy?: boolean;
+  onSelect?: (index: number) => void;
+  highlighted?: number;
   className?: string;
 }) {
   return (
@@ -26,8 +30,8 @@ export function ShelfFrames({
       {frames.map((f, i) => (
         <div
           key={i}
-          aria-hidden="true"
-          className={`absolute rounded-md border-2 transition-colors ${f.active === false ? "border-cream/70" : "border-accent shadow-[0_0_0_2px_var(--cream)]"}`}
+          aria-hidden={onSelect ? undefined : true}
+          className={`absolute rounded-md border-2 ${highlighted === i ? "ring-4 ring-[var(--focus)]" : ""} ${f.active === false ? "border-cream/70" : "border-accent shadow-[0_0_0_2px_var(--cream)]"}`}
           style={{
             left: `${f.bbox.x1 * 100}%`,
             top: `${f.bbox.y1 * 100}%`,
@@ -35,9 +39,10 @@ export function ShelfFrames({
             height: `${(f.bbox.y2 - f.bbox.y1) * 100}%`,
           }}
         >
+          {onSelect && <button type="button" onClick={() => onSelect(i)} aria-label={`Перейти к товару ${i + 1}`} aria-pressed={highlighted === i} className="absolute inset-0 min-h-11 min-w-11" />}
           {f.label && (
             <span
-              className={`absolute left-1 top-1 min-w-6 rounded-full px-1.5 text-center text-xs font-extrabold leading-6 ${f.active === false ? "bg-cream/80 text-muted" : "bg-accent text-on-accent"}`}
+              className={`pointer-events-none absolute left-1 top-1 min-w-6 rounded-full px-1.5 text-center text-xs font-extrabold leading-6 ${f.active === false ? "bg-cream/80 text-muted" : "bg-accent text-on-accent"}`}
             >
               {f.label}
             </span>

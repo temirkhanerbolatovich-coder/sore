@@ -30,5 +30,5 @@ export async function reportError(source: "server" | "client", error: unknown, c
 
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return sendTelegram(chat, `<b>Ошибка Sөre</b> (${source})\n${esc(message)}${context ? `\n${esc(context.slice(0, 200))}` : ""}${site ? `\n${esc(site)}` : ""}`);
+  return sendTelegram(chat, `<b>Ошибка SÖRE</b> (${source})\n${esc(message)}${context ? `\n${esc(context.slice(0, 200))}` : ""}${site ? `\n${esc(site)}` : ""}`);
 }

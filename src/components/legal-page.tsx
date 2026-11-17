@@ -8,7 +8,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
       <Link href="/" className="flex min-h-11 items-center gap-1 self-start font-semibold text-muted">
         <BackArrow /> На главную
       </Link>
-      <div className="flex flex-col gap-1">
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-1">
         <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
         <p className="text-sm text-muted">Обновлено: {updated}</p>
       </div>

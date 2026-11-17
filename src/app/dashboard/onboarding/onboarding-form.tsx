@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useStatefulAction } from "@/lib/use-stateful-action";
 import { createShop, type OnboardingState } from "./actions";
+import { formatPhoneInput } from "@/lib/order";
 import { slugify } from "@/lib/slug";
 
 const initial: OnboardingState = {};
@@ -11,6 +12,7 @@ export function OnboardingForm() {
   const [state, onSubmit, pending] = useStatefulAction(createShop, initial);
   const [name, setName] = useState(state.values?.name ?? "");
   const [slug, setSlug] = useState(state.values?.slug ?? "");
+  const [phone, setPhone] = useState(state.values?.whatsapp ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
 
   const shownSlug = slugTouched ? slug : slugify(name);
@@ -24,6 +26,8 @@ export function OnboardingForm() {
         </label>
         <input
           id="name"
+          autoComplete="organization"
+          autoFocus
           name="name"
           required
           maxLength={60}
@@ -69,7 +73,9 @@ export function OnboardingForm() {
           required
           inputMode="tel"
           placeholder="+7 701 123 45 67"
-          defaultValue={state.values?.whatsapp}
+          autoComplete="tel"
+          value={phone}
+          onChange={(event) => setPhone(formatPhoneInput(event.target.value))}
           aria-invalid={errIn("whatsapp")}
           className="input"
         />
@@ -80,7 +86,7 @@ export function OnboardingForm() {
         <label htmlFor="city" className="text-sm font-semibold">
           Город
         </label>
-        <input id="city" name="city" placeholder="Алматы" defaultValue={state.values?.city} className="input" />
+        <input id="city" autoComplete="address-level2" name="city" placeholder="Алматы" defaultValue={state.values?.city} className="input" />
       </div>
 
       {state.error && (

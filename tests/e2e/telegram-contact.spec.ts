@@ -83,10 +83,20 @@ test("после заказа два канала: WhatsApp и Telegram с ко�
     await expect(popup).toHaveURL("https://t.me/aliya_sweets");
     await expect(buyer.getByText("Текст заказа скопирован")).toBeVisible();
     const copied = await buyer.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toContain("Здравствуйте! Заказ из Sөre (№1)");
+    expect(copied).toContain("Здравствуйте! Заказ из SÖRE (№1)");
     expect(copied).toContain("Торт × 1");
     expect(copied).toContain("Итого: 4 000 ₸");
     await popup.close();
+
+    // В запасном пути textarea временно получает фокус: после копирования он возвращается ссылке.
+    await telegram.focus();
+    await buyer.evaluate(() => {
+      Object.defineProperty(navigator.clipboard, "writeText", { configurable: true, value: () => Promise.reject(new Error("blocked")) });
+      document.execCommand = () => true;
+      document.querySelector('a[href="https://t.me/aliya_sweets"]')?.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    });
+    await buyer.keyboard.press("Enter");
+    await expect(telegram).toBeFocused();
 
     // Страница статуса заказа: те же два канала.
     await buyer.getByRole("link", { name: "Следить за заказом" }).click();

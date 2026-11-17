@@ -1,10 +1,18 @@
 @import "tailwindcss";
 
-/* Токены Sөre. Основа — тёплая палитра (кремовый, терракота).
+/* Токены SÖRE. Основа — тёплая палитра (кремовый, терракота).
    Тёмная тема переопределяет те же переменные в :root[data-theme="dark"]:
    атрибут ставит скрипт в layout.tsx до первой отрисовки (без вспышки), выбор хранится в localStorage,
    без выбора тема следует за системой. Цвета в компонентах — только через токены, без hex. */
 :root {
+  --radius-control: .75rem;
+  --radius-card: 1rem;
+  --space-control: 1rem;
+  --space-panel: 1.5rem;
+  --shadow-card: 0 1px 2px rgb(43 33 24 / .06);
+  --shadow-panel: 0 4px 16px rgb(43 33 24 / .10);
+  --shadow-toast: 0 8px 24px rgb(43 33 24 / .16);
+  --shadow-modal: 0 16px 48px rgb(43 33 24 / .24);
   --cream: #fff8f0; /* фон страницы */
   --surface: #ffffff; /* карточки, поля, панели */
   --ink: #2b2118;
@@ -27,6 +35,7 @@
   --thumb-6: #f0d2c0;
   --switch-off: #8a7b6e;
   --shine: rgb(255 255 255 / 0.38);
+  --focus: #7442b3;
 
   /* Движение (используется в motion.css) */
   --ease-key: cubic-bezier(0.22, 0.8, 0.28, 1);
@@ -37,6 +46,10 @@
 }
 
 :root[data-theme="dark"] {
+  --shadow-card: 0 1px 2px rgb(0 0 0 / .18);
+  --shadow-panel: 0 4px 16px rgb(0 0 0 / .24);
+  --shadow-toast: 0 8px 24px rgb(0 0 0 / .32);
+  --shadow-modal: 0 16px 48px rgb(0 0 0 / .4);
   --cream: #17110c;
   --surface: #221a13;
   --ink: #f6ece1;
@@ -59,6 +72,7 @@
   --thumb-6: #3e2c24;
   --switch-off: #6d5f53;
   --shine: rgb(255 255 255 / 0.22);
+  --focus: #d2a8ff;
 
   color-scheme: dark;
 }
@@ -124,13 +138,50 @@ body {
     @apply inline-flex size-12 items-center justify-center rounded-xl border-[1.5px] border-line bg-surface text-ink transition-colors hover:border-ink;
   }
   .input {
-    @apply h-12 w-full rounded-xl border-[1.5px] border-field bg-surface px-4 text-base text-ink outline-none focus:border-ink;
+    @apply h-12 w-full rounded-xl border-[1.5px] border-field bg-surface px-4 text-base text-ink focus:border-ink;
   }
   .card {
-    @apply rounded-2xl border border-line bg-surface;
+    @apply border border-line bg-surface;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
   }
 }
+
+/* Единственный видимый индикатор клавиатурного фокуса для всех элементов управления. */
+:is(a, button, [role="button"], summary, input, select, textarea):focus-visible,
+input[type="date"]:focus-within,
+input[type="time"]:focus-within,
+label:has(input.sr-only:focus-visible),
+input.sr-only:focus-visible + label,
+input.sr-only:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Ссылки внутри карточек с обрезанными краями получают кольцо внутри карточки. */
+.card.overflow-hidden :is(a, button):focus-visible { outline-offset: -4px; }
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--ink);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible { transform: translateY(0); }
+.skip-link [lang="kk"] { display: none; }
+:lang(kk) .skip-link [lang="ru"] { display: none; }
+:lang(kk) .skip-link [lang="kk"] { display: inline; }
 
 button, a, input, select { touch-action: manipulation; }
 button { cursor: pointer; }
 button:disabled { cursor: wait; opacity: .6; }
+
+.input { border-radius: var(--radius-control); padding-inline: var(--space-control); }
+.input::placeholder { color: var(--muted); opacity: 1; }
+button:disabled { opacity: 1; color: var(--muted); background: var(--surface); }

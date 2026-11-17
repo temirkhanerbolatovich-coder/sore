@@ -31,8 +31,17 @@ export function normalizePhone(raw: string): string {
   return digits;
 }
 
+/** Показывает казахстанский номер как +7 701 123 45 67; чужие форматы не трогает. */
+export function formatPhoneInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits || (digits[0] !== "7" && digits[0] !== "8")) return raw;
+  const rest = digits.slice(1, 11);
+  const parts = [rest.slice(0, 3), rest.slice(3, 6), rest.slice(6, 8), rest.slice(8, 10)].filter(Boolean);
+  return ["+7", ...parts].join(" ");
+}
+
 export function buildOrderText(o: OrderInput): string {
-  const head = `Здравствуйте! Заказ из Sөre${o.number ? ` (№${o.number})` : ""}`;
+  const head = `Здравствуйте! Заказ из SÖRE${o.number ? ` (№${o.number})` : ""}`;
   const lines = o.lines.map(
     (l, i) => `${i + 1}. ${l.title} × ${l.qty} — ${formatPrice(l.price * l.qty)}`,
   );
@@ -76,7 +85,7 @@ export function priceLabel(price: number, mode: string | null | undefined, lang:
 export function inquiryText(title: string, price: number, mode: string | null | undefined, shopName: string): string {
   const m = asPriceMode(mode);
   const cost = m === "from" ? ` (${priceLabel(price, m)})` : "";
-  return `Здравствуйте! Пишу из магазина «${shopName}» в Sөre. Интересует: ${title}${cost}. Подскажите, пожалуйста, детали и стоимость.`;
+  return `Здравствуйте! Пишу из магазина «${shopName}» в SÖRE. Интересует: ${title}${cost}. Подскажите, пожалуйста, детали и стоимость.`;
 }
 
 /** «2026-11-20» + «18:00» → «20 ноября, 18:00» (дата без часового пояса). */

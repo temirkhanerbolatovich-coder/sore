@@ -15,8 +15,8 @@ export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address"
     <section className="mx-4 mt-3 flex flex-col gap-2 rounded-2xl border border-line bg-surface p-4 text-[15px]">
       {about && longAbout ? (
         <details className="group">
-          <summary className="flex min-h-11 cursor-pointer list-none flex-col justify-center group-open:hidden">
-            <span className="line-clamp-2 leading-snug">{shop.about}</span>
+          <summary className="flex min-h-11 cursor-pointer list-none flex-col justify-center">
+            <span className="line-clamp-2 leading-snug group-open:hidden">{shop.about}</span>
             <span className="text-sm font-semibold text-accent underline">{t.more}</span>
           </summary>
           <p className="whitespace-pre-line leading-snug">{shop.about}</p>

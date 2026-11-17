@@ -1,21 +1,19 @@
+import { HomeScreenHint } from "./home-screen-hint";
+import { ProductCatalog } from "./product-catalog";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import QRCode from "qrcode";
 import { requireShop } from "@/lib/shop";
-import { priceLabel } from "@/lib/order";
-import { variantsOf } from "@/lib/variants";
 import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
-import { ActionForm } from "@/components/action-form";
-import { ProductPhoto } from "@/components/product-photo";
-import { toggleStock, moveProduct } from "./products/actions";
 import { CopyLink } from "./copy-link";
 import { DashboardNav } from "@/components/dashboard-nav";
+import { AddProducts } from "./add-products";
 import { FirstSteps } from "./first-steps";
 import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
 import { CameraIcon, PlusIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export const metadata = { title: "Кабинет — Sөre" };
+export const metadata = { title: "Кабинет — SÖRE" };
 
 const SAVED: Record<string, string> = {
   added: "Товар добавлен. Он уже на витрине.",
@@ -44,126 +42,116 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const fullUrl = `${site}/${shop.slug}`;
   const shown = fullUrl.replace(/^https?:\/\//, "");
   const full = products.length >= FREE_PRODUCT_LIMIT;
+  const qr = await QRCode.toString(fullUrl, { type: "svg", margin: 1, errorCorrectionLevel: "M" });
 
   return (
-    <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
-      <div className="flex flex-col gap-4 px-5 pb-3 pt-6">
-        <div className="flex items-center gap-3">
-          <div className="size-11 flex-none rounded-full bg-thumb" />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-xl font-extrabold">{shop.name}</div>
-            {shop.city && <div className="text-sm text-muted">{shop.city}</div>}
-          </div>
-          <ThemeToggle />
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="min-h-11 min-w-11 px-1 text-sm font-semibold text-muted underline">
-              Выйти
-            </button>
-          </form>
-        </div>
-
-        <div className="card flex items-center gap-2 p-1.5 pl-3.5">
-          <div className="min-w-0 flex-1 truncate text-[15px] font-semibold">{shown}</div>
-          <CopyLink url={fullUrl} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="card p-3.5">
-            <div className="text-[13px] text-muted">Просмотры за неделю</div>
-            <div className="text-[28px] font-extrabold leading-tight">{stats.views}</div>
-          </div>
-          <div className="card p-3.5">
-            <div className="text-[13px] text-muted">Нажали «Заказать»</div>
-            <div className="text-[28px] font-extrabold leading-tight">{stats.clicks}</div>
-          </div>
-        </div>
-      </div>
-
-      {saved && SAVED[saved] && (
-        <div role="status" className="mx-5 mt-3 flex items-center justify-between gap-3 rounded-xl border border-ok-line bg-ok-bg px-4 py-3 text-[15px] font-semibold text-ok-ink">
-          <span>{saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]}</span>
-          <Link href="/dashboard" className="flex min-h-11 items-center px-1 text-sm underline" aria-label="Закрыть сообщение">
-            Закрыть
-          </Link>
-        </div>
-      )}
-      <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
-
-      <div className="flex items-center justify-between px-5 pt-2">
-        <h2 className="text-lg font-bold">Товары · {products.length}</h2>
-        <span className="text-sm text-muted">
-          Лимит Free: {products.length} из {FREE_PRODUCT_LIMIT}
-        </span>
-      </div>
-
-      {!full && (
-        <div className="flex flex-col gap-2 px-5 pt-2">
-          <Link href="/dashboard/products/shelf" className="btn-dark h-12 min-h-12 w-full text-[15px]">
-            <CameraIcon />
-            Добавить по фото полки
-          </Link>
-          <div className="grid grid-cols-2 gap-2">
-            <Link href="/dashboard/products/batch" className="btn-outline h-11 min-h-11 px-2 text-sm">
-              Несколько фото
-            </Link>
-            <Link href="/dashboard/products/import" className="btn-outline h-11 min-h-11 px-2 text-sm">
-              Прайс из Excel
-            </Link>
-          </div>
-        </div>
-      )}
-
-      <ul className="flex flex-col gap-2.5 px-5 pt-3">
-        {products.length === 0 && (
-          <li className="card flex flex-col gap-1 p-5">
-            <div className="text-lg font-bold">Пока нет товаров</div>
-            <p className="leading-relaxed text-muted">Добавьте первый товар: сфотографируйте его и укажите цену.</p>
-          </li>
-        )}
-        {products.map((p, index) => (
-          <li key={p.id} className={`card flex items-center gap-3 p-2.5 ${index < 12 ? "rise-in" : ""}`} style={index < 12 ? { "--rise-index": index } as CSSProperties : undefined}>
-            <Link href={`/dashboard/products/${p.id}/edit`} className="flex min-w-0 flex-1 items-center gap-3">
-                <ProductPhoto url={p.photo_url} alt="" thumbnail className="size-16 flex-none rounded-xl" />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-base font-semibold">{p.title}</div>
-                <div className="text-[15px] text-muted">{priceLabel(p.price, p.price_mode, "ru", variantsOf(p).length > 0)}</div>
-                <div className={`text-[13px] font-semibold ${p.in_stock ? "text-wa" : "text-accent-dark"}`}>
-                  {p.in_stock ? "В наличии" : "Нет в наличии"}
-                </div>
-              </div>
-            </Link>
-            <div className="flex flex-col gap-1"><ActionForm action={toggleStock}>
-              <input type="hidden" name="id" value={p.id} />
-              <input type="hidden" name="next" value={String(!p.in_stock)} />
-              <button
-                type="submit"
-                role="switch"
-                aria-checked={p.in_stock}
-                aria-label={`В наличии: ${p.title}`}
-                className={`flex h-11 w-12 items-center rounded-full p-[3px] ${p.in_stock ? "justify-end bg-wa" : "justify-start bg-switch-off"}`}
-              >
-                <span className="size-[22px] rounded-full bg-surface" />
+    <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col pb-28 lg:max-w-6xl lg:pb-10">
+      <DashboardNav active="products" newOrders={stats.newOrders} desktop />
+      <div className="px-5 pb-3 pt-6">
+          <div className="flex items-center gap-3">
+            <div className="size-11 flex-none rounded-full bg-thumb" />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xl font-extrabold">{shop.name}</div>
+              {shop.city && <div className="text-sm text-muted">{shop.city}</div>}
+            </div>
+            <ThemeToggle />
+            <form action="/auth/signout" method="post">
+              <button type="submit" className="min-h-11 min-w-11 px-1 text-sm font-semibold text-muted underline">
+                Выйти
               </button>
-            </ActionForm>
-            {[-1, 1].map((direction) => <ActionForm key={direction} action={moveProduct}>
-              <input type="hidden" name="id" value={p.id} /><input type="hidden" name="direction" value={direction} />
-              <button className="min-h-11 min-w-11 px-2 text-sm" aria-label={direction < 0 ? "Выше" : "Ниже"}>{direction < 0 ? "↑" : "↓"}</button>
-            </ActionForm>)}</div>
-          </li>
-        ))}
-      </ul>
+            </form>
+          </div>
 
-      {!full && (
-        <Link
-          href="/dashboard/products/new"
-          className="btn-accent fixed bottom-20 right-5 h-14 rounded-full pl-4 pr-5 shadow-lg md:right-[calc(50%-12rem)]"
-        >
-          <PlusIcon size={22} />
-          Товар
-        </Link>
-      )}
+      </div>
+      <div className="px-5 lg:hidden">
+        <ShopSummary fullUrl={fullUrl} shown={shown} qr={qr} stats={stats} />
+      </div>
+      <div className="lg:flex lg:items-start lg:gap-4">
+        <div id="main-content" tabIndex={-1} className="min-w-0 flex-1">
+        {saved && SAVED[saved] && (
+          <div role="status" className="mx-5 mt-3 flex items-center justify-between gap-3 rounded-xl border border-ok-line bg-ok-bg px-4 py-3 text-[15px] font-semibold text-ok-ink">
+            <span>{saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]}</span>
+            <Link href="/dashboard" className="flex min-h-11 items-center px-1 text-sm underline" aria-label="Закрыть сообщение">
+              Закрыть
+            </Link>
+          </div>
+        )}
+        {products.length === 0 && <AddProducts />}
+        <HomeScreenHint />
+        <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
 
+        <div className="flex items-center justify-between px-5 pt-2">
+          <h2 className="text-lg font-bold">Товары · {products.length}</h2>
+          <span className="text-sm text-muted">
+            Лимит Free: {products.length} из {FREE_PRODUCT_LIMIT}
+          </span>
+        </div>
+
+        {!full && (
+          <div className="flex flex-col gap-2 px-5 pt-2">
+            <Link href="/dashboard/products/shelf" className="btn-dark h-12 min-h-12 w-full text-[15px]">
+              <CameraIcon />
+              Добавить по фото полки
+            </Link>
+            <div className="grid grid-cols-2 gap-2">
+              <Link href="/dashboard/products/batch" className="btn-outline h-11 min-h-11 px-2 text-sm">
+                Несколько фото
+              </Link>
+              <Link href="/dashboard/products/import" className="btn-outline h-11 min-h-11 px-2 text-sm">
+                Прайс из Excel
+              </Link>
+            </div>
+          </div>
+        )}
+
+        <ProductCatalog products={products} />
+
+        {!full && products.length > 0 && (
+          <div className="pointer-events-none sticky bottom-24 z-10 flex justify-end px-5 pb-2 pt-4 lg:bottom-6">
+            <Link href="/dashboard/products/new" className="btn-accent pointer-events-auto h-14 rounded-full pl-4 pr-5 shadow-lg">
+              <PlusIcon size={22} />
+              Товар
+            </Link>
+          </div>
+        )}
+
+        </div>
+        <aside className="hidden w-80 flex-none px-5 lg:block" aria-label="Ссылка и статистика магазина">
+          <ShopSummary fullUrl={fullUrl} shown={shown} qr={qr} stats={stats} desktop />
+        </aside>
+      </div>
       <DashboardNav active="products" newOrders={stats.newOrders} />
     </main>
+  );
+}
+
+function ShopSummary({ fullUrl, shown, qr, stats, desktop = false }: {
+  fullUrl: string;
+  shown: string;
+  qr: string;
+  stats: Awaited<ReturnType<typeof getStats>>;
+  desktop?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="card flex items-center gap-2 p-1.5 pl-3.5">
+        <div className="min-w-0 flex-1 truncate text-[15px] font-semibold">{shown}</div>
+        <CopyLink url={fullUrl} />
+      </div>
+      {desktop && <div className="rounded-2xl border border-line bg-surface p-4 text-center">
+        <div role="img" aria-label={`QR-код витрины: ${fullUrl}`} className="mx-auto w-40 overflow-hidden rounded-xl [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: qr }} />
+        <Link href="/dashboard/poster" className="mt-2 inline-flex min-h-11 items-center font-semibold underline">Плакат с QR-кодом</Link>
+      </div>}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="card p-3.5">
+          <div className="text-[13px] text-muted">Просмотры за неделю</div>
+          <div className="text-[28px] font-extrabold leading-tight">{stats.views}</div>
+        </div>
+        <div className="card p-3.5">
+          <div className="text-[13px] text-muted">Нажали «Заказать»</div>
+          <div className="text-[28px] font-extrabold leading-tight">{stats.clicks}</div>
+        </div>
+      </div>
+    </div>
   );
 }

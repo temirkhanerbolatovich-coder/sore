@@ -11,7 +11,7 @@ export default async function ImportPage() {
   const slots = Math.max(0, FREE_PRODUCT_LIMIT - (count ?? 0));
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col">
       <FormHeader title="Прайс из Excel" />
       <ImportForm slots={slots} />
     </main>

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { BackArrow } from "@/components/back-link";
 import { LoginForm } from "./login-form";
 
-export const metadata = { title: "Вход — Sөre" };
+export const metadata = { title: "Вход — SÖRE" };
 
 export default async function LoginPage({
   searchParams,
@@ -20,13 +20,13 @@ export default async function LoginPage({
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-8">
       <div className="flex items-center justify-between gap-4">
         <Link href="/" className="text-2xl font-extrabold tracking-tight">
-          S<span className="text-accent">ө</span>re
+          S<span className="text-accent">Ö</span>RE
         </Link>
         <Link href="/" className="flex min-h-11 items-center gap-1 font-semibold text-muted">
           <BackArrow /> На главную
         </Link>
       </div>
-      <div className="mt-8 flex flex-col gap-3">
+      <div id="main-content" tabIndex={-1} className="mt-8 flex flex-col gap-3">
         <h1 className="text-3xl font-extrabold leading-tight tracking-tight">
           Войдите, чтобы создать магазин
         </h1>

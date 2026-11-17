@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { requireShop } from "@/lib/shop";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
@@ -5,6 +6,7 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { Field } from "@/components/field";
 import { applyOrderFilters, filterQuery, parseOrderFilters } from "@/lib/orders-query";
 import { StatusButton } from "./status-button";
+import { CartIcon } from "@/components/icons";
 
 export const metadata = { title: "Заказы — Sөre" };
 
@@ -58,8 +60,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const newCount = orders.filter((o) => o.status === "new").length;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24">
-      <div className="flex flex-col gap-1 px-5 pb-3 pt-6">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24 lg:max-w-6xl lg:pb-10">
+      <DashboardNav active="orders" desktop />
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-1 px-5 pb-3 pt-6">
         <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
         <p className="text-[15px] text-muted">
           Заказы сохраняются, даже если клиент не нажал «Отправить» в WhatsApp.
@@ -84,11 +87,13 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       </form>
       <ul className="flex flex-col gap-3 px-5">
         {orders.length === 0 && (
-          <li className="card p-5">
-            <div className="text-lg font-bold">{filtered ? "Ничего не найдено" : "Пока нет заказов"}</div>
-            <p className="mt-1 leading-relaxed text-muted">
-              {filtered ? "Проверьте номер, имя или дату, либо сбросьте поиск." : "Отправьте ссылку на магазин клиентам или поставьте её в био Instagram."}
-            </p>
+          <li>
+            <EmptyState
+              icon={<CartIcon size={24} />}
+              title={filtered ? "Ничего не найдено" : "Пока нет заказов"}
+              description={filtered ? "Проверьте номер, имя или дату, либо сбросьте поиск." : "Отправьте ссылку на магазин клиентам или поставьте её в био Instagram."}
+              action={filtered ? undefined : <Link href="/dashboard" className="btn-outline">К ссылке магазина</Link>}
+            />
           </li>
         )}
         {orders.map((o) => {

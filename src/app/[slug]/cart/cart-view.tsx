@@ -5,13 +5,14 @@ import Link from "next/link";
 import { publicRpc } from "@/lib/public-rpc";
 import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
-import { buildOrderText, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
+import { buildOrderText, formatPhoneInput, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
 import { ProductPhoto } from "@/components/product-photo";
 
 import type { Product } from "@/lib/types";
 import { Field } from "@/components/field";
 import { BackLink } from "@/components/back-link";
-import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { BackIcon, CheckIcon, WhatsAppIcon } from "@/components/icons";
+import { Toast } from "@/components/ui/toast";
 import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
@@ -29,11 +30,6 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   // Возврат удалённого: убранные позиции держим 8 секунд и даём кнопку «Вернуть».
   const [removed, setRemoved] = useState<StoredLine[]>([]);
-  useEffect(() => {
-    if (removed.length === 0) return;
-    const timer = setTimeout(() => setRemoved([]), 8000);
-    return () => clearTimeout(timer);
-  }, [removed]);
   function restore() {
     for (const line of removed) {
       add(shop.slug, { id: line.id, title: line.title, price: line.price, photo: line.photo, variantId: line.variantId ?? null, variantTitle: line.variantTitle ?? null });
@@ -42,12 +38,14 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     setRemoved([]);
   }
   const undoToast = removed.length > 0 && (
-    <div role="status" className="flex items-center justify-between gap-3 rounded-xl bg-ink px-4 py-2 text-sm text-cream">
-      <span>{t.removed}</span>
-      <button type="button" onClick={restore} className="min-h-11 px-2 font-bold underline">
-        {t.undo}
-      </button>
-    </div>
+    <Toast
+      message={t.removed}
+      closeLabel={t.close}
+      duration={8000}
+      bottomClassName="bottom-24 md:bottom-5"
+      onClose={() => setRemoved([])}
+      action={<button type="button" onClick={restore} className="min-h-11 px-2 font-bold underline">{t.undo}</button>}
+    />
   );
 
   const [name, setName] = useState("");
@@ -63,6 +61,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   );
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [sentUrl, setSentUrl] = useState("");
   const [sentText, setSentText] = useState("");
   const [sentNumber, setSentNumber] = useState<number | null>(null);
@@ -92,7 +91,11 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     setError("");
 
     const digits = normalizePhone(phone);
-    if (!/^[0-9]{10,15}$/.test(digits)) return setError(t.phoneError);
+    if (!/^[0-9]{10,15}$/.test(digits)) {
+      setPhoneError(t.phoneError);
+      document.getElementById("phone")?.focus();
+      return;
+    }
     if (delivery === "delivery" && !address.trim()) return setError(t.addressError);
     if (shop.leadDays > 0 && !neededDate) return setError(t.dateRequired);
     if (neededDate && neededDate < minDate) return setError(t.dateTooEarly);
@@ -155,7 +158,10 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   if (sentUrl) {
     return (
-      <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <main id="main-content" tabIndex={-1} lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+        <span aria-hidden="true" className="pop-in flex size-16 items-center justify-center rounded-full bg-ok-bg text-ok-ink">
+          <CheckIcon size={32} />
+        </span>
         <h1 className="text-2xl font-extrabold">
           {t.accepted}
           {sentNumber ? ` · №${sentNumber}` : ""}
@@ -183,7 +189,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
   if (lines.length === 0) {
     return (
-      <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <main id="main-content" tabIndex={-1} lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-2xl font-extrabold">{t.emptyCart}</h1>
         {notice && <p role="status">{t.updated}</p>}
         {undoToast}
@@ -196,7 +202,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   }
 
   return (
-    <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <main lang={lang === "kz" ? "kk" : "ru"} className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
       <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-4">
         <BackLink fallback={backHref} ariaLabel={t.back} className="flex size-11 items-center justify-center">
           <BackIcon size={24} />
@@ -204,7 +210,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
         <h1 className="text-xl font-extrabold">{t.yourOrder}</h1>
       </div>
 
-      <form onSubmit={submit} className="flex flex-1 flex-col">
+      <form id="main-content" tabIndex={-1} onSubmit={submit} className="flex flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_20rem] md:items-start md:gap-6">
         <div className="flex flex-1 flex-col gap-5 p-5">
           {notice && <p role="status">{t.updated}</p>}
           {undoToast}
@@ -223,7 +229,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
                   <button type="button" aria-label={t.decrease} onClick={() => { if (l.qty <= 1) setRemoved([l]); setQty(lineKey(l), l.qty - 1); }} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     −
                   </button>
-                  <span className="w-6 text-center font-bold">{l.qty}</span>
+                  <span aria-live="polite" className="w-6 text-center font-bold">{l.qty}</span>
                   <button type="button" aria-label={t.increase} onClick={() => setQty(lineKey(l), l.qty + 1)} className="size-11 rounded-[10px] border-[1.5px] border-field text-lg font-bold">
                     +
                   </button>
@@ -245,7 +251,21 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
               <input id="name" required maxLength={80} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="input" />
             </Field>
             <Field label={t.phone} htmlFor="phone">
-              <input id="phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="+7 701 123 45 67" value={phone} onChange={(e) => setPhone(e.target.value)} className="input" />
+              <input
+                id="phone"
+                type="tel"
+                required
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder="+7 701 123 45 67"
+                value={phone}
+                aria-invalid={phoneError ? true : undefined}
+                aria-describedby={phoneError ? "phone-error" : undefined}
+                onChange={(e) => { setPhone(formatPhoneInput(e.target.value)); setPhoneError(""); }}
+                onBlur={() => setPhoneError(phone && !/^[0-9]{10,15}$/.test(normalizePhone(phone)) ? t.phoneError : "")}
+                className="input"
+              />
+              {phoneError && <p id="phone-error" className="text-sm font-semibold text-accent-dark">{phoneError}</p>}
             </Field>
             <input type="text" name="website" tabIndex={-1} autoComplete="off" hidden />
 
@@ -295,7 +315,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-surface p-5">
+        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-surface p-5 md:top-4 md:bottom-auto md:mt-5 md:mr-5 md:rounded-2xl md:border">
           <div className="flex items-center justify-between">
             <span className="text-muted">{t.total}</span>
             <span className="text-2xl font-extrabold">{formatPrice(total)}</span>

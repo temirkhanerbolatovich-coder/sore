@@ -1,4 +1,4 @@
-/* Движение Sөre (перенесено из «Витрины» и адаптировано под кнопки Sөre).
+/* Движение SÖRE (перенесено из «Витрины» и адаптировано под кнопки SÖRE).
    Анимируются только transform и opacity. На телефонах наведения нет — иконка и кнопка отвечают на нажатие.
    При prefers-reduced-motion всё выключается правилом в конце файла. */
 
@@ -56,7 +56,7 @@
 
 /* ---------- Кнопки: нажатие и блик на главной ---------- */
 :is(.btn-accent, .btn-dark, .btn-outline, .btn-wa, .btn-icon) {
-  transition-property: color, background-color, border-color, opacity, transform;
+  transition-property: opacity, transform;
   transition-duration: 150ms;
 }
 :is(.btn-accent, .btn-dark, .btn-outline, .btn-wa, .btn-icon):active:not(:disabled) {
@@ -83,7 +83,7 @@
   .btn-accent:hover:not(:disabled)::after,
   .btn-wa:hover:not(:disabled)::after {
     transform: translateX(110%);
-    transition: transform 700ms var(--ease-key);
+    transition: transform 420ms var(--ease-key);
   }
 }
 
@@ -118,8 +118,8 @@
   color: var(--accent);
 }
 .icon-badge .icon {
-  animation: icon-float 3.6s ease-in-out infinite;
-  animation-delay: calc(var(--rise-index, 0) * 450ms);
+  animation: icon-float 420ms ease-out;
+  animation-delay: 0ms;
 }
 @media (hover: hover) {
   .icon-host:hover .icon-badge .icon { animation-iteration-count: 1; }
@@ -130,14 +130,17 @@
 }
 
 /* ---------- Плавная смена темы (только когда пользователь сам нажал переключатель) ---------- */
-:root.theme-fade,
-:root.theme-fade *,
-:root.theme-fade *::before,
-:root.theme-fade *::after {
-  transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease !important;
-}
+/* ---------- Счётчик корзины: один раз подпрыгивает при изменении ---------- */
+.bump { display: inline-block; animation: bump 300ms var(--ease-key); }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+/* ---------- Галочка «Заказ принят» ---------- */
+.pop-in { animation: pop-in var(--dur-long) var(--ease-key) both; }
+@keyframes pop-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
 
 @media (prefers-reduced-motion: reduce) {
+  .bump,
+  .pop-in,
   .icon,
   .rise-in,
   .btn-accent::after,
@@ -151,3 +154,9 @@
     transform: none;
   }
 }
+
+/* Фото проявляется после загрузки, без изменения геометрии. Приоритетное фото без задержки. */
+@media (prefers-reduced-motion: no-preference) {
+  .photo-reveal[data-loaded="true"] { animation: photo-reveal 220ms ease-out; }
+}
+@keyframes photo-reveal { from { opacity: .4; } to { opacity: 1; } }

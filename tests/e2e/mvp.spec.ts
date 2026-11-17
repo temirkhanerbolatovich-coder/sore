@@ -33,7 +33,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await page.getByLabel(/WhatsApp/).fill("87011234567");
     await page.getByRole("button", { name: /Создать/ }).click();
     await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
-    await page.getByRole("link", { name: "Товар", exact: true }).click();
+    await page.getByRole("link", { name: "Добавить товар вручную" }).click();
     await page.locator('input[type="file"]').setInputFiles("public/icon-192.png");
     await expect(page.getByRole("button", { name: "Заполнить с ИИ" })).toBeEnabled();
     await page.route("**/api/ai/product-card", (route) => route.fulfill({ json: { card: { title: "Торт тестовый", description_ru: "Описание торта", description_kz: "Торт сипаттамасы", category: "Торты", tags: [] }, remaining: 19 } }));
@@ -68,7 +68,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await page.getByRole("button", { name: "Выполнен", exact: true }).click();
     await expect(page.getByText("Выполнен", { exact: true })).toBeVisible();
     await page.goto("/dashboard");
-    await expect(page.getByText("Нажали «Заказать»").locator("..")).toContainText("1");
+    await expect(page.getByText("Нажали «Заказать»").filter({ visible: true }).locator("..")).toContainText("1");
     expect(errors).toEqual([]);
     await customer.close();
   } finally {
