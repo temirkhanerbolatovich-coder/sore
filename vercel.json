@@ -8,5 +8,11 @@
       "main": true,
       "**": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/storage-cleanup",
+      "schedule": "30 21 * * *"
+    }
+  ]
 }
