@@ -161,3 +161,9 @@
     transform: none;
   }
 }
+
+/* Фото проявляется после загрузки, без изменения геометрии. Приоритетное фото без задержки. */
+@media (prefers-reduced-motion: no-preference) {
+  .photo-reveal[data-loaded="true"] { animation: photo-reveal 220ms ease-out; }
+}
+@keyframes photo-reveal { from { opacity: .4; } to { opacity: 1; } }

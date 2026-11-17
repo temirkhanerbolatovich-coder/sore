@@ -17,8 +17,10 @@ export function ThumbnailImage({ original, thumbnail, alt, ...props }: Props) {
       {...props}
       alt={alt}
       src={useThumbnail ? thumbnail : original}
+      onLoad={(event) => { event.currentTarget.dataset.loaded = "true"; }}
       onError={() => { if (useThumbnail) setFailed(thumbnail); }}
       ref={(image) => {
+        if (image?.complete && image.naturalWidth > 0) image.dataset.loaded = "true";
         // An old upload may have failed to load its thumbnail before React hydrated.
         if (useThumbnail && image?.complete && image.naturalWidth === 0) setFailed(thumbnail);
       }}
