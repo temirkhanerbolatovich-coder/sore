@@ -37,7 +37,7 @@ export function storeJsonLd(shop: StoreFields, url: string, description: string)
     name: shop.name,
     url,
     description,
-    telephone: `+${shop.whatsapp}`,
+    telephone: shop.whatsapp ? `+${shop.whatsapp}` : undefined,
     address: shop.city || shop.address
       ? { "@type": "PostalAddress", streetAddress: shop.address || undefined, addressLocality: shop.city || undefined, addressCountry: "KZ" }
       : undefined,

@@ -14,6 +14,8 @@ import { ViewTracker } from "@/components/view-tracker";
 import { ShareButton } from "@/components/share-button";
 import { DocumentLanguage } from "@/components/document-language";
 import { publicAlternates, publicUrl, serializeJsonLd, shopTitle, storeJsonLd } from "@/lib/shop-seo";
+import { isDemoSlug } from "@/lib/slug";
+import { DemoActionStub, DemoNotice } from "@/components/demo-notice";
 import { shopDescription } from "@/lib/shop-info";
 import { ShopAbout } from "@/components/shop-about";
 import { ProductFilter } from "@/components/product-filter";
@@ -41,6 +43,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title,
     description,
     alternates: publicAlternates(`/${shop.slug}`, lang),
+    robots: isDemoSlug(shop.slug) ? { index: false } : undefined,
     openGraph: { title, description, images: image ? [image] : undefined, type: "website" },
   };
 }
@@ -56,7 +59,9 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const { shop, products } = data;
 
   const base = `/${shop.slug}`;
-  const jsonLd = storeJsonLd(shop, publicUrl(shopHref(base, lang)), shopDescription(shop, catalogDescription(products.length)));
+  const demo = isDemoSlug(shop.slug);
+  // Демо-магазин вымышленный: номер-заглушку не отдаём даже поисковым роботам.
+  const jsonLd = storeJsonLd(demo ? { ...shop, whatsapp: "" } : shop, publicUrl(shopHref(base, lang)), shopDescription(shop, catalogDescription(products.length)));
   const categories = [...new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))];
   const activeCat = sp.cat && categories.includes(sp.cat) ? sp.cat : undefined;
   const visible = activeCat ? products.filter((p) => p.category === activeCat) : products;
@@ -103,7 +108,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
             {shop.city && <div className="text-body text-muted">{shop.city}</div>}
           </div>
         </div>
-
+        {demo && <DemoNotice lang={lang} />}
       </header>
       {categories.length > 0 && (
         <div className="sticky top-0 z-20 border-b border-line bg-surface">
@@ -156,7 +161,9 @@ export default async function ShopPage({ params, searchParams }: Props) {
                   </div>
                 </Link>
                 <div className="mt-auto px-3 pb-3">
-                  {p.in_stock && isInquiry(p.price_mode) ? (
+                  {p.in_stock && isInquiry(p.price_mode) && demo ? (
+                    <DemoActionStub lang={lang} />
+                  ) : p.in_stock && isInquiry(p.price_mode) ? (
                     <InquiryButton
                       shopId={shop.id}
                       productId={p.id}
