@@ -103,3 +103,9 @@ reports/            скриншоты и отчёты проверок
 ## Команда
 
 Владелец репозитория: [@temirkhanerbolatovich-coder](https://github.com/temirkhanerbolatovich-coder). Участники: [@Aikyn800](https://github.com/Aikyn800), [@megaknight707](https://github.com/megaknight707).
+
+## UI/UX — Task 5
+
+[Отчёт и ограничения](docs/CODEX_REPORT_4.md), [скриншоты обеих тем, 390/768/1440 px](reports/ui-polish/).
+
+Для воспроизведения: локальная Supabase → `npx supabase db reset` → `npm run build` → в PowerShell `$env:E2E_SCREENSHOTS='1'; npm run test:e2e -- tests/e2e/screenshots.spec.ts`.
