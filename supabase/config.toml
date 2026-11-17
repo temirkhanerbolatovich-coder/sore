@@ -449,6 +449,11 @@ verify_enabled = true
 [remotes.production.auth.sms]
 enable_confirmations = true
 
+# Пул соединений в облаке (значения как в панели; локальные 20 и 100 нужны только для локальной базы).
+[remotes.production.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
 [remotes.production.storage.vector]
 enabled = false
 
