@@ -225,6 +225,11 @@ isOneToOne: true
 "set_notify_config":
 { Args: { "p_secret": string,"p_url": string }; Returns: undefined
                            },
+"storage_orphan_photos":
+{ Args: { "p_limit"?: number,"p_min_age"?: unknown }; Returns: {
+              "name": string
+            }[]
+                           },
 "valid_bbox":
 { Args: { "b": Json }; Returns: boolean
                            },
