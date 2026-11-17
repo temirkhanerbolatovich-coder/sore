@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (!shop || !link?.chat_id) return NextResponse.json({ ok: true, skipped: "no telegram link" });
 
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dukenai.vercel.app";
-  const { text, buttons } = buildOrderNotification(order as unknown as OrderForMessage, shop.name, site);
-  const sent = await sendTelegram(link.chat_id, text, buttons);
+  const { text, buttons, actions } = buildOrderNotification(order as unknown as OrderForMessage, shop.name, site);
+  const sent = await sendTelegram(link.chat_id, text, buttons, actions);
   return NextResponse.json({ ok: sent });
 }

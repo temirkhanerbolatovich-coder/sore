@@ -43,6 +43,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"bot_drafts": {
+                  Row: {
+                    "chat_id": number,"created_at": string,"id": string,"payload": NonNullable<Json>,"shop_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "chat_id": number,"created_at"?: string,"id"?: string,"payload": NonNullable<Json>,"shop_id": string
+                  }
+                  Update: {
+                    "chat_id"?: number,"created_at"?: string,"id"?: string,"payload"?: NonNullable<Json>,"shop_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bot_drafts_shop_id_fkey"
+      columns: ["shop_id"]
+isOneToOne: false
+      referencedRelation: "shops"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"bot_updates": {
+                  Row: {
+                    "created_at": string,"update_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"update_id": number
+                  }
+                  Update: {
+                    "created_at"?: string,"update_id"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"events": {
                   Row: {
                     "created_at": string,"id": string,"shop_id": string,"type": string

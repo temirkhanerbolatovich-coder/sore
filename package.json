@@ -14,7 +14,9 @@
     "ai:check": "tsx scripts/ai-check.ts",
     "ai:batch": "tsx scripts/ai-batch.ts",
     "seed:pilot": "tsx scripts/seed-pilot.ts",
-    "telegram:setup": "tsx scripts/telegram-setup.ts"
+    "telegram:setup": "tsx scripts/telegram-setup.ts",
+    "bot": "tsx scripts/telegram-polling.ts",
+    "brand:export": "tsx scripts/brand-export.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
@@ -23,6 +25,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.1.0",
     "exceljs": "^4.4.0",
+    "grammy": "^1.46.0",
     "lucide-react": "^1.73.0",
     "next": "16.4.6",
     "qrcode": "^1.5.4",

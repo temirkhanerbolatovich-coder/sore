@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { CatalogFileError, detectKind, MAX_FILE_BYTES, parseCatalog } from "@/lib/catalog-file";
+import { IMPORT_SKIP_REASON } from "@/lib/catalog-template";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { invalidateShopFromRoute } from "@/lib/shop-data";
-import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 
 /**
  * Импорт прайса: файл → проверка строк → одна транзакция в БД (функция import_products от имени продавца,
@@ -13,11 +13,6 @@ import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 export const maxDuration = 60;
 
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status });
-
-const SKIP_REASON: Record<string, string> = {
-  limit: `лимит бесплатного тарифа: ${FREE_PRODUCT_LIMIT} товаров`,
-  invalid: "база не приняла значения строки",
-};
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -71,6 +66,6 @@ export async function POST(request: Request) {
     invalidateShopFromRoute(shop.slug);
   }
 
-  const report = [...parsed.errors, ...skipped.map((s) => ({ row: s.row, message: SKIP_REASON[s.reason] ?? SKIP_REASON.invalid }))].sort((a, b) => a.row - b.row);
+  const report = [...parsed.errors, ...skipped.map((s) => ({ row: s.row, message: IMPORT_SKIP_REASON[s.reason] ?? IMPORT_SKIP_REASON.invalid }))].sort((a, b) => a.row - b.row);
   return NextResponse.json({ created, updated, skipped: report.length, total: parsed.total, report });
 }

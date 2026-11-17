@@ -9,7 +9,8 @@
  *   TELEGRAM_NOTIFY_SECRET    любая длинная случайная строка (проверка запросов от базы)
  *   NEXT_PUBLIC_SITE_URL      публичный адрес сайта (https://…), куда Telegram и база будут слать запросы
  *   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
- * Скрипт: проверяет токен, регистрирует webhook у Telegram и сохраняет адрес и секрет уведомлений в базе.
+ * Скрипт: проверяет токен, регистрирует webhook у Telegram (сообщения и нажатия кнопок), ставит меню команд
+ * бота SÖRE и сохраняет адрес и секрет уведомлений в базе.
  */
 import { createClient } from "@supabase/supabase-js";
 import { loadEnvConfig } from "@next/env";
@@ -39,8 +40,12 @@ async function main() {
 
   const me = (await call("getMe")) as { username: string };
   console.log(`Бот: @${me.username}`);
-  await call("setWebhook", { url: `${site}/api/telegram/webhook`, secret_token: webhookSecret, allowed_updates: ["message"], drop_pending_updates: true });
+  await call("setWebhook", { url: `${site}/api/telegram/webhook`, secret_token: webhookSecret, allowed_updates: ["message", "callback_query"], drop_pending_updates: true });
   console.log(`Webhook: ${site}/api/telegram/webhook`);
+  const { BOT_COMMANDS } = await import("@/lib/bot/texts");
+  await call("setMyCommands", { commands: BOT_COMMANDS });
+  await call("setMyName", { name: "SÖRE" }).catch((e) => console.warn(`Имя бота не обновлено: ${e instanceof Error ? e.message : e}`));
+  console.log("Меню команд бота обновлено.");
 
   const admin = createClient(need("NEXT_PUBLIC_SUPABASE_URL"), need("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
   const { error } = await admin.rpc("set_notify_config", { p_url: `${site}/api/telegram/notify`, p_secret: notifySecret });

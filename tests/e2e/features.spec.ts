@@ -171,7 +171,7 @@ test("Telegram: привязка по ссылке и уведомление о 
     expect(String(msg.chat_id)).toBe("555");
     expect(msg.text).toContain("Торт для Telegram × 1 — 7 000 ₸");
     expect(msg.text).toContain("Мадина &lt;b&gt;"); // пользовательский текст экранирован
-    expect(msg.reply_markup?.inline_keyboard.flat().map((b) => b.text)).toEqual(["Открыть заказы", "Написать клиенту в WhatsApp"]);
+    expect(msg.reply_markup?.inline_keyboard.flat().map((b) => b.text)).toEqual(["Открыть заказы", "Написать клиенту в WhatsApp", "✅ Выполнен", "✖️ Отменить"]);
 
     // Чужой секрет не пропускает запрос уведомления.
     const forged = await request.post(`${base}/api/telegram/notify`, { headers: { "x-notify-secret": "wrong" }, data: { order_id: "00000000-0000-0000-0000-000000000000" } });
