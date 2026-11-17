@@ -31,7 +31,7 @@ export function ProductBuy({
           {variants.map((v) => (
             <label
               key={v.id}
-              className={`flex min-h-11 cursor-pointer items-center rounded-xl px-4 text-[15px] font-bold has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink ${
+              className={`flex min-h-11 cursor-pointer items-center rounded-xl px-4 text-body font-bold has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink ${
                 v.id === selected.id ? "bg-ink text-cream" : "border-[1.5px] border-field"
               }`}
             >

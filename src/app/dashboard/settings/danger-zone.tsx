@@ -23,7 +23,7 @@ export function DangerZone({ slug }: { slug: string }) {
       </button>
       {open && (
         <form id="delete-account-form" action={action} className="card flex flex-col gap-3 p-4">
-          <p className="text-[15px] leading-relaxed">
+          <p className="text-body leading-relaxed">
             Будут безвозвратно удалены магазин, все товары, фото и заказы, а также ваш аккаунт. Отменить это нельзя.
           </p>
           <label htmlFor="confirm-slug" className="text-sm font-semibold">

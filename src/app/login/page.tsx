@@ -30,7 +30,7 @@ export default async function LoginPage({
         <h1 className="text-3xl font-extrabold leading-tight tracking-tight">
           Войдите, чтобы создать магазин
         </h1>
-        <p className="text-[17px] leading-relaxed text-muted">
+        <p className="text-lead leading-relaxed text-muted">
           Войдите по ссылке из письма или через Google, чтобы создать витрину и принимать заказы. Пароль не нужен.
         </p>
       </div>

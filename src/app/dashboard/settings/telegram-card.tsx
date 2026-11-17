@@ -44,7 +44,7 @@ export function TelegramCard({ linked }: { linked: boolean }) {
       </h2>
       {linked ? (
         <>
-          <p role="status" className="text-[15px] leading-relaxed text-wa">
+          <p role="status" className="text-body leading-relaxed text-wa">
             Telegram подключён: новые заказы приходят вам сообщением.
           </p>
           <button type="button" disabled={busy} onClick={disconnect} className="min-h-11 self-start text-sm font-semibold text-muted underline">
@@ -53,14 +53,14 @@ export function TelegramCard({ linked }: { linked: boolean }) {
         </>
       ) : url ? (
         <>
-          <p className="text-[15px] leading-relaxed text-muted">Откройте бота и нажмите Start. Эта страница сама обновится, когда всё подключится.</p>
+          <p className="text-body leading-relaxed text-muted">Откройте бота и нажмите Start. Эта страница сама обновится, когда всё подключится.</p>
           <a href={url} target="_blank" rel="noopener noreferrer" className="btn-dark h-12">
             Открыть Telegram
           </a>
         </>
       ) : (
         <>
-          <p className="text-[15px] leading-relaxed text-muted">Получайте новый заказ сообщением в Telegram, не заходя в кабинет.</p>
+          <p className="text-body leading-relaxed text-muted">Получайте новый заказ сообщением в Telegram, не заходя в кабинет.</p>
           <button type="button" disabled={busy} onClick={connect} className="btn-dark h-12 disabled:opacity-60">
             {busy ? "Готовим ссылку…" : "Подключить Telegram"}
           </button>

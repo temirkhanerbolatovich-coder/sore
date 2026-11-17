@@ -44,7 +44,7 @@ export function OnboardingForm() {
           Адрес ссылки
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-[15px] text-muted">sore.kz/</span>
+          <span className="text-body text-muted">sore.kz/</span>
           <input
             id="slug"
             name="slug"
@@ -59,7 +59,7 @@ export function OnboardingForm() {
             className="input"
           />
         </div>
-        <p className="text-[13px] text-muted">Латиница, цифры и дефис. Эту ссылку вы поставите в био Instagram.</p>
+        <p className="text-caption text-muted">Латиница, цифры и дефис. Эту ссылку вы поставите в био Instagram.</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -79,7 +79,7 @@ export function OnboardingForm() {
           aria-invalid={errIn("whatsapp")}
           className="input"
         />
-        <p className="text-[13px] text-muted">Сюда будут приходить заказы.</p>
+        <p className="text-caption text-muted">Сюда будут приходить заказы.</p>
       </div>
 
       <div className="flex flex-col gap-1.5">

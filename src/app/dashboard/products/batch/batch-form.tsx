@@ -134,12 +134,12 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
       <input type="hidden" name="payload" value={payload} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (
-          <p className="card p-4 text-[15px] leading-relaxed text-muted">
+          <p className="card p-4 text-body leading-relaxed text-muted">
             Бесплатный лимит товаров исчерпан. Удалите ненужные позиции или дождитесь тарифа Pro.
           </p>
         ) : (
           <>
-            <p className="text-[15px] leading-relaxed text-muted">
+            <p className="text-body leading-relaxed text-muted">
               Выберите до {limit} фото: ИИ составит название и описание на русском и казахском по каждому. Цены вы укажете сами.
             </p>
             <input ref={fileRef} id="batch-files" type="file" accept="image/*" multiple className="sr-only" onChange={onFiles} disabled={working || items.length >= limit} />
@@ -205,7 +205,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
               </div>
               {item.status === "ready" && (
                 <>
-                  {item.note && <p className="text-[13px] font-semibold text-accent-dark">{item.note}</p>}
+                  {item.note && <p className="text-caption font-semibold text-accent-dark">{item.note}</p>}
                   <div className="flex items-center gap-2">
                     <div className="grid flex-1 grid-cols-2 gap-2" role="group" aria-label={`Цена ${index + 1}`}>
                       {(
@@ -254,7 +254,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
           {saving ? "Сохраняем…" : items.length > 0 ? `Сохранить ${items.length} ${items.length === 1 ? "товар" : "товаров"}` : "Сохранить"}
         </button>
         {items.length > 0 && invalid && !working && (
-          <p className="text-center text-[13px] text-muted">Укажите название у каждого товара и цену там, где выбрана «Точная».</p>
+          <p className="text-center text-caption text-muted">Укажите название у каждого товара и цену там, где выбрана «Точная».</p>
         )}
         <Link href="/dashboard" className="btn-outline h-12 w-full">
           Отмена

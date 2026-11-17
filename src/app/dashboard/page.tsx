@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { requireShop } from "@/lib/shop";
 import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
 import { CopyLink } from "./copy-link";
+import { SavedToast } from "./saved-toast";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { AddProducts } from "./add-products";
 import { FirstSteps } from "./first-steps";
@@ -68,14 +69,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
       <div className="lg:flex lg:items-start lg:gap-4">
         <div id="main-content" tabIndex={-1} className="min-w-0 flex-1">
-        {saved && SAVED[saved] && (
-          <div role="status" className="mx-5 mt-3 flex items-center justify-between gap-3 rounded-xl border border-ok-line bg-ok-bg px-4 py-3 text-[15px] font-semibold text-ok-ink">
-            <span>{saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]}</span>
-            <Link href="/dashboard" className="flex min-h-11 items-center px-1 text-sm underline" aria-label="Закрыть сообщение">
-              Закрыть
-            </Link>
-          </div>
-        )}
+        {saved && SAVED[saved] && <SavedToast message={saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]} />}
         {products.length === 0 && <AddProducts />}
         <HomeScreenHint />
         <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
@@ -89,7 +83,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
         {!full && (
           <div className="flex flex-col gap-2 px-5 pt-2">
-            <Link href="/dashboard/products/shelf" className="btn-dark h-12 min-h-12 w-full text-[15px]">
+            <Link href="/dashboard/products/shelf" className="btn-dark h-12 min-h-12 w-full text-body">
               <CameraIcon />
               Добавить по фото полки
             </Link>
@@ -135,7 +129,7 @@ function ShopSummary({ fullUrl, shown, qr, stats, desktop = false }: {
   return (
     <div className="flex flex-col gap-4">
       <div className="card flex items-center gap-2 p-1.5 pl-3.5">
-        <div className="min-w-0 flex-1 truncate text-[15px] font-semibold">{shown}</div>
+        <div className="min-w-0 flex-1 truncate text-body font-semibold">{shown}</div>
         <CopyLink url={fullUrl} />
       </div>
       {desktop && <div className="rounded-2xl border border-line bg-surface p-4 text-center">
@@ -144,12 +138,12 @@ function ShopSummary({ fullUrl, shown, qr, stats, desktop = false }: {
       </div>}
       <div className="grid grid-cols-2 gap-3">
         <div className="card p-3.5">
-          <div className="text-[13px] text-muted">Просмотры за неделю</div>
-          <div className="text-[28px] font-extrabold leading-tight">{stats.views}</div>
+          <div className="text-caption text-muted">Просмотры за неделю</div>
+          <div className="text-stat font-extrabold leading-tight">{stats.views}</div>
         </div>
         <div className="card p-3.5">
-          <div className="text-[13px] text-muted">Нажали «Заказать»</div>
-          <div className="text-[28px] font-extrabold leading-tight">{stats.clicks}</div>
+          <div className="text-caption text-muted">Нажали «Заказать»</div>
+          <div className="text-stat font-extrabold leading-tight">{stats.clicks}</div>
         </div>
       </div>
     </div>

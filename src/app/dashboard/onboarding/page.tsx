@@ -30,7 +30,7 @@ export default async function OnboardingPage() {
       </div>
       <div id="main-content" tabIndex={-1} className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight">Создайте свой магазин</h1>
-        <p className="text-[17px] leading-relaxed text-muted">Шаг 1 из 2. Укажите название и WhatsApp. Затем выберите, как добавить товары.</p>
+        <p className="text-lead leading-relaxed text-muted">Шаг 1 из 2. Укажите название и WhatsApp. Затем выберите, как добавить товары.</p>
       </div>
       <OnboardingForm />
     </main>
