@@ -1,8 +1,10 @@
 /**
- * Демо-магазины SÖRE: шесть вымышленных магазинов малого бизнеса Казахстана с карточками и иллюстрациями.
- * Данные: scripts/demo-shops/data.ts, картинки: scripts/demo-shops/art.ts (рисуются здесь же, файлы не нужны).
+ * Демо-магазины SÖRE: шесть вымышленных магазинов малого бизнеса Казахстана с карточками и фото.
+ * Данные: scripts/demo-shops/data.ts. Фото скрипт скачивает со стока Pexels по номеру (лицензия Pexels:
+ * бесплатно, без указания автора) и обрезает в квадрат; если Pexels недоступен, рисует иллюстрацию
+ * (scripts/demo-shops/art.ts). Файлы фото в репозитории не хранятся.
  *
- *   npm run seed:demo -- --preview папка      только нарисовать картинки в папку, база не нужна
+ *   npm run seed:demo -- --preview папка      только подготовить картинки в папку, база не нужна
  *   npm run seed:demo                         заполнить локальную базу
  *   npm run seed:demo -- --allow-remote       заполнить облачную базу (нужен DEMO_WHATSAPP)
  *   npm run seed:demo -- --remove [--allow-remote]   удалить демо-магазины, их владельцев и фото
@@ -36,11 +38,32 @@ function arg(name: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-async function renderProduct(shop: DemoShop, product: DemoProduct): Promise<{ full: Buffer; thumb: Buffer }> {
-  const svg = Buffer.from(artSvg(product.art, { bg: shop.bg, accent: product.accent }));
-  const full = await sharp(svg).resize(1200, 1200).jpeg({ quality: 86, mozjpeg: true }).toBuffer();
+/** Номер фото Pexels в конце адреса: «red-roses-bouquet-on-table-22604232» → 22604232. */
+const pexelsId = (photo: string) => /-(\d+)$/.exec(photo)?.[1] ?? null;
+
+async function downloadPhoto(photo: string): Promise<Buffer | null> {
+  const id = pexelsId(photo);
+  if (!id) return null;
+  try {
+    const res = await fetch(`https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1600`, {
+      headers: { "User-Agent": "Mozilla/5.0 (sore-seed-demo)" },
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+async function renderProduct(shop: DemoShop, product: DemoProduct): Promise<{ full: Buffer; thumb: Buffer; source: "pexels" | "art" }> {
+  const photo = await downloadPhoto(product.photo);
+  const input = photo ?? Buffer.from(artSvg(product.art, { bg: shop.bg, accent: product.accent }));
+  // Квадрат 1200 px, обрезка по центру, как у вырезок «фото полки»; ориентация по EXIF.
+  const full = await sharp(input).rotate().resize(1200, 1200, { fit: "cover", position: "attention" }).jpeg({ quality: 84, mozjpeg: true }).toBuffer();
   const thumb = await sharp(full).resize(THUMB_WIDTH).jpeg({ quality: THUMB_QUALITY, mozjpeg: true }).toBuffer();
-  return { full, thumb };
+  if (!photo) console.warn(`  ! ${product.title}: фото Pexels недоступно, взята иллюстрация`);
+  return { full, thumb, source: photo ? "pexels" : "art" };
 }
 
 async function preview(dir: string) {
@@ -48,8 +71,8 @@ async function preview(dir: string) {
     const out = path.join(dir, shop.slug);
     await mkdir(out, { recursive: true });
     for (const [i, product] of shop.products.entries()) {
-      const { full } = await renderProduct(shop, product);
-      await writeFile(path.join(out, `${i + 1}-${product.art}.jpg`), full);
+      const { full, source } = await renderProduct(shop, product);
+      await writeFile(path.join(out, `${i + 1}-${source}-${product.art}.jpg`), full);
     }
     console.log(`✔ ${shop.name}: ${shop.products.length} картинок → ${out}`);
   }

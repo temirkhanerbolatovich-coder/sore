@@ -43,7 +43,13 @@ describe("демо-магазины", () => {
       expect(product.description_kz.length).toBeLessThanOrEqual(1000);
       expect(product.category.length).toBeLessThanOrEqual(60);
       expect(ART_NAMES).toContain(product.art);
+      expect(product.photo).toMatch(/^[a-z0-9-]+-\d+$/);
     }
+  });
+
+  it("у каждого товара своё фото", () => {
+    const photos = DEMO_SHOPS.flatMap((s) => s.products.map((p) => p.photo));
+    expect(new Set(photos).size).toBe(photos.length);
   });
 
   it("каждая иллюстрация рисуется в квадратный JPEG", async () => {
