@@ -125,6 +125,16 @@ export async function toggleStock(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+export async function toggleHidden(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const next = formData.get("next") === "true";
+  const { supabase, shop } = await requireShop();
+  const { error } = await supabase.from("products").update({ is_hidden: next }).eq("id", id).eq("shop_id", shop.id);
+  if (error) throw new Error("Не удалось изменить видимость");
+  invalidateShop(shop.slug);
+  revalidatePath("/dashboard");
+}
+
 export async function deleteProduct(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const { supabase, shop } = await requireShop();

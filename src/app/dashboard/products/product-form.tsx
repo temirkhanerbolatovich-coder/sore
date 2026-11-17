@@ -108,7 +108,7 @@ export function ProductForm({ product }: { product?: Product }) {
         <div className="flex flex-1 flex-col gap-4 p-5">
           <h2 className="text-lg font-bold">Основное</h2>
           <div className="flex items-center gap-3.5">
-            <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-thumb text-center text-[13px] text-muted">
+            <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-thumb text-center text-caption text-muted">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoUrl} alt="Фото товара" className="size-full object-cover" />
@@ -128,7 +128,7 @@ export function ProductForm({ product }: { product?: Product }) {
               />
               <label
                 htmlFor="photo"
-                className="flex h-11 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-surface text-[15px] font-semibold has-[:disabled]:opacity-60"
+                className="flex h-11 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-surface text-body font-semibold has-[:disabled]:opacity-60"
               >
                 {uploading ? "Загружаем…" : photoUrl ? "Заменить фото" : "Сделать или выбрать фото"}
               </label>
@@ -141,12 +141,12 @@ export function ProductForm({ product }: { product?: Product }) {
                 type="button"
                 onClick={fillWithAi}
                 disabled={!photoUrl || uploading || aiBusy}
-                className="flex h-11 items-center justify-center gap-2 rounded-xl bg-ink text-[15px] font-bold text-cream disabled:opacity-50"
+                className="flex h-11 items-center justify-center gap-2 rounded-xl bg-ink text-body font-bold text-cream disabled:opacity-50"
               >
                 <AiIcon size={18} />
                 {aiBusy ? "ИИ думает…" : "Заполнить с ИИ"}
               </button>
-              {!photoUrl && <p className="text-[13px] leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
+              {!photoUrl && <p className="text-caption leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
             </div>
           </div>
           {photoError && (
@@ -194,7 +194,7 @@ export function ProductForm({ product }: { product?: Product }) {
               maxLength={1000}
               value={descRu}
               onChange={(e) => setDescRu(e.target.value)}
-              className="input h-auto resize-none py-2.5 text-[15px] leading-snug"
+              className="input h-auto resize-none py-2.5 text-body leading-snug"
             />
           </Field>
 
@@ -206,7 +206,7 @@ export function ProductForm({ product }: { product?: Product }) {
               maxLength={1000}
               value={descKz}
               onChange={(e) => setDescKz(e.target.value)}
-              className="input h-auto resize-none py-2.5 text-[15px] leading-snug"
+              className="input h-auto resize-none py-2.5 text-body leading-snug"
             />
           </Field>
 
@@ -237,7 +237,7 @@ export function ProductForm({ product }: { product?: Product }) {
               ))}
             </div>
             {priceMode !== "fixed" && (
-              <p className="text-[13px] leading-snug text-muted">
+              <p className="text-caption leading-snug text-muted">
                 Такую позицию покупатель не добавляет в корзину: кнопка «Узнать цену» открывает ваш WhatsApp с готовым сообщением.
               </p>
             )}
@@ -320,7 +320,7 @@ export function ProductForm({ product }: { product?: Product }) {
                       Убрать все варианты
                     </button>
                   </div>
-                  <p className="text-[13px] leading-snug text-muted">В магазине покупатель выберет вариант, а на витрине будет «от» самой низкой цены.</p>
+                  <p className="text-caption leading-snug text-muted">В магазине покупатель выберет вариант, а на витрине будет «от» самой низкой цены.</p>
                 </>
               )}
             </fieldset>
@@ -364,7 +364,7 @@ export function ProductForm({ product }: { product?: Product }) {
           className="bg-surface px-5 pb-6"
         >
           <input type="hidden" name="id" value={product.id} />
-          <button type="submit" className="w-full py-2 text-[15px] font-semibold text-accent-dark underline">
+          <button type="submit" className="w-full py-2 text-body font-semibold text-accent-dark underline">
             Удалить товар
           </button>
         </ActionForm>

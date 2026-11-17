@@ -65,7 +65,7 @@ export function ImportForm({ slots }: { slots: number }) {
             </div>
             <p className="text-lg font-bold leading-tight">Загрузите прайс одним файлом</p>
           </div>
-          <p className="text-[15px] leading-relaxed text-muted">
+          <p className="text-body leading-relaxed text-muted">
             Нужны колонки «Название» и «Цена». По желанию: «Артикул», «Категория», «Описание», «Количество». Если артикул уже есть в
             магазине, товар обновится, а не задвоится. Бесплатно можно держать до 15 товаров, сейчас свободно мест: {slots}.
           </p>
@@ -101,7 +101,7 @@ export function ImportForm({ slots }: { slots: number }) {
           {file ? "Выбрать другой файл" : "Выбрать файл"}
         </label>
         {file && (
-          <p className="truncate text-center text-[15px] font-semibold" title={file.name}>
+          <p className="truncate text-center text-body font-semibold" title={file.name}>
             {file.name} · {Math.max(1, Math.round(file.size / 1024))} КБ
           </p>
         )}
@@ -113,7 +113,7 @@ export function ImportForm({ slots }: { slots: number }) {
         )}
 
         {error && (
-          <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="card border-accent p-4 text-[15px] font-semibold text-accent-dark">
+          <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="card border-accent p-4 text-body font-semibold text-accent-dark">
             {error}
           </p>
         )}
@@ -124,7 +124,7 @@ export function ImportForm({ slots }: { slots: number }) {
               <CheckIcon size={22} className="text-wa" />
               {changed > 0 ? "Прайс загружен" : "Ничего не загружено"}
             </div>
-            <ul className="flex flex-col gap-1 text-[15px]">
+            <ul className="flex flex-col gap-1 text-body">
               <li>
                 Добавлено: <b>{result.created}</b>
               </li>
@@ -138,14 +138,14 @@ export function ImportForm({ slots }: { slots: number }) {
             {result.report.length > 0 && (
               <div className="flex flex-col gap-2 border-t border-line pt-3">
                 <p className="text-sm font-bold">Что не загрузилось</p>
-                <ul className="flex flex-col gap-1 text-[13px] text-muted">
+                <ul className="flex flex-col gap-1 text-caption text-muted">
                   {result.report.slice(0, SHOWN_ERRORS).map((r) => (
                     <li key={`${r.row}-${r.message}`}>
                       Строка {r.row}: {r.message}
                     </li>
                   ))}
                 </ul>
-                {result.report.length > SHOWN_ERRORS && <p className="text-[13px] text-muted">…и ещё {result.report.length - SHOWN_ERRORS}. Все строки в отчёте.</p>}
+                {result.report.length > SHOWN_ERRORS && <p className="text-caption text-muted">…и ещё {result.report.length - SHOWN_ERRORS}. Все строки в отчёте.</p>}
                 <button type="button" onClick={() => downloadReport(result.report)} className="btn-outline h-11 min-h-11 text-sm">
                   <DownloadIcon size={18} />
                   Скачать отчёт об ошибках
@@ -162,7 +162,7 @@ export function ImportForm({ slots }: { slots: number }) {
             {busy ? "Загружаем…" : "Загрузить прайс"}
           </button>
         )}
-        {slots === 0 && !result && <p className="text-center text-[13px] text-muted">Лимит исчерпан: обновить существующие товары по артикулу можно, добавить новые нельзя.</p>}
+        {slots === 0 && !result && <p className="text-center text-caption text-muted">Лимит исчерпан: обновить существующие товары по артикулу можно, добавить новые нельзя.</p>}
         <Link href="/dashboard" className={`${result ? "btn-accent" : "btn-outline"} h-12 w-full`}>
           {result ? "К товарам" : "Назад"}
         </Link>

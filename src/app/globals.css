@@ -112,6 +112,10 @@
   --color-ok-ink: var(--ok-ink);
   --color-thumb: var(--thumb);
   --color-switch-off: var(--switch-off);
+  --text-caption: 0.8125rem;
+  --text-body: 0.9375rem;
+  --text-lead: 1.0625rem;
+  --text-stat: 1.75rem;
   --font-sans: "Onest", system-ui, sans-serif;
 }
 

@@ -141,7 +141,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
       )}
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-[15px] font-semibold">
+        <label htmlFor="email" className="text-body font-semibold">
           Электронная почта
         </label>
         <input
@@ -152,7 +152,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
           placeholder="aliya@mail.kz"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="input h-14 text-[17px]"
+          className="input h-14 text-lead"
         />
       </div>
       {message && (

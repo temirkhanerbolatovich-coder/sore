@@ -119,14 +119,14 @@ isOneToOne: false
                   ]
                 },"products": {
                   Row: {
-                    "bbox": Json | null,"category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"photo_url": string | null,"price": number,"price_mode": string,"price_needs_review": boolean,"shop_id": string,"sku": string | null,"sort": number,"source_photo_url": string | null,"title": string,"variants": NonNullable<Json>
+                    "bbox": Json | null,"category": string | null,"created_at": string,"description_kz": string | null,"description_ru": string | null,"id": string,"in_stock": boolean,"is_hidden": boolean,"photo_url": string | null,"price": number,"price_mode": string,"price_needs_review": boolean,"shop_id": string,"sku": string | null,"sort": number,"source_photo_url": string | null,"title": string,"variants": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "bbox"?: Json | null,"category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"price_needs_review"?: boolean,"shop_id": string,"sku"?: string | null,"sort"?: number,"source_photo_url"?: string | null,"title": string,"variants"?: NonNullable<Json>
+                    "bbox"?: Json | null,"category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"is_hidden"?: boolean,"photo_url"?: string | null,"price": number,"price_mode"?: string,"price_needs_review"?: boolean,"shop_id": string,"sku"?: string | null,"sort"?: number,"source_photo_url"?: string | null,"title": string,"variants"?: NonNullable<Json>
                   }
                   Update: {
-                    "bbox"?: Json | null,"category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"price_needs_review"?: boolean,"shop_id"?: string,"sku"?: string | null,"sort"?: number,"source_photo_url"?: string | null,"title"?: string,"variants"?: NonNullable<Json>
+                    "bbox"?: Json | null,"category"?: string | null,"created_at"?: string,"description_kz"?: string | null,"description_ru"?: string | null,"id"?: string,"in_stock"?: boolean,"is_hidden"?: boolean,"photo_url"?: string | null,"price"?: number,"price_mode"?: string,"price_needs_review"?: boolean,"shop_id"?: string,"sku"?: string | null,"sort"?: number,"source_photo_url"?: string | null,"title"?: string,"variants"?: NonNullable<Json>
                   }
                   Relationships: [
                     {

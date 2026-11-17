@@ -242,7 +242,7 @@ test("удаление магазина и аккаунта: нужно ввес
     await page.getByRole("button", { name: "Удалить магазин и аккаунт" }).click();
     await page.getByLabel(/Для подтверждения введите адрес/).fill("не-тот-адрес");
     await page.getByRole("button", { name: "Удалить навсегда" }).click();
-    await expect(page.getByText("введите адрес магазина")).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "введите адрес магазина" })).toBeVisible();
     expect((await admin.from("shops").select("id").eq("id", shopId).maybeSingle()).data).not.toBeNull();
 
     await page.getByLabel(/Для подтверждения введите адрес/).fill(slug);

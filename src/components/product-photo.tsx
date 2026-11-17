@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import { ThumbnailImage } from "@/components/thumbnail-image";
 import { thumbUrl } from "@/lib/photos";
 
@@ -13,6 +14,7 @@ export function ProductPhoto({
   priority = false,
   eager = false,
   thumbnail = false,
+  transitionName,
 }: {
   url: string | null;
   alt: string;
@@ -23,6 +25,8 @@ export function ProductPhoto({
   priority?: boolean;
   eager?: boolean;
   thumbnail?: boolean;
+  /** Имя общего перехода: фото витрины плавно превращается в фото карточки (View Transitions). */
+  transitionName?: string;
 }) {
   const letter = (initial ?? alt).trim().charAt(0).toUpperCase();
   const small = url && thumbnail ? thumbUrl(url) : url;
@@ -32,7 +36,7 @@ export function ProductPhoto({
     decoding: priority || eager ? undefined : "async",
     className: `size-full object-cover ${priority || eager ? "" : "photo-reveal"}`,
   } as const;
-  return (
+  const frame = (
     <div
       className={`flex items-center justify-center overflow-hidden ${className}`}
       style={{ background: TINTS[seed % TINTS.length] }}
@@ -50,4 +54,5 @@ export function ProductPhoto({
       )}
     </div>
   );
+  return transitionName ? <ViewTransition name={transitionName}>{frame}</ViewTransition> : frame;
 }

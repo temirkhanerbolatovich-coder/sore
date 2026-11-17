@@ -49,7 +49,7 @@ export function TelegramContact({ username, text, label, copiedLabel }: { userna
         {label}
       </a>
       {copied && (
-        <p role="status" className="text-center text-[13px] font-semibold text-muted">
+        <p role="status" className="text-center text-caption font-semibold text-muted">
           {copiedLabel}
         </p>
       )}

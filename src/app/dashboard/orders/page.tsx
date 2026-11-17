@@ -64,7 +64,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       <DashboardNav active="orders" desktop />
       <div id="main-content" tabIndex={-1} className="flex flex-col gap-1 px-5 pb-3 pt-6">
         <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
-        <p className="text-[15px] text-muted">
+        <p className="text-body text-muted">
           Заказы сохраняются, даже если клиент не нажал «Отправить» в WhatsApp.
         </p>
       </div>
@@ -102,7 +102,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           return (
             <li key={o.id} className="card flex flex-col gap-2.5 p-4">
               <div className="flex items-center justify-between gap-2">
-                <div className="text-[17px] font-bold">
+                <div className="text-lead font-bold">
                   №{o.number} · {o.customer_name}
                 </div>
                 <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${st.cls}`}>{st.label}</span>

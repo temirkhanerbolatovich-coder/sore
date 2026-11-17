@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(95);
+select plan(98);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -13,11 +13,14 @@ insert into public.products(id,shop_id,title,price,in_stock) values
 insert into public.products(id,shop_id,title,price,price_mode) values
 ('a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000002','Ask me',0,'request'),
 ('a0000000-0000-4000-8000-000000000007','a0000000-0000-4000-8000-000000000002','From price',15000,'from');
+insert into public.products(id,shop_id,title,price,is_hidden) values('b0000000-0000-4000-8000-000000000008','b0000000-0000-4000-8000-000000000002','Hidden',100,true);
 insert into public.ai_generations(shop_id) values('b0000000-0000-4000-8000-000000000002');
 set local role anon;
 select set_config('request.jwt.claim.sub','',true);
 select is((select count(*)::integer from public.shops where slug like 'rls-shop-%'),2,'anonymous reads storefronts');
 select is((select count(*)::integer from public.products where title in ('A','B','Sold out')),3,'anonymous reads products');
+select is((select count(*)::integer from public.products where title='Hidden'),0,'anonymous does not see hidden products');
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000008","qty":1}]','Buyer','77033333333','','')$$,'%items unavailable%','hidden product cannot be ordered');
 select is((select count(*)::integer from public.orders),0,'anonymous cannot read orders');
 select is((select count(*)::integer from public.events),0,'anonymous cannot read events');
 select is((select count(*)::integer from public.ai_generations),0,'anonymous cannot read AI usage');
@@ -38,6 +41,7 @@ select is((select number::integer from public.orders where shop_id='b0000000-000
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
 select is((select count(*)::integer from public.orders where shop_id='b0000000-0000-4000-8000-000000000002'),0,'A cannot read B orders');
+select is((select count(*)::integer from public.products where title='Hidden'),0,'A cannot see B hidden product');
 with changed as (update public.shops set name='hacked' where id='b0000000-0000-4000-8000-000000000002' returning id) select is(count(*)::integer,0,'A cannot update B shop') from changed;
 with changed as (update public.products set price=1 where id='b0000000-0000-4000-8000-000000000003' returning id) select is(count(*)::integer,0,'A cannot update B product') from changed;
 select throws_like($$insert into storage.objects(bucket_id,name) values('product-photos','b0000000-0000-4000-8000-000000000001/hacked.jpg')$$,'%row-level security%','A cannot upload into B folder');

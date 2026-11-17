@@ -60,7 +60,7 @@ export default function Home() {
               Посмотреть демо
             </Link>
           </div>
-          <p className="text-[15px] text-muted">Бесплатно до 15 товаров · без сайта и программиста</p>
+          <p className="text-body text-muted">Бесплатно до 15 товаров · без сайта и программиста</p>
         </div>
 
         <div className="mx-auto grid w-full max-w-md grid-cols-2 items-start gap-3" aria-label="Пример работы SÖRE">
