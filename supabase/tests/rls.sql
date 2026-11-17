@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(98);
+select plan(102);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -93,7 +93,16 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
 select is((select count(*)::integer from public.shop_telegram),1,'owner sees only own Telegram link status');
+-- Одноразовые nonce входа из бота (0021): только сервис, продавец не может ни прочитать, ни погасить чужой.
+select throws_like($$select count(*) from public.bot_login_nonces$$,'%permission denied%','seller cannot read bot login nonces');
+select throws_like($$insert into public.bot_login_nonces(nonce) values ('seller-made-nonce-0001')$$,'%permission denied%','seller cannot burn a bot login nonce');
 reset role;
+set local role anon;
+select throws_like($$select count(*) from public.bot_login_nonces$$,'%permission denied%','anonymous cannot read bot login nonces');
+reset role;
+insert into public.bot_login_nonces(nonce, created_at) values ('rls-old-nonce-000000001', now() - interval '2 days'),('rls-fresh-nonce-0000001', now());
+select private.purge_old_data();
+select is((select string_agg(nonce, ',') from public.bot_login_nonces where nonce like 'rls-%'),'rls-fresh-nonce-0000001','retention removes used bot login nonces after a day');
 
 -- Открытые маршруты вызывают лимитер через service_role, обход через RPC запрещён.
 select ok(not exists (
