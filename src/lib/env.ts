@@ -32,6 +32,7 @@ export const serverEnvSchema = z.object({
   TELEGRAM_WEBHOOK_SECRET: setting.optional(),
   TELEGRAM_NOTIFY_SECRET: setting.optional(),
   TELEGRAM_API_BASE: httpUrl.optional(),
+  CRON_SECRET: z.string().trim().min(16).optional(),
   ADMIN_TELEGRAM_CHAT_ID: z.string().regex(/^-?\d+$/).optional(),
 }).superRefine((env, ctx) => {
   if (!env.TELEGRAM_BOT_TOKEN) return;
