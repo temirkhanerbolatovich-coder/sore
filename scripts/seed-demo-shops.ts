@@ -6,12 +6,12 @@
  *
  *   npm run seed:demo -- --preview папка      только подготовить картинки в папку, база не нужна
  *   npm run seed:demo                         заполнить локальную базу
- *   npm run seed:demo -- --allow-remote       заполнить облачную базу (нужен DEMO_WHATSAPP)
+ *   npm run seed:demo -- --allow-remote       заполнить облачную базу
  *   npm run seed:demo -- --remove [--allow-remote]   удалить демо-магазины, их владельцев и фото
  *
  * Окружение: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (как у приложения),
- *   DEMO_WHATSAPP  номер, куда уйдут тестовые заказы из демо-витрин (ваш собственный). Для облака обязателен,
- *                  чтобы заказы случайных посетителей не попали постороннему человеку.
+ *   DEMO_WHATSAPP  необязательно. Демо-витрины не отправляют заказы и не показывают номер (src/components/demo-notice.tsx),
+ *                  а в базе нужен хоть какой-то: по умолчанию 70000000000, кода 000 не существует.
  * Скрипт можно запускать повторно: товары и фото демо-магазинов пересоздаются.
  * Адреса начинаются с «demo-»: такие магазины не попадают в sitemap и закрыты от индексации (src/lib/slug.ts).
  */
@@ -172,11 +172,9 @@ async function main() {
     return;
   }
 
-  const whatsapp = (process.env.DEMO_WHATSAPP ?? "").replace(/\D/g, "");
-  if (!local && !/^[0-9]{10,15}$/.test(whatsapp)) {
-    throw new Error("Задайте DEMO_WHATSAPP: ваш номер для тестовых заказов из демо-витрин (например 77011234567).");
-  }
-  for (const shop of DEMO_SHOPS) await seedShop(admin, shop, whatsapp || "77010000000");
+  const whatsapp = (process.env.DEMO_WHATSAPP ?? "").replace(/\D/g, "") || "70000000000";
+  if (!/^[0-9]{10,15}$/.test(whatsapp)) throw new Error("DEMO_WHATSAPP: 10–15 цифр.");
+  for (const shop of DEMO_SHOPS) await seedShop(admin, shop, whatsapp);
   console.log(`\nГотово: ${DEMO_SHOPS.length} демо-магазинов. Витрины обновятся в течение 4 минут (кэш).`);
 }
 
