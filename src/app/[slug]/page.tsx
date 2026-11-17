@@ -71,7 +71,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex items-center gap-2">
           <ThemeToggle className="size-11" />
-          <div className="flex rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
+          <div className="flex rounded-full border-[1.5px] border-field text-caption font-bold" role="group" aria-label="Язык">
             <Link
               href={shopHref(base, "ru", activeCat)}
               aria-current={lang === "ru" ? "true" : undefined}
@@ -100,7 +100,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
           />
           <div className="min-w-0">
             <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{shop.name}</h1>
-            {shop.city && <div className="text-[15px] text-muted">{shop.city}</div>}
+            {shop.city && <div className="text-body text-muted">{shop.city}</div>}
           </div>
         </div>
 
@@ -145,12 +145,13 @@ export default async function ShopPage({ params, searchParams }: Props) {
                     alt={p.title}
                     seed={i}
                     thumbnail
+                    transitionName={`photo-${p.id}`}
                     priority={i === firstPhoto}
                     eager={i < 4}
                     className={`aspect-[4/3] w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}
                   />
                   <div className="flex flex-col gap-1 p-3 pb-2">
-                    <div className="text-[15px] font-semibold leading-tight">{p.title}</div>
+                    <div className="text-body font-semibold leading-tight">{p.title}</div>
                     <div className="text-base font-extrabold">{priceLabel(p.price, p.price_mode, lang, variantsOf(p).length > 0)}</div>
                   </div>
                 </Link>
@@ -179,14 +180,14 @@ export default async function ShopPage({ params, searchParams }: Props) {
           />
         )}
 
-        <p className="mt-8 text-center text-[13px] text-muted">
+        <p className="mt-8 text-center text-caption text-muted">
           {t.madeWith}{" "}
           <Link href="/" className="font-bold text-accent underline">
             Sөre
           </Link>{" "}
           · {t.createOwn}
         </p>
-        <p className="mt-2 flex justify-center gap-5 text-[13px] text-muted">
+        <p className="mt-2 flex justify-center gap-5 text-caption text-muted">
           <Link href="/terms" className="flex min-h-11 items-center underline">
             {t.terms}
           </Link>

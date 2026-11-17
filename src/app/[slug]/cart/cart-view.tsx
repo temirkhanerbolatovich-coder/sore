@@ -166,7 +166,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           {t.accepted}
           {sentNumber ? ` · №${sentNumber}` : ""}
         </h1>
-        <p className="text-[17px] font-semibold">{t.nextStep}</p>
+        <p className="text-lead font-semibold">{t.nextStep}</p>
         <p className="leading-relaxed text-muted">
           {t.waHelp}
         </p>
@@ -219,7 +219,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
               <li key={lineKey(l)} className="card flex items-center gap-3 p-2.5">
                 <ProductPhoto url={l.photo} alt="" seed={i} className="size-14 flex-none rounded-xl" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[15px] font-semibold leading-tight">
+                  <div className="text-body font-semibold leading-tight">
                     {l.title}
                     {l.variantTitle ? ` · ${l.variantTitle}` : ""}
                   </div>
@@ -246,7 +246,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
           </button>
 
           <div className="flex flex-col gap-3">
-            <h2 className="text-[17px] font-bold">{t.details}</h2>
+            <h2 className="text-lead font-bold">{t.details}</h2>
             <Field label={t.name} htmlFor="name">
               <input id="name" required maxLength={80} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="input" />
             </Field>
@@ -278,7 +278,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
                   type="button"
                   aria-pressed={delivery === v}
                   onClick={() => setDelivery(v)}
-                  className={`h-12 rounded-xl text-[15px] font-bold ${delivery === v ? "bg-ink text-cream" : "border-[1.5px] border-field"}`}
+                  className={`h-12 rounded-xl text-body font-bold ${delivery === v ? "bg-ink text-cream" : "border-[1.5px] border-field"}`}
                 >
                   {v === "delivery" ? t.delivery : t.pickup}
                 </button>
@@ -299,7 +299,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
               </Field>
             </div>
             {shop.leadDays > 0 && (
-              <p className="text-[13px] text-muted">
+              <p className="text-caption text-muted">
                 {t.leadPre} {shop.leadDays} {t.leadPost}
               </p>
             )}
@@ -324,7 +324,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             <WhatsAppIcon />
             {sending ? t.sending : t.order}
           </button>
-          <p className="text-center text-[13px] text-muted">{t.orderHint}</p>
+          <p className="text-center text-caption text-muted">{t.orderHint}</p>
           <p className="text-center text-[12px] text-muted">
             {t.consent}{" "}
             <Link href="/privacy" className="underline">

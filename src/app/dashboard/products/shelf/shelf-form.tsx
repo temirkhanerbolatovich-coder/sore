@@ -195,7 +195,7 @@ export function ShelfForm({ slots }: { slots: number }) {
       <input type="hidden" name="payload" value={payload} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (
-          <p className="card p-4 text-[15px] leading-relaxed text-muted">
+          <p className="card p-4 text-body leading-relaxed text-muted">
             Бесплатный лимит товаров исчерпан. Удалите ненужные позиции, чтобы добавить новые.
           </p>
         ) : phase === "pick" ? (
@@ -205,7 +205,7 @@ export function ShelfForm({ slots }: { slots: number }) {
                 <CameraIcon size={24} />
               </div>
               <p className="text-lg font-bold">Одно фото — сразу несколько товаров</p>
-              <p className="text-[15px] leading-relaxed text-muted">
+              <p className="text-body leading-relaxed text-muted">
                 Сфотографируйте полку или витрину целиком. ИИ найдёт до 12 товаров, вырежет фото каждого и напишет
                 названия на русском и казахском. Вы проверите и выберете, что выложить. Можно добавить ещё {slots}.
               </p>
@@ -227,7 +227,7 @@ export function ShelfForm({ slots }: { slots: number }) {
               <li>3. Проверка и публикация</li>
             </ol>
             <p className="text-lg font-bold">{phase === "upload" ? "Загружаем фото…" : "Ищем товары на полке…"}</p>
-            <p className="text-[15px] text-muted">{phase === "ai" ? "Обычно это 10–30 секунд. Не закрывайте страницу." : "Сжимаем фото прямо на телефоне."}</p>
+            <p className="text-body text-muted">{phase === "ai" ? "Обычно это 10–30 секунд. Не закрывайте страницу." : "Сжимаем фото прямо на телефоне."}</p>
             {source && <ShelfFrames src={source} alt="Фото полки" frames={[]} className="mt-2 w-full opacity-70" />}
           </div>
         ) : (
@@ -241,7 +241,7 @@ export function ShelfForm({ slots }: { slots: number }) {
               frames={drafts.map((d, i) => ({ bbox: d.bbox, label: String(i + 1), active: d.selected }))}
             />
             </div>
-            <p role="status" className="text-[15px] leading-relaxed text-muted">
+            <p role="status" className="text-body leading-relaxed text-muted">
               Нашли товаров: {drafts.length}. Выбрано {selectedCount} из {drafts.length}, места: {slots}. Проверьте названия и цены.
             </p>
           </>
@@ -343,7 +343,7 @@ export function ShelfForm({ slots }: { slots: number }) {
                   )}
                 </div>
                 {d.review && d.mode === "fixed" && (
-                  <p className="text-[13px] font-semibold text-accent-dark">Цену прочитали с ценника — проверьте её.</p>
+                  <p className="text-caption font-semibold text-accent-dark">Цену прочитали с ценника — проверьте её.</p>
                 )}
               </li>
             ))}
@@ -365,7 +365,7 @@ export function ShelfForm({ slots }: { slots: number }) {
               {saving ? "Публикуем…" : `Опубликовать выбранные (${selectedCount})`}
             </button>
             {invalid && selectedCount > 0 && (
-              <p className="text-center text-[13px] text-muted">Укажите название у каждого выбранного товара и цену там, где выбрана «Точная».</p>
+              <p className="text-center text-caption text-muted">Укажите название у каждого выбранного товара и цену там, где выбрана «Точная».</p>
             )}
           </>
         )}

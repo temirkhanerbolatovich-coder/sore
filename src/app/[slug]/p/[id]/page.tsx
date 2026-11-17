@@ -72,7 +72,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <div className="md:grid md:grid-cols-2 md:items-start md:gap-6 md:px-5">
         {product.photo_url ? (
           <PhotoViewer url={product.photo_url} alt={product.title} zoomLabel={t.zoomPhoto} closeLabel={t.closePhoto}>
-            <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
+            <ProductPhoto url={product.photo_url} alt={product.title} priority transitionName={`photo-${product.id}`} className="aspect-square w-full md:rounded-2xl" />
           </PhotoViewer>
         ) : (
           <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
@@ -86,7 +86,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               {product.in_stock ? t.inStock : t.out}
             </div>
           </div>
-          {text && <p className="whitespace-pre-line text-[17px] leading-relaxed text-muted">{text}</p>}
+          {text && <p className="whitespace-pre-line text-lead leading-relaxed text-muted">{text}</p>}
           <div className="pt-2 md:sticky md:bottom-4 md:z-10 md:rounded-xl md:bg-surface md:p-3">
             {product.in_stock && isInquiry(product.price_mode) ? (
               <div className="flex flex-col gap-2">
@@ -96,7 +96,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
                   href={whatsappUrl(shop.whatsapp, inquiryText(product.title, product.price, product.price_mode, shop.name))}
                   label={t.ask}
                 />
-                <p className="text-center text-[13px] text-muted">{t.askHint}</p>
+                <p className="text-center text-caption text-muted">{t.askHint}</p>
               </div>
             ) : variants.length > 0 && product.in_stock ? (
               <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} />

@@ -59,7 +59,7 @@ export default async function OrderStatusPage({
         </div>
       </div>
 
-      <p role="status" className="text-[17px] leading-relaxed">
+      <p role="status" className="text-lead leading-relaxed">
         {hint}
       </p>
 
