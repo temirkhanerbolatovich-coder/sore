@@ -35,6 +35,13 @@ test("фото полки: черновики, правка, публикаци�
 
     await expect(page.getByLabel("Название 3")).toBeVisible({ timeout: 30_000 });
     expect(calls()).toBe(1);
+    await page.getByRole("button", { name: "Перейти к товару 2", exact: true }).click();
+    await expect(page.getByLabel("Название 2").locator("xpath=ancestor::li")).toBeFocused();
+    await page.getByRole("button", { name: "Показать рамку 2", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Перейти к товару 2", exact: true })).toBeFocused();
+    await page.getByRole("button", { name: "Снять все", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Опубликовать выбранные (0)" })).toBeDisabled();
+    await page.getByRole("button", { name: "Выбрать все", exact: true }).click();
     await expect(page.getByText("Нашли товаров: 3")).toBeVisible();
     await expect(page.getByText("Цену прочитали с ценника — проверьте её.")).toBeVisible();
     await expect(page.getByLabel("Цена 1, ₸")).toHaveValue("450");
@@ -46,6 +53,8 @@ test("фото полки: черновики, правка, публикаци�
     await page.getByLabel("Название 2").fill("Сок «Да-Да» яблоко");
     await page.getByRole("group", { name: "Цена 2" }).getByRole("button", { name: "Точная" }).click();
     await expect(page.getByRole("button", { name: "Опубликовать выбранные (2)" })).toBeDisabled();
+    await page.getByLabel("Цена 1, ₸").press("Enter");
+    await expect(page.getByLabel("Цена 2, ₸")).toBeFocused();
     await page.getByLabel("Цена 2, ₸").fill("600");
     await page.getByRole("button", { name: "Опубликовать выбранные (2)" }).click();
 
@@ -113,7 +122,8 @@ test("фото полки: ИИ ничего не нашёл — понятно�
     await page.waitForLoadState("networkidle");
     await page.locator("#shelf-file").setInputFiles("public/icon-512.png");
     await expect(page.getByText("На фото не нашли товаров.", { exact: false })).toBeVisible({ timeout: 30_000 });
-    await expect(page.locator("label[for=shelf-file]")).toBeVisible();
+    await expect(page.getByText("Снять заново", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Добавить вручную", exact: true })).toBeVisible();
     await expect.poll(() => storedFiles(admin, ownerId)).toEqual([]);
   } finally {
     await cleanupUser(admin, email);
