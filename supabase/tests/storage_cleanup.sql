@@ -37,14 +37,14 @@ create temp view cleanup_orphans as
   select replace(name, '5c1ea000-0000-4000-8000-000000000001/', '') as f
   from public.storage_orphan_photos() where name like '5c1ea000-0000-4000-8000-000000000001/%';
 
-select is((select string_agg(f, ',' order by f) from cleanup_orphans),'orphan.jpg,orphan_s.jpg',
+select is((select string_agg(f, ',' order by f collate "C") from cleanup_orphans),'orphan.jpg,orphan_s.jpg',
   'only old files without references are orphans: products, shelf, avatar, bot drafts and thumbnails are kept');
 select is((select count(*)::integer from public.storage_orphan_photos(interval '1 hour', 1)),1,'limit is respected');
 select is((select count(*)::integer from public.storage_orphan_photos(interval '0 seconds') where name like '5c1ea000-%fresh%'),0,
   'files younger than an hour are never orphans');
 
 delete from public.bot_drafts where id='5c1ea000-0000-4000-8000-000000000003';
-select is((select string_agg(f, ',' order by f) from cleanup_orphans),'draft-crop.jpg,draft-crop_s.jpg,draft-src.jpg,draft-src_s.jpg,orphan.jpg,orphan_s.jpg',
+select is((select string_agg(f, ',' order by f collate "C") from cleanup_orphans),'draft-crop.jpg,draft-crop_s.jpg,draft-src.jpg,draft-src_s.jpg,orphan.jpg,orphan_s.jpg',
   'files of an expired bot draft become orphans');
 
 set local role anon;
