@@ -21,6 +21,7 @@ export default defineConfig({
       TELEGRAM_WEBHOOK_SECRET: "e2e-webhook-secret",
       TELEGRAM_NOTIFY_SECRET: "e2e-notify-secret",
       ADMIN_TELEGRAM_CHAT_ID: "999",
+      BOT_LOGIN_SECRET: "e2e-bot-login-secret-0123456789abcdef",
     },
   },
 });

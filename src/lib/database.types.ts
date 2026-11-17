@@ -63,6 +63,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"bot_login_nonces": {
+                  Row: {
+                    "created_at": string,"nonce": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"nonce": string
+                  }
+                  Update: {
+                    "created_at"?: string,"nonce"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"bot_updates": {
                   Row: {
                     "created_at": string,"update_id": number

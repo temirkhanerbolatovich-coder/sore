@@ -25,6 +25,7 @@ export const HELP_TEXT = [
   "📥 <b>Пришлите прайс .xlsx или .csv</b> документом: товары загрузятся, по артикулу обновятся.",
   "",
   "/shop — ссылка на витрину, QR-код и кабинет",
+  "/login — войти в кабинет одной кнопкой, без почты",
   "/orders — последние 5 заказов, отметить выполненные",
   "/import — шаблон прайса и правила",
   "/stop — отключить бота и уведомления",
@@ -44,6 +45,7 @@ export const IMPORT_HELP_TEXT = [
 export const BOT_COMMANDS = [
   { command: "start", description: "Начать" },
   { command: "shop", description: "Витрина, QR-код и кабинет" },
+  { command: "login", description: "Войти в кабинет" },
   { command: "orders", description: "Последние заказы" },
   { command: "import", description: "Загрузить прайс из Excel/CSV" },
   { command: "help", description: "Помощь" },
