@@ -34,7 +34,7 @@ export function Toast({ message, onClose, action, closeLabel = "Закрыть",
   return (
     <div
       ref={toast}
-      className={`fixed inset-x-4 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-cream shadow-lg ${bottomClassName}`}
+      className={`fixed inset-x-4 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-cream shadow-[var(--shadow-toast)] ${bottomClassName}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={(event) => {
