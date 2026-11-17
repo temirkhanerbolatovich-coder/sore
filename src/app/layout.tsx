@@ -13,7 +13,7 @@ import "./motion.css";
 export const metadata: Metadata = {
   icons: { apple: "/apple-touch-icon.png" },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "Sөre — ваша полка в интернете",
+  title: "SÖRE — ваша полка в интернете",
   description:
     "Одно фото полки или прайс из Excel, карточки с помощью ИИ и витрина по ссылке с заказами в WhatsApp и Telegram.",
 };
@@ -41,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="skip-link"><span lang="ru">К содержимому</span><span lang="kk">Негізгі мазмұнға өту</span></a>
         <ThemeInitializer />
         {children}
         <Analytics />

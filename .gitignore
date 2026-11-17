@@ -46,4 +46,5 @@ next-env.d.ts
 /reports/*
 # Скриншоты и отчёты проверок, на которые ссылаются README и docs, хранятся в git
 !/reports/stage-3/
+!/reports/ui-polish/
 /HANDOFF.md

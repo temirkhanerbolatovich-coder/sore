@@ -1,4 +1,4 @@
-# Как работать над Sөre
+# Как работать над SÖRE
 
 Короткие правила для команды. Запуск проекта: [docs/ONBOARDING.md](docs/ONBOARDING.md). Карта кода: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

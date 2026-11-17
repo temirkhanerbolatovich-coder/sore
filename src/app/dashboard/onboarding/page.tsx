@@ -4,7 +4,7 @@ import { BackArrow } from "@/components/back-link";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "./onboarding-form";
 
-export const metadata = { title: "Создание магазина — Sөre" };
+export const metadata = { title: "Создание магазина — SÖRE" };
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -17,7 +17,7 @@ export default async function OnboardingPage() {
   if (shop) redirect("/dashboard");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 py-4">
+    <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col gap-6 px-5 py-4">
       <div className="flex items-center justify-between">
         <Link href="/" className="flex min-h-11 items-center gap-1 font-semibold text-muted">
           <BackArrow /> На главную
@@ -28,9 +28,9 @@ export default async function OnboardingPage() {
           </button>
         </form>
       </div>
-      <div className="flex flex-col gap-2">
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight">Создайте свой магазин</h1>
-        <p className="text-[17px] leading-relaxed text-muted">Это займёт минуту. Всё можно поменять позже.</p>
+        <p className="text-[17px] leading-relaxed text-muted">Шаг 1 из 2. Укажите название и WhatsApp. Затем выберите, как добавить товары.</p>
       </div>
       <OnboardingForm />
     </main>

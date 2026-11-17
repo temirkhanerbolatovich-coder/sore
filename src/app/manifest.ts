@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Sөre",
-    short_name: "Sөre",
+    name: "SÖRE",
+    short_name: "SÖRE",
     description: "Полка в интернете: фото полки или прайс, ИИ-карточки и заказ в WhatsApp и Telegram.",
     start_url: "/dashboard",
     display: "standalone",

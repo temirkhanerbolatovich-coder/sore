@@ -1,8 +1,9 @@
-// Иконки Sөre — библиотека Lucide (ISC), один набор на весь сайт.
+// Иконки SÖRE — библиотека Lucide (ISC), один набор на весь сайт.
 // Цвет — currentColor, линия 1.75px. Иконки декоративные (скрыты от скринридеров): смысл несёт текст рядом.
 // У каждой иконки своё движение при наведении на кнопку или ссылку (классы icon--* в src/app/motion.css).
 import {
   ArrowLeft,
+  GripVertical,
   Camera,
   Check,
   Download,
@@ -68,3 +69,5 @@ export const MoonIcon = iconFrom(Moon, "swing");
 export const FileIcon = iconFrom(FileSpreadsheet, "bounce");
 export const DownloadIcon = iconFrom(Download, "bounce");
 export const UploadIcon = iconFrom(Upload, "nudge");
+
+export const GripIcon = iconFrom(GripVertical, "nudge");

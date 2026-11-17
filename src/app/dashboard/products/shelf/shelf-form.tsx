@@ -46,6 +46,10 @@ export function ShelfForm({ slots }: { slots: number }) {
   const [source, setSource] = useState("");
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [message, setMessage] = useState("");
+  const [highlighted, setHighlighted] = useState<number>();
+  const cards = useRef<(HTMLLIElement | null)[]>([]);
+  const prices = useRef<(HTMLInputElement | null)[]>([]);
+  const framesRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   useUnsavedGuard(phase !== "pick" && !saving);
@@ -53,7 +57,33 @@ export function ShelfForm({ slots }: { slots: number }) {
   const selectedCount = drafts.filter((d) => d.selected).length;
   const patch = (key: number, change: Partial<Draft>) => setDrafts((list) => list.map((d) => (d.key === key ? { ...d, ...change } : d)));
 
+  function focusCard(index: number) {
+    setHighlighted(index);
+    cards.current[index]?.scrollIntoView({ block: "center" });
+    cards.current[index]?.focus({ preventScroll: true });
+  }
+
+  function focusFrame(index: number) {
+    setHighlighted(index);
+    framesRef.current?.scrollIntoView({ block: "center" });
+    framesRef.current?.querySelectorAll("button")[index]?.focus({ preventScroll: true });
+  }
+
+  function selectAll(selected: boolean) {
+    setMessage(selected && drafts.length > slots ? `Выбраны первые ${slots}: больше не позволяет лимит.` : "");
+    setDrafts((list) => list.map((draft, index) => ({ ...draft, selected: selected && index < slots })));
+  }
+
+  function nextPrice(event: React.KeyboardEvent<HTMLInputElement>, index: number) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    if (!drafts[index + 1]) return;
+    setHighlighted(index + 1);
+    (prices.current[index + 1] ?? cards.current[index + 1]?.querySelector("input"))?.focus();
+  }
+
   function reset() {
+    setHighlighted(undefined);
     setPhase("pick");
     setSource("");
     setDrafts([]);
@@ -161,7 +191,7 @@ export function ShelfForm({ slots }: { slots: number }) {
   const working = phase === "upload" || phase === "ai";
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-1 flex-col">
+    <form id="main-content" tabIndex={-1} onSubmit={onSubmit} className="flex flex-1 flex-col">
       <input type="hidden" name="payload" value={payload} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (
@@ -183,7 +213,7 @@ export function ShelfForm({ slots }: { slots: number }) {
             <input ref={fileRef} id="shelf-file" type="file" accept="image/*" className="sr-only" onChange={onFile} />
             <label htmlFor="shelf-file" className="btn-accent h-14 w-full cursor-pointer text-lg">
               <CameraIcon />
-              Сфотографировать полку
+              {message ? "Снять заново" : "Сфотографировать полку"}
             </label>
           </>
         ) : working ? (
@@ -191,23 +221,33 @@ export function ShelfForm({ slots }: { slots: number }) {
             <div className="icon-badge">
               <AiIcon size={24} />
             </div>
+            <ol className="flex flex-wrap gap-3 text-sm" aria-label="Этапы подготовки">
+              <li aria-current={phase === "upload" ? "step" : undefined}>1. Загрузка фото</li>
+              <li aria-current={phase === "ai" ? "step" : undefined}>2. Поиск товаров</li>
+              <li>3. Проверка и публикация</li>
+            </ol>
             <p className="text-lg font-bold">{phase === "upload" ? "Загружаем фото…" : "Ищем товары на полке…"}</p>
             <p className="text-[15px] text-muted">{phase === "ai" ? "Обычно это 10–30 секунд. Не закрывайте страницу." : "Сжимаем фото прямо на телефоне."}</p>
             {source && <ShelfFrames src={source} alt="Фото полки" frames={[]} className="mt-2 w-full opacity-70" />}
           </div>
         ) : (
           <>
+            <div ref={framesRef} className="scroll-mt-6">
             <ShelfFrames
+              highlighted={highlighted}
+              onSelect={focusCard}
               src={source}
               alt="Фото полки с найденными товарами"
               frames={drafts.map((d, i) => ({ bbox: d.bbox, label: String(i + 1), active: d.selected }))}
             />
-            <p className="text-[15px] leading-relaxed text-muted">
-              Нашли товаров: {drafts.length}. Выбрано: {selectedCount} из {Math.min(slots, drafts.length)} возможных. Проверьте названия и цены.
+            </div>
+            <p role="status" className="text-[15px] leading-relaxed text-muted">
+              Нашли товаров: {drafts.length}. Выбрано {selectedCount} из {drafts.length}, места: {slots}. Проверьте названия и цены.
             </p>
           </>
         )}
 
+        {message && phase === "pick" && <Link href="/dashboard/products/new" className="btn-outline">Добавить вручную</Link>}
         {message && (
           <p role="status" className="text-sm font-semibold text-accent-dark">
             {message}
@@ -215,11 +255,18 @@ export function ShelfForm({ slots }: { slots: number }) {
         )}
 
         {phase === "drafts" && (
+          <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            <button type="button" className="btn-outline" onClick={() => selectAll(true)}>Выбрать все</button>
+            <button type="button" className="btn-outline" onClick={() => selectAll(false)}>Снять все</button>
+          </div>
           <ul className="flex flex-col gap-3">
             {drafts.map((d, index) => (
               <li
                 key={d.key}
-                className={`card rise-in flex flex-col gap-3 p-3 ${d.selected ? "" : "opacity-60"}`}
+                tabIndex={-1}
+                ref={(node) => { cards.current[index] = node; }}
+                className={`card rise-in flex flex-col gap-3 p-3 ${highlighted === index ? "ring-2 ring-[var(--focus)]" : ""} ${d.selected ? "" : "border-dashed"}`}
                 style={{ "--rise-index": Math.min(index, 11) } as CSSProperties}
               >
                 <div className="flex gap-3">
@@ -240,9 +287,9 @@ export function ShelfForm({ slots }: { slots: number }) {
                     ) : (
                       <span className="flex size-full items-center justify-center text-xs text-muted">без вырезки</span>
                     )}
-                    <span className="absolute left-1 top-1 min-w-6 rounded-full bg-accent px-1.5 text-center text-xs font-extrabold leading-6 text-on-accent">
+                    <button type="button" aria-label={`Показать рамку ${index + 1}`} aria-pressed={highlighted === index} onClick={() => focusFrame(index)} className="absolute left-0 top-0 min-h-11 min-w-11 rounded-full bg-accent px-1.5 text-center text-sm font-extrabold text-on-accent">
                       {index + 1}
-                    </span>
+                    </button>
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <input
@@ -284,6 +331,8 @@ export function ShelfForm({ slots }: { slots: number }) {
                   </div>
                   {d.mode === "fixed" && (
                     <input
+                      ref={(node) => { prices.current[index] = node; }}
+                      onKeyDown={(event) => nextPrice(event, index)}
                       aria-label={`Цена ${index + 1}, ₸`}
                       placeholder="₸"
                       inputMode="numeric"
@@ -299,6 +348,7 @@ export function ShelfForm({ slots }: { slots: number }) {
               </li>
             ))}
           </ul>
+          </div>
         )}
 
         {state.error && (

@@ -27,6 +27,8 @@ export default async function PosterPage() {
       </div>
 
       <section
+        id="main-content"
+        tabIndex={-1}
         aria-label="Плакат"
         className="flex flex-col items-center gap-5 rounded-3xl border-2 border-ink bg-surface px-6 py-8 text-center print:min-h-[250mm] print:justify-center print:gap-10 print:rounded-none print:border-4"
       >

@@ -15,11 +15,14 @@ export default async function SettingsPage() {
     : { data: null };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-5 p-5 pb-24">
-      <h1 className="text-2xl font-extrabold">Магазин</h1>
-      {telegramConfigured() && <TelegramCard linked={Boolean(tg?.linked_at)} />}
-      <SettingsForm shop={shop} url={url} />
-      <DangerZone slug={shop.slug} />
+    <main className="mx-auto flex w-full max-w-md flex-col gap-5 p-5 pb-24 md:max-w-2xl lg:max-w-6xl lg:pb-10">
+      <DashboardNav active="settings" desktop />
+      <div id="main-content" tabIndex={-1} className="flex flex-col gap-5 lg:mx-auto lg:w-full lg:max-w-2xl">
+        <h1 className="text-2xl font-extrabold">Магазин</h1>
+        {telegramConfigured() && <TelegramCard linked={Boolean(tg?.linked_at)} />}
+        <SettingsForm shop={shop} url={url} />
+        <DangerZone slug={shop.slug} />
+      </div>
       <DashboardNav active="settings" />
     </main>
   );

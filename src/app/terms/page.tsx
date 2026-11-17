@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage, contactLine } from "@/components/legal-page";
 
-export const metadata: Metadata = { title: "Условия использования — Sөre", description: "Правила пользования сервисом Sөre для продавцов и покупателей." };
+export const metadata: Metadata = { title: "Условия использования — SÖRE", description: "Правила пользования сервисом SÖRE для продавцов и покупателей." };
 
 export default function TermsPage() {
   return (
     <LegalPage title="Условия использования" updated="16 ноября 2026">
       <p>
-        Sөre помогает продавцу создать витрину по ссылке и принимать заказы в WhatsApp. Продавец также может подключить уведомления о заказах в Telegram. Пользуясь сервисом, вы соглашаетесь с этими условиями.
+        SÖRE помогает продавцу создать витрину по ссылке и принимать заказы в WhatsApp. Продавец также может подключить уведомления о заказах в Telegram. Пользуясь сервисом, вы соглашаетесь с этими условиями.
       </p>
 
       <h2>1. Что делает сервис</h2>

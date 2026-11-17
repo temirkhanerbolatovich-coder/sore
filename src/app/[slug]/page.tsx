@@ -63,26 +63,26 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const firstPhoto = visible.findIndex((product) => Boolean(product.photo_url));
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
       <DocumentLanguage lang={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <header className="flex flex-col gap-4 border-b border-line bg-surface px-5 pb-4 pt-6">
+      <header className="flex flex-col gap-4 border-b border-line bg-surface px-5 pb-4 pt-6 md:gap-3 md:py-4">
         <div className="flex items-center justify-between">
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex items-center gap-2">
           <ThemeToggle className="size-11" />
-          <div className="flex overflow-hidden rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
+          <div className="flex rounded-full border-[1.5px] border-field text-[13px] font-bold" role="group" aria-label="Язык">
             <Link
               href={shopHref(base, "ru", activeCat)}
               aria-current={lang === "ru" ? "true" : undefined}
-              className={`flex min-h-11 min-w-11 items-center justify-center px-3 ${lang === "ru" ? "bg-ink text-cream" : "text-muted"}`}
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-l-full px-3 ${lang === "ru" ? "bg-ink text-cream" : "text-muted"}`}
             >
               RU
             </Link>
             <Link
               href={shopHref(base, "kz", activeCat)}
               aria-current={lang === "kz" ? "true" : undefined}
-              className={`flex min-h-11 min-w-11 items-center justify-center px-3 ${lang === "kz" ? "bg-ink text-cream" : "text-muted"}`}
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-r-full px-3 ${lang === "kz" ? "bg-ink text-cream" : "text-muted"}`}
             >
               KZ
             </Link>
@@ -104,8 +104,10 @@ export default async function ShopPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        {categories.length > 0 && (
-          <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
+      </header>
+      {categories.length > 0 && (
+        <div className="sticky top-0 z-20 border-b border-line bg-surface">
+          <nav className="flex gap-2 overflow-x-auto px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Категории">
             <Chip href={shopHref(base, lang)} active={!activeCat}>
               {t.all}
             </Chip>
@@ -115,26 +117,27 @@ export default async function ShopPage({ params, searchParams }: Props) {
               </Chip>
             ))}
           </nav>
-        )}
-      </header>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-surface to-transparent" />
+        </div>
+      )}
 
       <ShopAbout shop={shop} lang={lang} />
 
-      <section className="flex-1 px-4 pb-28 pt-4">
+      <section id="main-content" tabIndex={-1} className="flex-1 px-4 pb-28 pt-4">
         {visible.length === 0 ? (
           <p className="card p-5 text-muted">{t.empty}</p>
         ) : (
           <ProductFilter
             minItems={SEARCH_MIN_PRODUCTS}
-            labels={{ placeholder: t.search, empty: t.searchEmpty, reset: t.searchReset }}
+            labels={{ placeholder: t.search, empty: t.searchEmpty, reset: t.searchReset, clear: t.searchClear, found: t.searchFound }}
             items={visible.map((p, i) => ({
               id: p.id,
               text: [p.title, p.category, p.description_ru, p.description_kz].filter(Boolean).join(" ").toLocaleLowerCase("ru"),
               node: (
               <li
                 key={p.id}
-                className={`card flex flex-col overflow-hidden ${i < 12 ? "rise-in" : ""}`}
-                style={i < 12 ? { "--rise-index": i } as CSSProperties : undefined}
+                className={`card flex flex-col overflow-hidden ${i >= 4 && i < 12 ? "rise-in" : ""}`}
+                style={i >= 4 && i < 12 ? { "--rise-index": i - 4 } as CSSProperties : undefined}
               >
                 <Link href={shopHref(`${base}/p/${p.id}`, lang)} className="flex flex-col">
                   <ProductPhoto
@@ -144,7 +147,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
                     thumbnail
                     priority={i === firstPhoto}
                     eager={i < 4}
-                    className={`h-36 w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}
+                    className={`aspect-[4/3] w-full ${p.in_stock ? "" : "opacity-50 grayscale"}`}
                   />
                   <div className="flex flex-col gap-1 p-3 pb-2">
                     <div className="text-[15px] font-semibold leading-tight">{p.title}</div>

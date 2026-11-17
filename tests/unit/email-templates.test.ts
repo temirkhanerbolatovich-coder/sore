@@ -20,8 +20,8 @@ describe.each(["magic_link", "confirmation"])("шаблон %s", (name) => {
     expect(html.match(/\{\{ \.Token \}\}/g)).toHaveLength(2);
   });
 
-  it("бренд Sөre, русский и казахский текст, без старого названия", () => {
-    expect(html).toContain('S<span style="color:#c73e1d;">ө</span>re');
+  it("бренд SÖRE, русский и казахский текст, без старого названия", () => {
+    expect(html).toContain('S<span style="color:#c73e1d;">Ö</span>RE');
     expect(html).toMatch(/Пароль не нужен/);
     expect(html).toMatch(/Құпиясөз қажет емес/);
     expect(html).not.toMatch(/duken/i);
@@ -51,6 +51,6 @@ describe.each(["magic_link", "confirmation"])("шаблон %s", (name) => {
 
 it("шаблоны отличаются заголовком и кнопкой", () => {
   expect(read("magic_link")).toContain("Вход в кабинет магазина");
-  expect(read("confirmation")).toContain("Добро пожаловать в Sөre");
+  expect(read("confirmation")).toContain("Добро пожаловать в SÖRE");
   expect(read("confirmation")).toContain("Подтвердить и войти");
 });

@@ -41,7 +41,6 @@ export default async function OrderStatusPage({
   if (!order) notFound();
 
   const status = order.order_status === "done" || order.order_status === "cancelled" ? order.order_status : "new";
-  const label = { new: t.statusNew, done: t.statusDone, cancelled: t.statusCancelled }[status];
   const hint = { new: t.statusHintNew, done: t.statusHintDone, cancelled: t.statusHintCancelled }[status];
   const items = order.order_items as { title: string; qty: number; price: number }[];
   const question = `Здравствуйте! Вопрос по заказу №${order.order_number}.`;
@@ -49,7 +48,7 @@ export default async function OrderStatusPage({
   const { data: seller } = await createPublicClient().from("shops").select("telegram_username").eq("slug", order.shop_slug).maybeSingle();
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
       <DocumentLanguage lang={lang} />
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -58,12 +57,20 @@ export default async function OrderStatusPage({
             {t.statusTitle} №{order.order_number}
           </h1>
         </div>
-        <span className={`rounded-full px-3 py-1.5 text-sm font-bold ${STATUS_STYLE[status]}`}>{label}</span>
       </div>
 
       <p role="status" className="text-[17px] leading-relaxed">
         {hint}
       </p>
+
+      <ol aria-label={t.statusTitle} className={`card flex flex-col gap-2 p-4 ${STATUS_STYLE[status]}`}>
+        {(status === "new" ? ["new"] : ["new", status]).map((step) => (
+          <li key={step} aria-current={step === status ? "step" : undefined} className="flex items-center gap-2 font-semibold">
+            <span aria-hidden="true" className={`size-3 rounded-full ${step === "done" ? "bg-wa" : step === "cancelled" ? "bg-switch-off" : "bg-accent"}`} />
+            {{ new: t.statusNew, done: t.statusDone, cancelled: t.statusCancelled }[step as "new" | "done" | "cancelled"]}
+          </li>
+        ))}
+      </ol>
 
       <section className="card flex flex-col gap-2 p-4">
         <h2 className="text-sm font-bold text-muted">{t.statusItems}</h2>

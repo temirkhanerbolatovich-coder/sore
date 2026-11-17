@@ -1,0 +1,66 @@
+[
+  {
+    "profile": "mobile",
+    "path": "/",
+    "performance": 100,
+    "accessibility": 100,
+    "lcp": 759.8320000000001,
+    "cls": 0.002380825185024668
+  },
+  {
+    "profile": "mobile",
+    "path": "/demo",
+    "performance": 91,
+    "accessibility": 100,
+    "lcp": 3496.2963999999993,
+    "cls": 0
+  },
+  {
+    "profile": "mobile",
+    "path": "/demo/p/46fd2108-700f-413d-a1ac-0ac26cbb9fe0",
+    "performance": 98,
+    "accessibility": 100,
+    "lcp": 796.761,
+    "cls": 0.00007303683083439954
+  },
+  {
+    "profile": "mobile",
+    "path": "/demo/cart",
+    "performance": 93,
+    "accessibility": 100,
+    "lcp": 756.4259,
+    "cls": 0
+  },
+  {
+    "profile": "desktop",
+    "path": "/",
+    "performance": 91,
+    "accessibility": 100,
+    "lcp": 792.6777,
+    "cls": 0.00009504791217810608
+  },
+  {
+    "profile": "desktop",
+    "path": "/demo",
+    "performance": 62,
+    "accessibility": 100,
+    "lcp": 3494.7809499999994,
+    "cls": 0.00003579354331247222
+  },
+  {
+    "profile": "desktop",
+    "path": "/demo/p/46fd2108-700f-413d-a1ac-0ac26cbb9fe0",
+    "performance": 97,
+    "accessibility": 100,
+    "lcp": 774.6966,
+    "cls": 0.00001092122395833334
+  },
+  {
+    "profile": "desktop",
+    "path": "/demo/cart",
+    "performance": 97,
+    "accessibility": 100,
+    "lcp": 779.5476000000001,
+    "cls": 0
+  }
+]

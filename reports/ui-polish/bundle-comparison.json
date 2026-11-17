@@ -1,0 +1,32 @@
+[
+  {
+    "route": "/",
+    "before": 509161,
+    "after": 509531,
+    "delta": 370
+  },
+  {
+    "route": "/[slug]",
+    "before": 515862,
+    "after": 516701,
+    "delta": 839
+  },
+  {
+    "route": "/[slug]/p/[id]",
+    "before": 516208,
+    "after": 516985,
+    "delta": 777
+  },
+  {
+    "route": "/[slug]/cart",
+    "before": 525099,
+    "after": 526005,
+    "delta": 906
+  },
+  {
+    "route": "/dashboard",
+    "before": 497419,
+    "after": 510358,
+    "delta": 12939
+  }
+]

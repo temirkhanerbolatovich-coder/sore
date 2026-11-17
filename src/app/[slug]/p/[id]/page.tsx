@@ -11,6 +11,7 @@ import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
 import { ProductPhoto } from "@/components/product-photo";
+import { PhotoViewer } from "@/components/photo-viewer";
 import { DocumentLanguage } from "@/components/document-language";
 import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
 import { BackIcon } from "@/components/icons";
@@ -57,7 +58,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const jsonLd = productJsonLd(product, url, text || `${priceLabel(product.price, product.price_mode, lang)} · ${shop.name}`);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-28">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col pb-28">
       <DocumentLanguage lang={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <div className="flex items-center justify-between gap-1 px-3 py-3">
@@ -68,43 +69,51 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <ShareButton title={`${product.title} — ${shop.name}`} label={t.share} copiedLabel={t.shared} />
       </div>
 
-      <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full" />
+      <div className="md:grid md:grid-cols-2 md:items-start md:gap-6 md:px-5">
+        {product.photo_url ? (
+          <PhotoViewer url={product.photo_url} alt={product.title} zoomLabel={t.zoomPhoto} closeLabel={t.closePhoto}>
+            <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
+          </PhotoViewer>
+        ) : (
+          <ProductPhoto url={product.photo_url} alt={product.title} priority className="aspect-square w-full md:rounded-2xl" />
+        )}
 
-      <div className="flex flex-col gap-3 px-5 pt-5">
-        <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-2xl font-extrabold">{priceLabel(product.price, product.price_mode, lang, variants.length > 0)}</div>
-          <div className={`text-sm font-bold ${product.in_stock ? "text-wa" : "text-accent-dark"}`}>
-            {product.in_stock ? t.inStock : t.out}
-          </div>
-        </div>
-        {text && <p className="whitespace-pre-line text-[17px] leading-relaxed text-muted">{text}</p>}
-        <div className="pt-2">
-          {product.in_stock && isInquiry(product.price_mode) ? (
-            <div className="flex flex-col gap-2">
-              <InquiryButton
-                shopId={shop.id}
-                productId={product.id}
-                href={whatsappUrl(shop.whatsapp, inquiryText(product.title, product.price, product.price_mode, shop.name))}
-                label={t.ask}
-              />
-              <p className="text-center text-[13px] text-muted">{t.askHint}</p>
+        <div id="main-content" tabIndex={-1} className="flex min-w-0 flex-col gap-3 px-5 pt-5 md:px-0 md:pt-0">
+          <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{product.title}</h1>
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-2xl font-extrabold">{priceLabel(product.price, product.price_mode, lang, variants.length > 0)}</div>
+            <div className={`text-sm font-bold ${product.in_stock ? "text-wa" : "text-accent-dark"}`}>
+              {product.in_stock ? t.inStock : t.out}
             </div>
-          ) : variants.length > 0 && product.in_stock ? (
-            <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} />
-          ) : (
-            <AddToCart slug={shop.slug} product={product} lang={lang} />
+          </div>
+          {text && <p className="whitespace-pre-line text-[17px] leading-relaxed text-muted">{text}</p>}
+          <div className="pt-2 md:sticky md:bottom-4 md:z-10 md:rounded-xl md:bg-surface md:p-3">
+            {product.in_stock && isInquiry(product.price_mode) ? (
+              <div className="flex flex-col gap-2">
+                <InquiryButton
+                  shopId={shop.id}
+                  productId={product.id}
+                  href={whatsappUrl(shop.whatsapp, inquiryText(product.title, product.price, product.price_mode, shop.name))}
+                  label={t.ask}
+                />
+                <p className="text-center text-[13px] text-muted">{t.askHint}</p>
+              </div>
+            ) : variants.length > 0 && product.in_stock ? (
+              <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} />
+            ) : (
+              <AddToCart slug={shop.slug} product={product} lang={lang} />
+            )}
+          </div>
+          {shelfBox && product.source_photo_url && (
+            // Снимок полки ниже кнопок и с ленивой загрузкой: не влияет на первый экран и не сдвигает его.
+            <figure className="flex flex-col gap-2 pt-4">
+              <figcaption className="text-sm font-semibold text-muted">{t.onShelf}</figcaption>
+              <ShelfFrames src={product.source_photo_url} alt={`${product.title}: ${t.onShelf.toLowerCase()}`} frames={[{ bbox: shelfBox }]} lazy />
+            </figure>
           )}
         </div>
-        {shelfBox && product.source_photo_url && (
-          // Снимок полки ниже кнопок и с ленивой загрузкой: не влияет на первый экран и не сдвигает его.
-          <figure className="flex flex-col gap-2 pt-4">
-            <figcaption className="text-sm font-semibold text-muted">{t.onShelf}</figcaption>
-            <ShelfFrames src={product.source_photo_url} alt={`${product.title}: ${t.onShelf.toLowerCase()}`} frames={[{ bbox: shelfBox }]} lazy />
-          </figure>
-        )}
-      </div>
 
+      </div>
       <CartBar slug={shop.slug} lang={lang} />
     </main>
   );

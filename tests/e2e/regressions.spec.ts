@@ -67,7 +67,7 @@ test.describe("покупатель", () => {
       await expect(buyer.getByRole("heading", { name: "Тапсырыс қабылданды" })).toBeVisible();
       await expect(buyer.getByRole("link", { name: "WhatsApp ашу" })).toBeVisible();
       // Сообщение продавцу всегда на русском, даже если витрина на казахском.
-      expect(new URL(whatsapp).searchParams.get("text")).toContain("Здравствуйте! Заказ из Sөre (№1)");
+      expect(new URL(whatsapp).searchParams.get("text")).toContain("Здравствуйте! Заказ из SÖRE (№1)");
 
       expect(JSON.parse((await buyer.evaluate(() => localStorage.getItem("sore-customer"))) || "{}")).toMatchObject({ name: "Айгерим", phone: "77015550011" });
 
@@ -95,7 +95,8 @@ test.describe("продавец", () => {
     try {
       await loginAs(page, request, email);
       await page.goto("/dashboard");
-      await page.getByRole("button", { name: "Ниже" }).first().click();
+      await page.getByText("Действия с товаром", { exact: true }).first().click();
+      await page.getByRole("button", { name: "Ниже", exact: true }).first().click();
       await expect
         .poll(async () => {
           await page.reload();

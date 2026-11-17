@@ -18,7 +18,7 @@ export async function renderOg({
   subtitle: string;
   badge: string;
 }) {
-  // cyrillic-ext нужен для казахских букв (ө, ү, қ…), в том числе в названии Sөre.
+  // cyrillic-ext нужен для казахских букв (ө, ү, қ…) в названиях магазинов и товаров.
   const [cyr, lat, ext] = await Promise.all([
     font("onest-cyrillic-700-normal.woff"),
     font("onest-latin-700-normal.woff"),
@@ -44,7 +44,7 @@ export async function renderOg({
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", fontSize: 40 }}>
-            S<span style={{ color: "#c73e1d" }}>ө</span>re
+            S<span style={{ color: "#c73e1d" }}>Ö</span>RE
           </div>
           <div
             style={{

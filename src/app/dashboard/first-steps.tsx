@@ -6,16 +6,22 @@ type Step = { done: boolean; title: string; text: string; href?: string; cta?: s
 export function FirstSteps({ hasProducts, shared, telegram }: { hasProducts: boolean; shared: boolean; telegram: "off" | "pending" | "done" }) {
   const steps: Step[] = [
     { done: hasProducts, title: "Добавьте первый товар", text: "Сфотографируйте его, ИИ составит описание.", href: "/dashboard/products/new", cta: "Добавить товар" },
-    { done: shared, title: "Поделитесь ссылкой", text: "Поставьте ссылку в био Instagram или отправьте клиентам. Скопируйте её выше." },
+    { done: shared, title: "Поделитесь ссылкой", text: "Поставьте ссылку в био Instagram или отправьте клиентам. Скопируйте её в карточке магазина." },
     ...(telegram === "off" ? [] : [{ done: telegram === "done", title: "Подключите Telegram", text: "Заказы будут приходить вам сообщением.", href: "/dashboard/settings", cta: "Подключить" }]),
   ];
   if (steps.every((s) => s.done)) return null;
+
+  const completed = steps.filter((step) => step.done).length;
+  const next = steps.find((step) => !step.done);
 
   return (
     <section className="card mx-5 mt-3 flex flex-col gap-3 p-4" aria-labelledby="first-steps">
       <h2 id="first-steps" className="text-lg font-bold">
         Первые шаги
       </h2>
+      <label htmlFor="first-steps-progress" className="text-sm text-muted">Выполнено {completed} из {steps.length}</label>
+      <progress id="first-steps-progress" value={completed} max={steps.length} className="h-2 w-full accent-[var(--accent)]" />
+      <p className="text-sm font-semibold">Далее: {next?.title}</p>
       <ol className="flex flex-col gap-3">
         {steps.map((s) => (
           <li key={s.title} className="flex gap-3">

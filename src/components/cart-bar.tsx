@@ -15,7 +15,7 @@ export function CartBar({ slug, lang }: { slug: string; lang: Lang }) {
       href={shopHref(`/${slug}/cart`, lang)}
       className="fixed inset-x-4 bottom-4 z-10 mx-auto flex h-[60px] max-w-md items-center justify-between rounded-2xl bg-accent px-5 text-[17px] font-bold text-on-accent shadow-lg"
     >
-      <span>
+      <span key={count} className="bump">
         {T[lang].cart} · {count}
       </span>
       <span>{formatPrice(orderTotal(lines))}</span>
