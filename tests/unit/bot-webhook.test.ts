@@ -60,7 +60,11 @@ function builder(table: string) {
 }
 
 vi.mock("@/lib/supabase/admin", () => ({
-  createAdminClient: () => ({ from: builder, rpc: async () => ({ data: true, error: null }) }),
+  createAdminClient: () => ({
+    from: builder,
+    rpc: async () => ({ data: true, error: null }),
+    auth: { admin: { getUserById: async (id: string) => ({ data: { user: { id, email: "owner@example.test" } }, error: null }) } },
+  }),
 }));
 
 const calls: { method: string; body: Record<string, unknown> }[] = [];
@@ -96,6 +100,7 @@ beforeAll(async () => {
     TELEGRAM_WEBHOOK_SECRET: SECRET,
     TELEGRAM_API_BASE: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
     NEXT_PUBLIC_SITE_URL: "https://sore.example",
+    BOT_LOGIN_SECRET: "unit-bot-login-secret-0123456789abcdef",
   });
   ({ POST } = await import("@/app/api/telegram/webhook/route"));
 });
@@ -156,6 +161,24 @@ describe("webhook бота SÖRE", () => {
   it("/start без кода присылает логотип с приветствием", async () => {
     await send(msg("/start"));
     expect(calls[0].method).toBe("sendPhoto");
+  });
+
+  it("/login присылает одноразовую ссылку входа, /shop даёт кнопку входа", async () => {
+    db.linkedChat = 555;
+    await send(msg("/login"));
+    const login = calls.find((c) => c.method === "sendMessage")!;
+    const button = (login.body.reply_markup as { inline_keyboard: { url: string }[][] }).inline_keyboard[0][0];
+    expect(button.url).toMatch(/^https:\/\/sore\.example\/auth\/bot\?t=[\w-]+\.[\w-]+$/);
+    calls.length = 0;
+    await send(msg("/shop"));
+    const shop = calls.find((c) => c.method === "sendPhoto");
+    expect(shop).toBeDefined();
+  });
+
+  it("/login без привязки не даёт ссылку", async () => {
+    db.linkedChat = null;
+    await send(msg("/login"));
+    expect(texts().at(-1)).toContain("не подключён к магазину");
   });
 
   it("/shop присылает QR-код фото", async () => {

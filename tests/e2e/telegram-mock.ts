@@ -31,3 +31,4 @@ export const TELEGRAM_MOCK_PORT = 3199;
 export const WEBHOOK_SECRET = "e2e-webhook-secret";
 export const NOTIFY_SECRET = "e2e-notify-secret";
 export const ADMIN_CHAT = 999;
+export const BOT_LOGIN_SECRET = "e2e-bot-login-secret-0123456789abcdef";

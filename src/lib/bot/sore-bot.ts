@@ -7,6 +7,7 @@ import QRCode from "qrcode";
 import { BOT_LOGO_PATH } from "@/lib/brand";
 import { catalogTemplateXlsx } from "@/lib/catalog-template";
 import { importCatalogFromBot, precheckCatalog } from "@/lib/bot/catalog";
+import { botLoginSecret, createLoginLink } from "@/lib/bot/login";
 import { draftKeyboard, orderActionData, parseAction, type InlineKeyboard } from "@/lib/bot/drafts";
 import { recentOrders, setOrderStatusFromChat } from "@/lib/bot/orders";
 import { createShelfDraft, discardDraft, publishDraft, toggleDraftItem } from "@/lib/bot/shelf";
@@ -117,7 +118,8 @@ export function createSoreBot(token: string, options: SoreBotOptions = {}): Bot 
             inline_keyboard: [
               [{ text: "🛍 Открыть витрину", url }],
               [
-                { text: "⚙️ Кабинет", url: `${siteUrl()}/dashboard` },
+                // С BOT_LOGIN_SECRET кнопка входит в кабинет без почты: ссылку выдаём только по нажатию.
+                botLoginSecret() ? { text: "🔑 Войти в кабинет", callback_data: "login" } : { text: "⚙️ Кабинет", url: `${siteUrl()}/dashboard` },
                 { text: "🖨 QR-плакат", url: `${siteUrl()}/dashboard/poster` },
               ],
             ],
@@ -178,6 +180,39 @@ export function createSoreBot(token: string, options: SoreBotOptions = {}): Bot 
         { text: `✖️ №${o.number} отменить`, callback_data: orderActionData(o.id, "cancelled") },
       ]);
     await ctx.reply(formatOrdersList(orders), { parse_mode: "HTML", reply_markup: keyboard.length ? { inline_keyboard: keyboard } : undefined });
+  });
+
+  // ---------- Вход в кабинет одной кнопкой (задача #19) ----------
+
+  const LOGIN_FAIL: Record<string, string> = {
+    disabled: "Вход из бота пока не включён. Откройте кабинет на сайте и войдите по почте.",
+    "not-linked": NOT_LINKED_TEXT,
+    "no-email": "У владельца магазина нет почты для входа. Войдите на сайте обычным способом.",
+    "rate-limited": "Слишком много ссылок за час. Попробуйте позже или войдите на сайте по почте.",
+    unavailable: "Сервис входа временно недоступен. Попробуйте через минуту.",
+  };
+
+  async function sendLogin(ctx: Context) {
+    if (!ctx.chat) return;
+    const link = await createLoginLink(admin(), ctx.chat.id);
+    if (!link.ok) {
+      await ctx.reply(LOGIN_FAIL[link.reason]);
+      return;
+    }
+    // Ссылку не логируем: 5 минут это ключ к магазину.
+    const text = "🔑 Ссылка для входа в кабинет. Работает 5 минут и только один раз. Никому её не пересылайте.";
+    if (link.url.startsWith("https://")) {
+      await ctx.reply(text, { reply_markup: { inline_keyboard: [[{ text: "Открыть кабинет", url: link.url }]] } });
+    } else {
+      await ctx.reply(`${text}\n${link.url}`, { link_preview_options: { is_disabled: true } });
+    }
+  }
+
+  chat.hears(command("login"), (ctx) => sendLogin(ctx));
+
+  chat.callbackQuery("login", async (ctx) => {
+    await ctx.answerCallbackQuery();
+    await sendLogin(ctx);
   });
 
   chat.hears(command("import"), async (ctx) => {
