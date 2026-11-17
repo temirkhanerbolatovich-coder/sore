@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(98);
+select plan(109);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -214,6 +214,30 @@ reset role;
 set local role anon;
 select throws_like($$select public.import_products('c0000000-0000-4000-8000-000000000002','[{"row":2,"title":"X","price":1}]')$$,'%permission denied%','anonymous cannot import');
 reset role;
+-- Таблицы бота (миграция 0019): клиентским ролям закрыты, работает только service_role.
+set local role anon;
+select set_config('request.jwt.claim.sub','',true);
+select throws_like($$select count(*) from public.bot_updates$$,'%permission denied%','anonymous cannot read bot_updates');
+select throws_like($$select count(*) from public.bot_drafts$$,'%permission denied%','anonymous cannot read bot_drafts');
+select throws_like($$insert into public.bot_updates(update_id) values(1)$$,'%permission denied%','anonymous cannot write bot_updates');
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
+select throws_like($$select count(*) from public.bot_updates$$,'%permission denied%','seller cannot read bot_updates');
+select throws_like($$select count(*) from public.bot_drafts$$,'%permission denied%','seller cannot read bot_drafts');
+reset role;
+set local role service_role;
+select set_config('request.jwt.claim.sub','',true);
+select lives_ok($$insert into public.bot_updates(update_id) values(900001),(900001) on conflict (update_id) do nothing$$,'service role records a bot update, a repeat is ignored');
+select is((select count(*)::integer from public.bot_updates where update_id=900001),1,'repeated update_id is stored once');
+select lives_ok($$insert into public.bot_drafts(chat_id,shop_id,payload) values(900001,'b0000000-0000-4000-8000-000000000002','{"items":[]}')$$,'service role stores a shelf draft');
+select is((public.import_products('b0000000-0000-4000-8000-000000000002','[{"row":2,"title":"From bot","price":500,"sku":"BOT-1"}]'::jsonb)->>'created')::integer,1,'service role imports a price list without auth.uid()');
+reset role;
+insert into public.bot_updates(update_id,created_at) values(900002,now()-interval '8 days');
+insert into public.bot_drafts(chat_id,shop_id,payload,created_at) values(900002,'b0000000-0000-4000-8000-000000000002','{"items":[]}',now()-interval '25 hours');
+select private.purge_old_data();
+select is((select string_agg(update_id::text,',' order by update_id) from public.bot_updates where update_id in (900001,900002)),'900001','purge removes bot updates older than 7 days');
+select is((select string_agg(chat_id::text,',' order by chat_id) from public.bot_drafts where chat_id in (900001,900002)),'900001','purge removes bot drafts older than 24 hours');
 
 select * from finish();
 rollback;
