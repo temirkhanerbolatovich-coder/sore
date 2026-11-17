@@ -5,6 +5,7 @@ import Link from "next/link";
 import { publicRpc } from "@/lib/public-rpc";
 import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
+import { DemoActionStub, DemoNotice } from "@/components/demo-notice";
 import { buildOrderText, formatPhoneInput, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
 import { ProductPhoto } from "@/components/product-photo";
 
@@ -17,7 +18,7 @@ import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
-type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number };
+type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number; demo?: boolean };
 
 export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang; products: Product[] }) {
   const t = T[lang];
@@ -89,6 +90,8 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    // Демо-магазин: заказ не создаётся и никуда не уходит.
+    if (shop.demo) return;
 
     const digits = normalizePhone(phone);
     if (!/^[0-9]{10,15}$/.test(digits)) {
@@ -320,11 +323,20 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             <span className="text-muted">{t.total}</span>
             <span className="text-2xl font-extrabold">{formatPrice(total)}</span>
           </div>
-          <button type="submit" disabled={sending} className="btn-wa h-14 text-lg disabled:opacity-60">
-            <WhatsAppIcon />
-            {sending ? t.sending : t.order}
-          </button>
-          <p className="text-center text-caption text-muted">{t.orderHint}</p>
+          {shop.demo ? (
+            <>
+              <DemoActionStub lang={lang} className="h-14 text-lg" />
+              <DemoNotice lang={lang} />
+            </>
+          ) : (
+            <>
+              <button type="submit" disabled={sending} className="btn-wa h-14 text-lg disabled:opacity-60">
+                <WhatsAppIcon />
+                {sending ? t.sending : t.order}
+              </button>
+              <p className="text-center text-caption text-muted">{t.orderHint}</p>
+            </>
+          )}
           <p className="text-center text-[12px] text-muted">
             {t.consent}{" "}
             <Link href="/privacy" className="underline">

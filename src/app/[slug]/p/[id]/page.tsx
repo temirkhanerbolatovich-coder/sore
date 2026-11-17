@@ -14,6 +14,8 @@ import { ProductPhoto } from "@/components/product-photo";
 import { PhotoViewer } from "@/components/photo-viewer";
 import { DocumentLanguage } from "@/components/document-language";
 import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
+import { isDemoSlug } from "@/lib/slug";
+import { DemoActionStub, DemoNotice } from "@/components/demo-notice";
 import { BackIcon } from "@/components/icons";
 import { ShelfFrames } from "@/components/shelf-frames";
 import { asBBox } from "@/lib/bbox";
@@ -34,6 +36,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title: `${product.title} — ${data.shop.name}`,
     description: text,
     alternates: publicAlternates(`/${data.shop.slug}/p/${id}`, lang),
+    robots: isDemoSlug(data.shop.slug) ? { index: false } : undefined,
     openGraph: {
       title: product.title,
       description: text,
@@ -55,6 +58,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const variants = variantsOf(product);
   const shelfBox = product.source_photo_url ? asBBox(product.bbox) : null;
   const url = publicUrl(shopHref(`/${shop.slug}/p/${id}`, lang));
+  const demo = isDemoSlug(shop.slug);
   const jsonLd = productJsonLd(product, url, text || `${priceLabel(product.price, product.price_mode, lang)} · ${shop.name}`);
 
   return (
@@ -68,6 +72,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         </BackLink>
         <ShareButton title={`${product.title} — ${shop.name}`} label={t.share} copiedLabel={t.shared} />
       </div>
+      {demo && <DemoNotice lang={lang} className="mx-5 mb-3 md:mx-5" />}
 
       <div className="md:grid md:grid-cols-2 md:items-start md:gap-6 md:px-5">
         {product.photo_url ? (
@@ -88,7 +93,9 @@ export default async function ProductPage({ params, searchParams }: Props) {
           </div>
           {text && <p className="whitespace-pre-line text-lead leading-relaxed text-muted">{text}</p>}
           <div className="pt-2 md:sticky md:bottom-4 md:z-10 md:rounded-xl md:bg-surface md:p-3">
-            {product.in_stock && isInquiry(product.price_mode) ? (
+            {product.in_stock && isInquiry(product.price_mode) && demo ? (
+              <DemoActionStub lang={lang} />
+            ) : product.in_stock && isInquiry(product.price_mode) ? (
               <div className="flex flex-col gap-2">
                 <InquiryButton
                   shopId={shop.id}
