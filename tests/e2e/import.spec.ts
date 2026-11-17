@@ -22,7 +22,7 @@ test("импорт прайса: шаблон, загрузка, обновле�
   try {
     await loginAs(page, request, email);
     await page.goto("/dashboard");
-    await expect(page.getByRole("link", { name: "Прайс из Excel" })).toHaveAttribute("href", "/dashboard/products/import");
+    await expect(page.getByRole("link", { name: "Прайс из Excel", exact: true })).toHaveAttribute("href", "/dashboard/products/import");
     await page.goto("/dashboard/products/import");
     await page.waitForLoadState("networkidle");
 

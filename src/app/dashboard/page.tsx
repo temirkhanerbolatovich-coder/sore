@@ -1,13 +1,9 @@
+import { HomeScreenHint } from "./home-screen-hint";
+import { ProductCatalog } from "./product-catalog";
 import Link from "next/link";
 import QRCode from "qrcode";
-import type { CSSProperties } from "react";
 import { requireShop } from "@/lib/shop";
-import { priceLabel } from "@/lib/order";
-import { variantsOf } from "@/lib/variants";
 import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
-import { ActionForm } from "@/components/action-form";
-import { ProductPhoto } from "@/components/product-photo";
-import { toggleStock, moveProduct } from "./products/actions";
 import { CopyLink } from "./copy-link";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { AddProducts } from "./add-products";
@@ -15,10 +11,9 @@ import { FirstSteps } from "./first-steps";
 import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
 import { CameraIcon, PlusIcon } from "@/components/icons";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export const metadata = { title: "Кабинет — Sөre" };
+export const metadata = { title: "Кабинет — SÖRE" };
 
 const SAVED: Record<string, string> = {
   added: "Товар добавлен. Он уже на витрине.",
@@ -82,6 +77,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </div>
         )}
         {products.length === 0 && <AddProducts />}
+        <HomeScreenHint />
         <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
 
         <div className="flex items-center justify-between px-5 pt-2">
@@ -108,49 +104,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </div>
         )}
 
-        <ul className="flex flex-col gap-2.5 px-5 pt-3 lg:grid lg:grid-cols-2">
-          {products.length === 0 && (
-            <li className="lg:col-span-2">
-              <EmptyState
-                icon={<CameraIcon size={24} />}
-                title="Пока нет товаров"
-                description="Добавьте первый товар: сфотографируйте его и укажите цену."
-                action={<Link href="/dashboard/products/new" className="btn-dark">Добавить товар вручную</Link>}
-              />
-            </li>
-          )}
-          {products.map((p, index) => (
-            <li key={p.id} className={`card flex items-center gap-3 p-2.5 ${index < 12 ? "rise-in" : ""}`} style={index < 12 ? { "--rise-index": index } as CSSProperties : undefined}>
-              <Link href={`/dashboard/products/${p.id}/edit`} className="flex min-w-0 flex-1 items-center gap-3">
-                  <ProductPhoto url={p.photo_url} alt="" thumbnail className="size-16 flex-none rounded-xl" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-base font-semibold">{p.title}</div>
-                  <div className="text-[15px] text-muted">{priceLabel(p.price, p.price_mode, "ru", variantsOf(p).length > 0)}</div>
-                  <div className={`text-[13px] font-semibold ${p.in_stock ? "text-wa" : "text-accent-dark"}`}>
-                    {p.in_stock ? "В наличии" : "Нет в наличии"}
-                  </div>
-                </div>
-              </Link>
-              <div className="flex flex-col gap-1"><ActionForm action={toggleStock}>
-                <input type="hidden" name="id" value={p.id} />
-                <input type="hidden" name="next" value={String(!p.in_stock)} />
-                <button
-                  type="submit"
-                  role="switch"
-                  aria-checked={p.in_stock}
-                  aria-label={`В наличии: ${p.title}`}
-                  className={`flex h-11 w-12 items-center rounded-full p-[3px] ${p.in_stock ? "justify-end bg-wa" : "justify-start bg-switch-off"}`}
-                >
-                  <span className="size-[22px] rounded-full bg-surface" />
-                </button>
-              </ActionForm>
-              {[-1, 1].map((direction) => <ActionForm key={direction} action={moveProduct}>
-                <input type="hidden" name="id" value={p.id} /><input type="hidden" name="direction" value={direction} />
-                <button className="min-h-11 min-w-11 px-2 text-sm" aria-label={direction < 0 ? "Выше" : "Ниже"}>{direction < 0 ? "↑" : "↓"}</button>
-              </ActionForm>)}</div>
-            </li>
-          ))}
-        </ul>
+        <ProductCatalog products={products} />
 
         {!full && products.length > 0 && (
           <div className="pointer-events-none sticky bottom-24 z-10 flex justify-end px-5 pb-2 pt-4 lg:bottom-6">

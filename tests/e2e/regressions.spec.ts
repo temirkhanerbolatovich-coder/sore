@@ -95,7 +95,8 @@ test.describe("продавец", () => {
     try {
       await loginAs(page, request, email);
       await page.goto("/dashboard");
-      await page.getByRole("button", { name: "Ниже" }).first().click();
+      await page.getByText("Действия с товаром", { exact: true }).first().click();
+      await page.getByRole("button", { name: "Ниже", exact: true }).first().click();
       await expect
         .poll(async () => {
           await page.reload();
