@@ -1,5 +1,5 @@
-import ExcelJS from "exceljs";
 import { TEMPLATE_EXAMPLES, TEMPLATE_HEADER, toCsv } from "@/lib/catalog-file";
+import { catalogTemplateXlsx } from "@/lib/catalog-template";
 
 /** Шаблон прайса: ?format=xlsx (по умолчанию) или ?format=csv. Статичен, входа не требует. */
 export async function GET(request: Request) {
@@ -12,13 +12,7 @@ export async function GET(request: Request) {
     });
   }
 
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Прайс");
-  sheet.addRow(TEMPLATE_HEADER).font = { bold: true };
-  TEMPLATE_EXAMPLES.forEach((row) => sheet.addRow(row));
-  [28, 10, 14, 16, 34, 34, 12].forEach((width, i) => (sheet.getColumn(i + 1).width = width));
-  sheet.views = [{ state: "frozen", ySplit: 1 }];
-  const body = Buffer.from(await workbook.xlsx.writeBuffer());
+  const body = await catalogTemplateXlsx();
   return new Response(new Uint8Array(body), {
     headers: {
       ...headers,

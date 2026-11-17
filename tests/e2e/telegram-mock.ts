@@ -1,6 +1,6 @@
 import http from "node:http";
 
-export type TelegramMessage = { chat_id: number | string; text: string; reply_markup?: { inline_keyboard: { text: string; url: string }[][] } };
+export type TelegramMessage = { chat_id: number | string; text: string; reply_markup?: { inline_keyboard: { text: string; url?: string; callback_data?: string }[][] } };
 
 /** Подставной Telegram Bot API: записывает все sendMessage, чтобы тесты могли их проверить. */
 export function startTelegramMock(port: number) {
