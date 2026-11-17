@@ -5,9 +5,16 @@ import { adminClient, cleanupUser, loginAs, seedShop } from "./helpers";
 const admin = adminClient();
 
 async function scan(page: Page, label: string) {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.waitForLoadState("networkidle");
-  const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  const summary = result.violations.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`);
+  // Итоговое состояние должно проходить axe; переходы цвета и появление карточек занимают доли секунды, поэтому до 5 попыток.
+  let summary: string[] = [];
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await page.waitForTimeout(400);
+    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    summary = result.violations.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`);
+    if (summary.length === 0) break;
+  }
   expect(summary, `axe: ${label}`).toEqual([]);
 }
 

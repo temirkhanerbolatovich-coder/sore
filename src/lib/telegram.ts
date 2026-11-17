@@ -6,9 +6,14 @@ const apiBase = () => process.env.TELEGRAM_API_BASE ?? "https://api.telegram.org
 export const telegramConfigured = () => Boolean(process.env.TELEGRAM_BOT_TOKEN);
 
 export type InlineButton = { text: string; url: string };
+/** Кнопка-действие: нажатие приходит боту (src/lib/bot/sore-bot.ts), а не открывает ссылку. */
+export type ActionButton = { text: string; callback_data: string };
 
-/** Отправка сообщения ботом. Возвращает true при успехе; сбой не должен ломать основной запрос. */
-export async function sendTelegram(chatId: number | string, text: string, buttons: InlineButton[] = []): Promise<boolean> {
+/**
+ * Отправка сообщения ботом. Возвращает true при успехе; сбой не должен ломать основной запрос.
+ * Кнопки-ссылки идут по одной в ряд, кнопки-действия одним рядом под ними.
+ */
+export async function sendTelegram(chatId: number | string, text: string, buttons: InlineButton[] = [], actions: ActionButton[] = []): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return false;
   try {
@@ -20,7 +25,9 @@ export async function sendTelegram(chatId: number | string, text: string, button
         text,
         parse_mode: "HTML",
         disable_web_page_preview: true,
-        ...(buttons.length ? { reply_markup: { inline_keyboard: buttons.map((b) => [b]) } } : {}),
+        ...(buttons.length || actions.length
+          ? { reply_markup: { inline_keyboard: [...buttons.map((b): (InlineButton | ActionButton)[] => [b]), ...(actions.length ? [actions] : [])] } }
+          : {}),
       }),
       signal: AbortSignal.timeout(8_000),
     });
@@ -33,6 +40,7 @@ export async function sendTelegram(chatId: number | string, text: string, button
 export const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export type OrderForMessage = {
+  id?: string;
   number: number;
   items: { title: string; qty: number; price: number }[];
   total: number;
@@ -68,5 +76,12 @@ export function buildOrderNotification(order: OrderForMessage, shopName: string,
       url: whatsappUrl(order.customer_phone, `Здравствуйте, ${order.customer_name}! Ваш заказ №${order.number} на ${formatPrice(order.total)} из магазина «${shopName}»`),
     },
   ];
-  return { text: parts.join("\n"), buttons };
+  // Отметить заказ прямо из уведомления: бот проверит, что заказ из магазина этого чата.
+  const actions: ActionButton[] = order.id
+    ? [
+        { text: "✅ Выполнен", callback_data: `o:${order.id}:done` },
+        { text: "✖️ Отменить", callback_data: `o:${order.id}:cancelled` },
+      ]
+    : [];
+  return { text: parts.join("\n"), buttons, actions };
 }
