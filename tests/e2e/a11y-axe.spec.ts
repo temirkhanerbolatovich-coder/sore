@@ -53,6 +53,16 @@ for (const theme of ["light", "dark"] as const) {
         await page.goto(path);
         await scan(page, `${path} ${theme}`);
       }
+      await page.route("**/api/ai/shelf", (route) => route.fulfill({ json: { items: [
+        { title: "Пирог", description_ru: "", description_kz: "", category: "Выпечка", bbox: { x1: .05, y1: .05, x2: .9, y2: .9 }, price_hint: 1000, photo_url: null },
+      ] } }));
+      await page.goto("/dashboard/products/shelf");
+      await page.waitForLoadState("networkidle");
+      await page.locator("#shelf-file").setInputFiles("public/icon-512.png");
+      await expect(page.getByLabel("Название 1")).toBeVisible();
+      await scan(page, `черновики полки ${theme}`);
+      await page.getByRole("button", { name: "Снять все", exact: true }).click();
+      await scan(page, `снятый выбор полки ${theme}`);
     } finally {
       await cleanupUser(admin, email);
     }

@@ -4,7 +4,7 @@ import { BackArrow } from "@/components/back-link";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "./onboarding-form";
 
-export const metadata = { title: "Создание магазина — Sөre" };
+export const metadata = { title: "Создание магазина — SÖRE" };
 
 export default async function OnboardingPage() {
   const supabase = await createClient();

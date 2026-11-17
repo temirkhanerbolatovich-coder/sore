@@ -28,9 +28,9 @@ export function ProductPhoto({
   const small = url && thumbnail ? thumbUrl(url) : url;
   const imageProps = {
     loading: priority || eager ? "eager" : "lazy",
-    fetchPriority: priority ? "high" : eager ? "low" : undefined,
+    fetchPriority: priority ? "high" : undefined,
     decoding: priority || eager ? undefined : "async",
-    className: `size-full object-cover ${priority ? "" : "photo-reveal"}`,
+    className: `size-full object-cover ${priority || eager ? "" : "photo-reveal"}`,
   } as const;
   return (
     <div

@@ -40,6 +40,8 @@ async function shelfImage() {
 }
 
 async function shot(page: Page, name: string, theme: string, width: number) {
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByText("Загружаем кабинет…", { exact: true })).toHaveCount(0);
   await page.evaluate(() => document.fonts.ready);
   const png = await page.screenshot({ type: "png", fullPage: true, animations: "disabled", scale: "css" });
   // Сохраняем исходную ширину: сначала уменьшаем качество, а не масштаб экрана.

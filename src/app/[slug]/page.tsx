@@ -136,8 +136,8 @@ export default async function ShopPage({ params, searchParams }: Props) {
               node: (
               <li
                 key={p.id}
-                className={`card flex flex-col overflow-hidden ${i < 12 ? "rise-in" : ""}`}
-                style={i < 12 ? { "--rise-index": i } as CSSProperties : undefined}
+                className={`card flex flex-col overflow-hidden ${i >= 4 && i < 12 ? "rise-in" : ""}`}
+                style={i >= 4 && i < 12 ? { "--rise-index": i - 4 } as CSSProperties : undefined}
               >
                 <Link href={shopHref(`${base}/p/${p.id}`, lang)} className="flex flex-col">
                   <ProductPhoto

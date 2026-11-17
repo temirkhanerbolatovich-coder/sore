@@ -77,3 +77,26 @@ test("Task 5: FAQ открывается клавиатурой", async ({ page 
   await page.keyboard.press("Enter");
   await expect(page.getByText("Оплаты на сайте нет.", { exact: false })).toBeVisible();
 });
+
+for (const storage of ["available", "blocked"]) {
+  test(`Task 5: подсказка главного экрана, storage ${storage}`, async ({ page, request }) => {
+    const id = Date.now().toString(36);
+    const email = `hint-${storage}-${id}@example.test`;
+    await seedShop(admin, { email, slug: `hint-${storage}-${id}` });
+    try {
+      if (storage === "blocked") await page.addInitScript(() => {
+        Object.defineProperty(window, "localStorage", { get() { throw new DOMException("Storage blocked", "SecurityError"); } });
+      });
+      await loginAs(page, request, email);
+      const hint = page.getByRole("complementary", { name: "Быстрый доступ к магазину" });
+      await expect(hint).toBeVisible();
+      await hint.getByRole("button", { name: "Понятно" }).click();
+      await expect(hint).toHaveCount(0);
+      if (storage === "available") {
+        await page.reload();
+        await expect(page.getByRole("heading", { name: /Товары/ })).toBeVisible();
+        await expect(hint).toHaveCount(0);
+      }
+    } finally { await cleanupUser(admin, email); }
+  });
+}
