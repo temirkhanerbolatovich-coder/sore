@@ -10,6 +10,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import { toggleStock, moveProduct } from "./products/actions";
 import { CopyLink } from "./copy-link";
 import { DashboardNav } from "@/components/dashboard-nav";
+import { AddProducts } from "./add-products";
 import { FirstSteps } from "./first-steps";
 import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
@@ -80,6 +81,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             </Link>
           </div>
         )}
+        {products.length === 0 && <AddProducts />}
         <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
 
         <div className="flex items-center justify-between px-5 pt-2">
