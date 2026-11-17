@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { artSvg, ART_NAMES } from "../../scripts/demo-shops/art";
-import { DEMO_NOTE, DEMO_SHOPS } from "../../scripts/demo-shops/data";
+import { DEMO_SHOPS } from "../../scripts/demo-shops/data";
 import { DEMO_SLUG_PREFIX, isDemoSlug, SLUG_RE, slugError } from "@/lib/slug";
 import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 
@@ -15,13 +15,12 @@ describe("демо-магазины", () => {
     }
   });
 
-  it("поля магазина укладываются в ограничения базы и помечены как демо", () => {
+  it("поля магазина укладываются в ограничения базы", () => {
     for (const shop of DEMO_SHOPS) {
       expect(shop.name.length).toBeGreaterThanOrEqual(2);
       expect(shop.name.length).toBeLessThanOrEqual(60);
       expect(shop.city.length).toBeLessThanOrEqual(60);
       expect(shop.about.length).toBeLessThanOrEqual(300);
-      expect(shop.about.startsWith(DEMO_NOTE)).toBe(true);
       expect(shop.address.length).toBeLessThanOrEqual(120);
       expect(shop.hours.length).toBeLessThanOrEqual(120);
       expect(shop.lead_days).toBeGreaterThanOrEqual(0);

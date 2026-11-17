@@ -21,11 +21,21 @@
 
 ## Скриншоты
 
-| Фото полки: ИИ нашёл товары | Витрина (тёмная тема) | Импорт прайса | После заказа: WhatsApp и Telegram |
-|---|---|---|---|
-| <img src="reports/stage-3/04-shelf-frames-light.jpg" width="190" alt="Фото полки с рамками найденных товаров"> | <img src="reports/stage-3/09-storefront-dark.jpg" width="190" alt="Витрина магазина в тёмной теме"> | <img src="reports/stage-3/08-import-result-light.jpg" width="190" alt="Итог импорта прайса с отчётом об ошибках"> | <img src="reports/stage-3/11-order-done-dark.jpg" width="190" alt="Экран после заказа с двумя каналами связи"> |
+Снято с боевого сайта на [демо-магазинах](https://dukenai.vercel.app/demo-bauyrsak), телефон 390 px.
 
-Все снимки обеих тем: [`reports/stage-3`](reports/stage-3).
+| Главная | Витрина | Тёмная тема | Карточка товара | Корзина |
+|---|---|---|---|---|
+| <img src="docs/screenshots/landing.jpg" width="160" alt="Главная страница SÖRE"> | <img src="docs/screenshots/storefront-light.jpg" width="160" alt="Витрина пекарни с фото, ценами и категориями"> | <img src="docs/screenshots/storefront-dark.jpg" width="160" alt="Витрина цветочного магазина в тёмной теме"> | <img src="docs/screenshots/product.jpg" width="160" alt="Карточка товара с фото, ценой и описанием"> | <img src="docs/screenshots/cart.jpg" width="160" alt="Корзина с двумя товарами"> |
+
+<img src="docs/screenshots/storefront-desktop.jpg" width="820" alt="Витрина сувенирного магазина на компьютере">
+
+**Кабинет продавца**
+
+| Фото полки: ИИ нашёл товары | Импорт прайса из Excel |
+|---|---|
+| <img src="reports/stage-3/04-shelf-frames-light.jpg" width="190" alt="Фото полки с рамками найденных товаров"> | <img src="reports/stage-3/08-import-result-light.jpg" width="190" alt="Итог импорта прайса с отчётом об ошибках"> |
+
+Демо-магазины вымышленные, фото со стока Pexels; заказы из них не отправляются. Заполняет их `npm run seed:demo`, снимки обновляет `npx tsx scripts/readme-screenshots.ts`. Все снимки кабинета в обеих темах: [`reports/stage-3`](reports/stage-3).
 
 ## Как устроено
 
