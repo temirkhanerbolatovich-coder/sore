@@ -27,7 +27,7 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-5 pb-14 pt-6 sm:px-8">
       <header className="flex items-center justify-between gap-4">
         <div className="text-2xl font-extrabold tracking-tight">
-          S<span className="text-accent">ө</span>re
+          S<span className="text-accent">Ö</span>RE
         </div>
         <div className="flex items-center gap-3 sm:gap-5">
           <ThemeToggle />
@@ -90,6 +90,10 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="card p-6 sm:p-8" aria-labelledby="problem">
+        <h2 id="problem" className="text-3xl font-extrabold">Меньше одинаковых вопросов в переписке</h2>
+        <p className="mt-4 max-w-3xl text-lg text-muted">Фото теряются в чате, цены приходится отправлять каждому. Соберите товары в одной витрине: покупатель увидит наличие, выберет товары и отправит состав заказа.</p>
+      </section>
       <section className="flex flex-col gap-6">
         <h2 className="text-3xl font-extrabold tracking-tight">Три шага до первого заказа</h2>
         <div className="grid gap-5 sm:grid-cols-3">
@@ -105,6 +109,12 @@ export default function Home() {
         </div>
       </section>
 
+      <section aria-labelledby="features" className="flex flex-col gap-6">
+        <h2 id="features" className="text-3xl font-extrabold">Всё для вашей витрины</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[["Фото полки", "Карточки нескольких товаров по одному снимку. Проверьте результат ИИ перед публикацией."], ["Прайс Excel и CSV", "Добавляйте товары из таблицы и проверяйте ошибки в отчёте."], ["Русский и казахский", "Покупатель выбирает язык витрины. Описания можно исправить вручную."], ["WhatsApp и Telegram", "Состав заказа и связь с продавцом в привычном мессенджере."], ["Светлая и тёмная тема", "Покупатель выбирает комфортное оформление."], ["Ссылка и QR-код", "Отправьте витрину в чат или распечатайте плакат."]].map(([title, text]) => <div key={title} className="card p-5"><h3 className="font-bold">{title}</h3><p className="mt-2 text-muted">{text}</p></div>)}
+        </div>
+      </section>
       <section className="flex flex-col gap-6" aria-labelledby="plans">
         <h2 id="plans" className="text-3xl font-extrabold tracking-tight">
           Начните бесплатно
@@ -118,7 +128,7 @@ export default function Home() {
             <ul className="flex flex-col gap-2 text-muted">
               <li>До 15 товаров</li>
               <li>Ограниченное число ИИ-генераций в день</li>
-              <li>Плашка «Сделано в Sөre»</li>
+              <li>Плашка «Сделано в SÖRE»</li>
             </ul>
             <Link href="/login" className="btn-accent mt-auto">
               Создать магазин
@@ -127,8 +137,17 @@ export default function Home() {
         </div>
       </section>
 
+      <section aria-labelledby="faq">
+        <h2 id="faq" className="mb-6 text-3xl font-extrabold">Частые вопросы</h2>
+        {[["Нужен ли свой сайт?", "Нет. Вы получите ссылку на витрину, которую можно отправить клиентам или добавить в профиль."], ["Можно ли начать без ИИ?", "Да. Добавляйте карточки вручную или загружайте прайс из Excel и CSV."], ["Нужно ли проверять распознанные товары?", "Да. ИИ может ошибиться в названии, описании или цене. Перед публикацией проверьте каждую карточку."], ["Как покупатель оплатит заказ?", "Оплаты на сайте нет. Способ оплаты и доставку вы согласуете с покупателем напрямую."], ["Сколько товаров доступно бесплатно?", "До 15 товаров. Число ИИ-генераций в день ограничено; остаток виден при работе с ИИ."]].map(([question, answer]) => <details key={question} className="border-b border-line py-2"><summary className="cursor-pointer py-3 font-bold">{question}</summary><p className="pb-4 text-muted">{answer}</p></details>)}
+      </section>
+      <section className="card flex flex-col items-start gap-4 p-6 sm:p-8">
+        <h2 className="text-3xl font-extrabold">Начните с первого товара</h2>
+        <p className="text-muted">Создайте магазин, добавьте товары и поделитесь ссылкой с покупателями.</p>
+        <Link href="/login" className="btn-accent">Создать магазин</Link>
+      </section>
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-sm text-muted">
-        <div>© Sөre · Сделано в Казахстане</div>
+        <div>© SÖRE · Сделано в Казахстане</div>
         <nav aria-label="Юридическая информация" className="flex flex-wrap gap-x-5">
           <Link href="/terms" className="flex min-h-11 items-center underline">
             Условия
