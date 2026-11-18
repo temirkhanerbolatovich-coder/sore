@@ -56,6 +56,15 @@ async function downloadPhoto(photo: string): Promise<Buffer | null> {
   }
 }
 
+/** Аватар магазина: квадрат 400 px из фото Pexels; без фото остаётся буква на фоне, как у обычного магазина. */
+async function renderAvatar(shop: DemoShop): Promise<{ full: Buffer; thumb: Buffer } | null> {
+  const photo = await downloadPhoto(shop.avatar);
+  if (!photo) return null;
+  const full = await sharp(photo).rotate().resize(400, 400, { fit: "cover", position: "attention" }).jpeg({ quality: 84, mozjpeg: true }).toBuffer();
+  const thumb = await sharp(full).resize(160).jpeg({ quality: THUMB_QUALITY, mozjpeg: true }).toBuffer();
+  return { full, thumb };
+}
+
 async function renderProduct(shop: DemoShop, product: DemoProduct): Promise<{ full: Buffer; thumb: Buffer; source: "pexels" | "art" }> {
   const photo = await downloadPhoto(product.photo);
   const input = photo ?? Buffer.from(artSvg(product.art, { bg: shop.bg, accent: product.accent }));
@@ -117,11 +126,23 @@ async function seedShop(admin: SupabaseClient, shop: DemoShop, whatsapp: string)
   }
 
   const bucket = admin.storage.from(BUCKET);
+  const options = { contentType: "image/jpeg", cacheControl: "31536000" };
+  const avatar = await renderAvatar(shop);
+  if (avatar) {
+    const avatarPath = `${owner.id}/${randomUUID()}.jpg`;
+    const up = await bucket.upload(avatarPath, avatar.full, options);
+    if (up.error) throw up.error;
+    const small = await bucket.upload(avatarPath.replace(/\.jpg$/, "_s.jpg"), avatar.thumb, options);
+    if (small.error) throw small.error;
+    const { error: avatarError } = await admin.from("shops").update({ avatar_url: bucket.getPublicUrl(avatarPath).data.publicUrl }).eq("id", shopId);
+    if (avatarError) throw avatarError;
+  } else {
+    console.warn(`  ! ${shop.name}: фото для аватара недоступно, останется буква`);
+  }
   const rows = [];
   for (const [sort, product] of shop.products.entries()) {
     const { full, thumb } = await renderProduct(shop, product);
     const filePath = `${owner.id}/${randomUUID()}.jpg`;
-    const options = { contentType: "image/jpeg", cacheControl: "31536000" };
     const upload = await bucket.upload(filePath, full, options);
     if (upload.error) throw upload.error;
     const small = await bucket.upload(filePath.replace(/\.jpg$/, "_s.jpg"), thumb, options);
