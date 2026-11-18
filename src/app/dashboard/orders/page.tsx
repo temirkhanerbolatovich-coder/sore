@@ -78,7 +78,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           <div className="min-w-0 flex-1">
             <Field label="Когда нужно" htmlFor="orders-date"><input id="orders-date" name="date" type="date" defaultValue={filters.date} className="input" /></Field>
           </div>
-          <button type="submit" className="btn-dark h-11 min-h-11 px-5">Найти</button>
+          <button type="submit" className="btn-dark h-12 min-h-12 shrink-0 px-5">Найти</button>
         </div>
         <div className="flex items-center justify-between gap-3 text-sm">
           {filtered ? <Link href={filterQuery({ ...filters, q: "", date: "" })} className="flex min-h-11 items-center font-semibold underline">Сбросить поиск</Link> : <span />}

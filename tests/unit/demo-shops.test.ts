@@ -26,6 +26,7 @@ describe("демо-магазины", () => {
       expect(shop.lead_days).toBeGreaterThanOrEqual(0);
       expect(shop.lead_days).toBeLessThanOrEqual(60);
       expect(shop.products.length).toBeLessThanOrEqual(FREE_PRODUCT_LIMIT);
+      expect(shop.avatar).toMatch(/^[a-z0-9-]+-\d+$/);
     }
   });
 

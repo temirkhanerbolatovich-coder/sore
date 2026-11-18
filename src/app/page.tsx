@@ -67,9 +67,9 @@ export default function Home() {
           <figure className="card overflow-hidden p-2">
             <div className="rounded-xl bg-thumb p-2">
               <div className="grid grid-cols-2 gap-2 border-b-4 border-field pb-2">
-                {["prague", "cupcakes", "eclairs", "macarons"].map((image, index) => (
+                {["kese", "slippers", "dombyra", "takiya"].map((image, index) => (
                   <div key={image} className="relative overflow-hidden rounded-lg border-2 border-accent">
-                    <Image src={`/demo/${image}.svg`} alt="" width={600} height={600} className="aspect-square w-full object-cover" />
+                    <Image src={`/landing/${image}.jpg`} alt="" width={600} height={600} sizes="(min-width: 640px) 110px, 22vw" className="aspect-square w-full object-cover" />
                     <span className="absolute left-1 top-1 flex size-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-on-accent">{index + 1}</span>
                   </div>
                 ))}
@@ -77,16 +77,16 @@ export default function Home() {
             </div>
             <figcaption className="px-1 pt-2 text-sm font-semibold">Пример полки с найденными товарами</figcaption>
           </figure>
-          <div className="card flex flex-col gap-3 p-3">
+          <Link href="/demo" className="card flex flex-col gap-3 p-3 transition-colors hover:border-ink">
             <div className="text-sm font-bold">Витрина магазина</div>
-            {[["prague", "Торт «Прага»", "12 000 ₸"], ["cupcakes", "Капкейки", "4 500 ₸"]].map(([image, title, price]) => (
+            {[["slippers", "Войлочные тапочки", "8 500 ₸"], ["kese", "Кесе с росписью", "12 000 ₸"]].map(([image, title, price]) => (
               <div key={image} className="flex flex-col gap-1">
-                <Image src={`/demo/${image}.svg`} alt="" width={600} height={600} className="aspect-[4/3] w-full rounded-xl object-cover" />
+                <Image src={`/landing/${image}.jpg`} alt="" width={600} height={600} sizes="(min-width: 640px) 220px, 45vw" className="aspect-[4/3] w-full rounded-xl object-cover" />
                 <div className="text-sm font-semibold">{title}</div>
                 <div className="text-sm font-bold">{price}</div>
               </div>
             ))}
-          </div>
+          </Link>
         </div>
       </section>
 

@@ -25,6 +25,8 @@ export type DemoShop = {
   about: string;
   lead_days: number;
   bg: string;
+  /** Аватар магазина: фото Pexels, как у товаров. */
+  avatar: string;
   products: DemoProduct[];
 };
 
@@ -40,6 +42,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     about: "Домашняя выпечка по семейным рецептам: баурсаки, самса, табанан и торты к празднику.",
     lead_days: 0,
     bg: "#f3e2cf",
+    avatar: "lepeshka-uzbek-bread-20045238",
     products: [
       { title: "Баурсаки, 1 кг", category: "Выпечка", price: 3500, price_mode: "fixed", art: "baursak", photo: "traditional-fried-bread-on-outdoor-picnic-table-30696373",
         description_ru: "Пышные баурсаки на молоке, жарим утром в день заказа. Хорошо держат форму и на второй день.",
@@ -70,6 +73,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     about: "Свежие цветы и комнатные растения, соберём букет к нужному часу.",
     lead_days: 0,
     bg: "#f7e1e6",
+    avatar: "vibrant-bouquet-of-red-roses-and-baby-s-breath-35568784",
     products: [
       { title: "Букет из 25 роз", category: "Букеты", price: 27000, price_mode: "fixed", art: "roses", photo: "red-roses-bouquet-on-table-22604232",
         description_ru: "Красные розы 50 см в крафтовой упаковке с лентой. Открытка в подарок.",
@@ -100,6 +104,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     about: "Сувениры и подарки с казахским орнаментом ручной работы.",
     lead_days: 1,
     bg: "#e3ecf5",
+    avatar: "kazakh-dombyra-with-traditional-ornamentation-30472401",
     products: [
       { title: "Кесе с росписью, 6 шт", category: "Посуда", price: 12000, price_mode: "fixed", art: "cups", photo: "vibrant-traditional-uzbek-ceramic-pottery-display-40336773",
         description_ru: "Керамические кесе ручной росписи, 200 мл. Узор на каждой немного свой. В подарочной коробке.",
@@ -119,6 +124,21 @@ export const DEMO_SHOPS: DemoShop[] = [
       { title: "Подарочный набор на заказ", category: "Подарки", price: 0, price_mode: "request", art: "gift", photo: "two-gift-boxes-13975271", accent: "#1f6fb2",
         description_ru: "Соберём набор для гостей, коллег или иностранных партнёров под ваш бюджет.",
         description_kz: "Қонақтарға, әріптестерге немесе шетелдік серіктестерге бюджетіңізге сай жиынтық құрастырамыз." },
+      { title: "Домбыра ученическая", category: "Музыка", price: 45000, price_mode: "fixed", art: "dombra", photo: "traditional-kazakh-dombyra-on-white-background-30472406",
+        description_ru: "Настоящая домбыра для занятий: ель и орех, роспись на деке. Подходит детям и начинающим.",
+        description_kz: "Сабаққа арналған нағыз домбыра: шырша мен жаңғақ ағашы, қақпағында өрнек. Балалар мен жаңадан үйренушілерге лайық." },
+      { title: "Шёлковый платок с орнаментом", category: "Текстиль", price: 9500, price_mode: "fixed", art: "rug", photo: "colorful-geometric-patterned-silk-scarf-36455708",
+        description_ru: "Натуральный шёлк, 90×90 см. Яркий геометрический узор, в подарочной коробке.",
+        description_kz: "Табиғи жібек, 90×90 см. Ашық геометриялық өрнек, сыйлық қорапшасында." },
+      { title: "Расписная тарелка, 26 см", category: "Посуда", price: 7000, price_mode: "fixed", art: "shanyrak", photo: "handcrafted-blue-and-white-ornate-ceramic-plate-31000471",
+        description_ru: "Ручная роспись по керамике. Можно повесить на стену или поставить на дастархан.",
+        description_kz: "Керамикаға қолмен салынған сурет. Қабырғаға ілуге немесе дастарханға қоюға болады." },
+      { title: "Серебро с орнаментом", category: "Украшения", price: 6000, price_mode: "from", art: "shanyrak", photo: "close-up-of-silver-antique-accessories-12685978",
+        description_ru: "Подвески и браслеты из серебра 925 пробы с казахским орнаментом. Цена зависит от изделия.",
+        description_kz: "Қазақ өрнегі бар 925 сынамалы күмістен алқалар мен білезіктер. Бағасы бұйымға байланысты." },
+      { title: "Войлочная игрушка", category: "Войлок", price: 3500, price_mode: "fixed", art: "slippers", photo: "colorful-wool-felt-cat-toys-in-a-basket-40987769",
+        description_ru: "Котики и зверята из шерсти, ручная валка, около 12 см. Для детей от 3 лет.",
+        description_kz: "Жүннен басылған мысықтар мен аңдар, қолдан жасалған, шамамен 12 см. 3 жастан асқан балаларға." },
     ],
   },
   {
@@ -130,6 +150,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     about: "Уборка квартир и домов, химчистка мебели и ковров на дому. Своя химия и техника.",
     lead_days: 1,
     bg: "#dff1f0",
+    avatar: "person-cleaning-window-with-squeegee-and-gloves-31435403",
     products: [
       { title: "Генеральная уборка квартиры", category: "Уборка", price: 25000, price_mode: "from", art: "bucket", photo: "woman-cleaning-the-living-room-27176673", accent: "#2e86c1",
         description_ru: "Кухня, санузел, полы, пыль, двери и плинтусы. Цена за 1-комнатную, точную назовём по площади.",
@@ -160,6 +181,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     about: "Натуральная косметика ручной работы: мыло на верблюжьем молоке, кремы и скрабы.",
     lead_days: 0,
     bg: "#f4ece4",
+    avatar: "stack-of-natural-soaps-placed-on-table-6621497",
     products: [
       { title: "Мыло на верблюжьем молоке", category: "Мыло", price: 2200, price_mode: "fixed", art: "soap", photo: "stack-of-natural-soaps-placed-on-table-6621497",
         description_ru: "Холодный способ, без отдушек, 100 г. Подходит для сухой кожи.",
@@ -190,6 +212,7 @@ export const DEMO_SHOPS: DemoShop[] = [
     about: "Фермерские продукты из аула: конина, молочное и мёд. Привозим раз в неделю.",
     lead_days: 2,
     bg: "#eef0dc",
+    avatar: "honey-in-glass-jars-5865194",
     products: [
       { title: "Говядина, 1 кг", category: "Мясо", price: 4800, price_mode: "fixed", art: "kazy", photo: "fresh-raw-ribeye-beef-on-cutting-board-33157191",
         description_ru: "Мякоть молодого бычка из аула, без костей. Привозим охлаждённой.",
