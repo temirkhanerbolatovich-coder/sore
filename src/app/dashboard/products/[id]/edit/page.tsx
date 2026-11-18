@@ -3,7 +3,7 @@ import { requireShop } from "@/lib/shop";
 import type { Product } from "@/lib/types";
 import { FormHeader, ProductForm } from "../../product-form";
 
-export const metadata = { title: "Редактирование товара — Sөre" };
+export const metadata = { title: "Редактирование товара — SÖRE" };
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

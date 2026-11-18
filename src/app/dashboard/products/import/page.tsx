@@ -3,7 +3,7 @@ import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 import { FormHeader } from "../product-form";
 import { ImportForm } from "./import-form";
 
-export const metadata = { title: "Прайс из Excel — Sөre" };
+export const metadata = { title: "Прайс из Excel — SÖRE" };
 
 export default async function ImportPage() {
   const { supabase, shop } = await requireShop();

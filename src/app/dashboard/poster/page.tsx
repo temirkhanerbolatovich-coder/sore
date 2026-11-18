@@ -4,7 +4,7 @@ import { requireShop } from "@/lib/shop";
 import { PrintButton } from "./print-button";
 import { BackIcon } from "@/components/icons";
 
-export const metadata = { title: "Плакат с QR-кодом — Sөre", robots: { index: false } };
+export const metadata = { title: "Плакат с QR-кодом — SÖRE", robots: { index: false } };
 
 /** Страница для печати: название магазина, крупный QR-код на витрину и адрес ссылки. */
 export default async function PosterPage() {
@@ -43,7 +43,7 @@ export default async function PosterPage() {
         />
         <p className="text-base text-muted print:text-2xl">Наведите камеру телефона на QR-код</p>
         <p className="break-all text-lg font-extrabold text-accent print:text-3xl">{url.replace(/^https?:\/\//, "")}</p>
-        <p className="text-sm text-muted print:text-lg">Сделано в Sөre</p>
+        <p className="text-sm text-muted print:text-lg">Сделано в SÖRE</p>
       </section>
 
       <div className="flex flex-col gap-2 print:hidden">

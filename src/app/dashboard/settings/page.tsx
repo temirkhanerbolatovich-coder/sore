@@ -5,7 +5,7 @@ import { SettingsForm } from "./settings-form";
 import { TelegramCard } from "./telegram-card";
 import { DangerZone } from "./danger-zone";
 
-export const metadata = { title: "Настройки магазина — Sөre" };
+export const metadata = { title: "Настройки магазина — SÖRE" };
 
 export default async function SettingsPage() {
   const { supabase, shop } = await requireShop();
