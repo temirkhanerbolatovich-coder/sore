@@ -54,5 +54,13 @@ export function ProductPhoto({
       )}
     </div>
   );
-  return transitionName ? <ViewTransition name={transitionName}>{frame}</ViewTransition> : frame;
+  // share: фото «перелетает» только между витриной и карточкой товара. default="none": при других переходах
+  // (смена категории, поиск) карточки не анимируются, иначе iOS Safari оставлял картинку не на своём месте.
+  return transitionName ? (
+    <ViewTransition name={transitionName} share="auto" default="none">
+      {frame}
+    </ViewTransition>
+  ) : (
+    frame
+  );
 }

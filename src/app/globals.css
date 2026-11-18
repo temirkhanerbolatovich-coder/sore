@@ -188,4 +188,7 @@ button:disabled { cursor: wait; opacity: .6; }
 
 .input { border-radius: var(--radius-control); padding-inline: var(--space-control); }
 .input::placeholder { color: var(--muted); opacity: 1; }
+/* iOS Safari рисует поле даты системным элементом со своей минимальной шириной: оно вылезало из контейнера. */
+.input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; line-height: 3rem; }
+.input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 button:disabled { opacity: 1; color: var(--muted); background: var(--surface); }
