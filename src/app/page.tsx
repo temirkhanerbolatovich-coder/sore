@@ -77,7 +77,7 @@ export default function Home() {
             </div>
             <figcaption className="px-1 pt-2 text-sm font-semibold">Пример полки с найденными товарами</figcaption>
           </figure>
-          <Link href="/demo" className="card flex flex-col gap-3 p-3 transition-colors hover:border-ink" aria-label="Открыть демо-витрину «Ою сувенир»">
+          <Link href="/demo" className="card flex flex-col gap-3 p-3 transition-colors hover:border-ink">
             <div className="text-sm font-bold">Витрина магазина</div>
             {[["slippers", "Войлочные тапочки", "8 500 ₸"], ["kese", "Кесе с росписью", "12 000 ₸"]].map(([image, title, price]) => (
               <div key={image} className="flex flex-col gap-1">
