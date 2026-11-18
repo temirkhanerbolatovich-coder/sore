@@ -8,6 +8,7 @@
  *   npm run seed:demo                         заполнить локальную базу
  *   npm run seed:demo -- --allow-remote       заполнить облачную базу
  *   npm run seed:demo -- --remove [--allow-remote]   удалить демо-магазины, их владельцев и фото
+ *   DEMO_OWNER_EMAIL=name@gmail.com npm run seed:demo -- --rebind --allow-remote   почта владельцев → name+demo-<slug>@gmail.com
  *
  * Окружение: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (как у приложения),
  *   DEMO_WHATSAPP  необязательно. Демо-витрины не отправляют заказы и не показывают номер (src/components/demo-notice.tsx),
@@ -31,7 +32,20 @@ const BUCKET = "product-photos";
 const THUMB_WIDTH = 480;
 const THUMB_QUALITY = 78;
 
+/** Исходный служебный адрес владельца: письма на него не доходят. */
 const ownerEmail = (slug: string) => `${slug}@demo.sore.invalid`;
+
+/**
+ * Адрес для входа в демо-кабинет: DEMO_OWNER_EMAIL=name@gmail.com даёт name+demo-<slug>@gmail.com,
+ * письмо со ссылкой приходит в обычный ящик. Без переменной остаётся служебный адрес.
+ */
+function loginEmail(slug: string): string {
+  const base = (process.env.DEMO_OWNER_EMAIL ?? "").trim().toLowerCase();
+  if (!base) return ownerEmail(slug);
+  const match = /^([^@+\s]+)@([^@\s]+\.[^@\s]+)$/.exec(base);
+  if (!match) throw new Error("DEMO_OWNER_EMAIL: нужен обычный адрес вида name@gmail.com, без плюса.");
+  return `${match[1]}+${slug}@${match[2]}`;
+}
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(name);
@@ -96,14 +110,38 @@ async function findOwner(admin: SupabaseClient, email: string) {
   }
 }
 
+/** Владелец демо-магазина: по адресу для входа, а если ещё не переименован, по служебному. */
+async function findShopOwner(admin: SupabaseClient, slug: string) {
+  return (await findOwner(admin, loginEmail(slug))) ?? (await findOwner(admin, ownerEmail(slug)));
+}
+
+/** Переносит почту владельцев на адрес для входа (без пересева товаров и фото). */
+async function rebindOwners(admin: SupabaseClient) {
+  for (const shop of DEMO_SHOPS) {
+    const target = loginEmail(shop.slug);
+    const owner = await findShopOwner(admin, shop.slug);
+    if (!owner) {
+      console.log(`– ${shop.slug}: владельца нет`);
+      continue;
+    }
+    if (owner.email === target) {
+      console.log(`= ${shop.slug}: уже ${target}`);
+      continue;
+    }
+    const { error } = await admin.auth.admin.updateUserById(owner.id, { email: target, email_confirm: true });
+    if (error) throw new Error(`${shop.slug}: ${error.message}`);
+    console.log(`✔ ${shop.slug}: ${target}`);
+  }
+}
+
 async function removeOwnerFiles(admin: SupabaseClient, ownerId: string) {
   const { data: files } = await admin.storage.from(BUCKET).list(ownerId, { limit: 1000 });
   if (files?.length) await admin.storage.from(BUCKET).remove(files.map((f) => `${ownerId}/${f.name}`));
 }
 
 async function seedShop(admin: SupabaseClient, shop: DemoShop, whatsapp: string) {
-  const email = ownerEmail(shop.slug);
-  let owner = await findOwner(admin, email);
+  const email = loginEmail(shop.slug);
+  let owner = await findShopOwner(admin, shop.slug);
   if (!owner) {
     const { data, error } = await admin.auth.admin.createUser({ email, email_confirm: true, user_metadata: { demo: true } });
     if (error || !data.user) throw error ?? new Error(`не удалось создать владельца ${email}`);
@@ -166,7 +204,7 @@ async function seedShop(admin: SupabaseClient, shop: DemoShop, whatsapp: string)
 }
 
 async function removeShop(admin: SupabaseClient, shop: DemoShop) {
-  const owner = await findOwner(admin, ownerEmail(shop.slug));
+  const owner = await findShopOwner(admin, shop.slug);
   if (!owner) return console.log(`– ${shop.slug}: нет`);
   await removeOwnerFiles(admin, owner.id);
   // Магазин, товары и заказы удаляются каскадом вместе с владельцем.
@@ -187,6 +225,8 @@ async function main() {
     throw new Error("База не локальная. Для облака добавьте --allow-remote осознанно.");
   }
   const admin = createClient(url, key, { auth: { persistSession: false } });
+
+  if (process.argv.includes("--rebind")) return rebindOwners(admin);
 
   if (process.argv.includes("--remove")) {
     for (const shop of DEMO_SHOPS) await removeShop(admin, shop);
