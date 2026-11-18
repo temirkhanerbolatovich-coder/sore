@@ -3,7 +3,7 @@ import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 import { FormHeader } from "../product-form";
 import { ShelfForm } from "./shelf-form";
 
-export const metadata = { title: "Фото полки — Sөre" };
+export const metadata = { title: "Фото полки — SÖRE" };
 
 export default async function ShelfPage() {
   const { supabase, shop } = await requireShop();

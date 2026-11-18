@@ -8,7 +8,7 @@ import { applyOrderFilters, filterQuery, parseOrderFilters } from "@/lib/orders-
 import { StatusButton } from "./status-button";
 import { CartIcon } from "@/components/icons";
 
-export const metadata = { title: "Заказы — Sөre" };
+export const metadata = { title: "Заказы — SÖRE" };
 
 type OrderRow = {
   id: string;
