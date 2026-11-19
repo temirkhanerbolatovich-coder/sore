@@ -31,7 +31,7 @@
 
 | Документ | О чём |
 |---|---|
-| [DEPLOY.md](DEPLOY.md) | боевая среда: Vercel, Supabase, переменные, письма входа, SMTP, Google-вход |
+| [DEPLOY.md](DEPLOY.md) | Supabase, переменные, письма входа, SMTP, Google-вход (хостинг теперь Netlify, см. NETLIFY.md) |
 | [TELEGRAM.md](TELEGRAM.md) | уведомления о заказах: настройка бота, как работает привязка |
 | [email-templates/](email-templates) | двуязычные письма входа для Supabase (загружаются после подключения SMTP) |
 
@@ -45,4 +45,4 @@
 
 ## Архив
 
-[archive/](archive) хранит историю: задания для Codex и отчёты по ним (`CODEX_TASK*.md`, `CODEX_REPORT*.md`), аудит (`AUDIT.md`), старый список улучшений (`BACKLOG.md`) и передачу после задания №3 (`HANDOFF_stage3.md`). Это не инструкции к действию: актуальные задачи ведутся в [Issues](https://github.com/temirkhanerbolatovich-coder/sore/issues).
+[archive/](archive) хранит историю: задания для Codex и отчёты по ним (`CODEX_TASK*.md`, `CODEX_REPORT*.md`, включая Task 4–5), аудит (`AUDIT.md`), старый список улучшений (`BACKLOG.md`) и передачу после задания №3 (`HANDOFF_stage3.md`). Это не инструкции к действию: актуальные задачи ведутся в [Issues](https://github.com/temirkhanerbolatovich-coder/sore/issues).
