@@ -10,12 +10,15 @@ const nextConfig: NextConfig = {
     const dev = process.env.NODE_ENV === "development";
     // The Vercel SDKs use same-origin /_vercel endpoints in production and a debug script in development.
     const devScripts = dev ? " 'unsafe-eval' https://va.vercel-scripts.com" : "";
+    // Счётчик Umami Cloud разрешаем в политике только когда он включён (NEXT_PUBLIC_UMAMI_ID).
+    const umamiScript = process.env.NEXT_PUBLIC_UMAMI_ID ? " https://cloud.umami.is" : "";
+    const umamiConnect = process.env.NEXT_PUBLIC_UMAMI_ID ? " https://cloud.umami.is https://api-gateway.umami.dev" : "";
     const policy = [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${devScripts}`,
+      `script-src 'self' 'unsafe-inline'${devScripts}${umamiScript}`,
       "style-src 'self' 'unsafe-inline'",
       `img-src 'self' data: blob: https://*.supabase.co${localSupabase}`,
-      `connect-src 'self' https://*.supabase.co${localSupabase}`,
+      `connect-src 'self' https://*.supabase.co${localSupabase}${umamiConnect}`,
       "font-src 'self' data:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
