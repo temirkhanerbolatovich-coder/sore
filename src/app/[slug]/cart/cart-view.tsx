@@ -173,6 +173,20 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
         <p className="leading-relaxed text-muted">
           {t.waHelp}
         </p>
+        <section aria-label={t.whatNext} className="flex w-full flex-col gap-1.5 rounded-xl border border-line bg-surface p-3 text-left text-sm">
+          <h2 className="font-bold">{t.whatNext}</h2>
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-muted">
+            <li>{t.afterReply}</li>
+            {(shop.paymentInfo || shop.deliveryInfo) && (
+              <li>
+                {t.afterTerms}
+                {shop.paymentInfo && <span className="block whitespace-pre-line text-ink">{t.payment}: {shop.paymentInfo}</span>}
+                {shop.deliveryInfo && <span className="block whitespace-pre-line text-ink">{t.deliveryTerms}: {shop.deliveryInfo}</span>}
+              </li>
+            )}
+            {statusHref && <li>{t.afterTrack}</li>}
+          </ul>
+        </section>
         <a href={sentUrl} className="btn-wa h-14 w-full text-lg">
           <WhatsAppIcon />
           {t.openWa}
