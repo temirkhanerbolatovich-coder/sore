@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { uploadProductPhoto } from "@/lib/image";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import type { BBox } from "@/lib/bbox";
+import { shelfReviewReason } from "@/lib/shelf-review";
 import { ShelfFrames } from "@/components/shelf-frames";
 import { AiIcon, CameraIcon, CheckIcon } from "@/components/icons";
 import { discardShelf, saveShelf, type ShelfState } from "./actions";
@@ -308,6 +309,14 @@ export function ShelfForm({ slots }: { slots: number }) {
                       onChange={(e) => patch(d.key, { category: e.target.value })}
                       className="input h-11 text-sm"
                     />
+                    {(() => {
+                      const reason = shelfReviewReason(d);
+                      return reason ? (
+                        <span role="note" className="w-fit rounded-full bg-accent-soft px-2.5 py-1 text-xs font-bold text-accent-dark">
+                          Проверьте: {reason}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
