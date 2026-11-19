@@ -9,10 +9,11 @@
       "**": false
     }
   },
-  "crons": [
+  "redirects": [
     {
-      "path": "/api/cron/storage-cleanup",
-      "schedule": "30 21 * * *"
+      "source": "/(.*)",
+      "destination": "https://sore-kz.netlify.app/$1",
+      "permanent": false
     }
   ]
 }
