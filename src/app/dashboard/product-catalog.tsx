@@ -51,7 +51,7 @@ export function ProductCatalog({ products }: { products: Product[] }) {
     <label htmlFor="catalog-search" className="text-sm font-semibold">Найти товар</label>
     <input id="catalog-search" type="search" className="input mt-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Название товара" />
     <div className="my-3 flex flex-wrap gap-2" aria-label="Фильтры товаров">
-      {[["all", "Все"], ["stock", "В наличии"], ["out", "Нет в наличии"], ["review", "Проверить цену"], ["hidden", "Скрытые"]].map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={`min-h-11 rounded-xl border border-field px-3 text-sm font-semibold ${filter === value ? "bg-ink text-cream" : "bg-surface"}`}>{label}</button>)}
+      {[["all", "Все"], ["stock", "В наличии"], ["out", "Нет в наличии"], ["review", "Цена не проверена"], ["hidden", "Скрытые"]].map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)} className={`min-h-11 rounded-xl border border-field px-3 text-sm font-semibold ${filter === value ? "bg-ink text-cream" : "bg-surface"}`}>{label}</button>)}
     </div>
     <p role="status" className="mb-3 text-sm text-muted">Найдено {visible.length} из {products.length}. {message}</p>
     {!canDrag && <p className="mb-3 text-sm text-muted">Для перетаскивания выберите «Все» и очистите поиск. Кнопки «Выше» и «Ниже» меняют общий порядок.</p>}
@@ -70,7 +70,7 @@ export function ProductCatalog({ products }: { products: Product[] }) {
             <div className="min-w-0"><div className="break-words font-semibold">{product.title}</div><div className="text-sm text-muted">{priceLabel(product.price, product.price_mode, "ru", variantsOf(product).length > 0)}</div></div>
           </Link>
         </div>
-        <div className="flex flex-wrap gap-2 text-sm"><span className="rounded-full bg-accent-soft px-2 py-1 text-accent-dark">{product.in_stock ? "В наличии" : "Нет в наличии"}</span>{product.is_hidden && <span className="rounded-full border border-field px-2 py-1">Скрыт с витрины</span>}{product.price_needs_review && <span className="rounded-full border border-field px-2 py-1">Проверить цену</span>}</div>
+        <div className="flex flex-wrap gap-2 text-sm"><span className={`rounded-full px-2 py-1 ${product.in_stock ? "bg-ok-bg text-ok-ink" : "bg-accent-soft text-accent-dark"}`}>{product.in_stock ? "В наличии" : "Нет в наличии"}</span>{product.is_hidden && <span className="rounded-full border border-field px-2 py-1">Скрыт с витрины</span>}{product.price_needs_review && <span className="rounded-full border border-field px-2 py-1">Цена не проверена</span>}</div>
         <ActionForm action={toggleStock}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="next" value={String(!product.in_stock)} /><button disabled={pending} type="submit" role="switch" aria-checked={product.in_stock} aria-label={`В наличии: ${product.title}`} className="min-h-11 text-sm font-semibold underline">{product.in_stock ? "Отметить отсутствие" : "Вернуть в наличие"}</button></ActionForm>
         <details><summary className="min-h-11 cursor-pointer py-3 font-semibold">Действия с товаром</summary>
           <Link href={`/dashboard/products/${product.id}/edit`} className="flex min-h-11 items-center underline">Редактировать</Link>

@@ -81,6 +81,11 @@ export function priceLabel(price: number, mode: string | null | undefined, lang:
   return formatPrice(price);
 }
 
+/** Первое сообщение продавцу с витрины («Написать продавцу»), без привязки к товару. */
+export function contactText(shopName: string): string {
+  return `Здравствуйте! Пишу из магазина «${shopName}» в SÖRE. Хочу уточнить: `;
+}
+
 /** Сообщение продавцу всегда на русском, даже если витрина на казахском. */
 export function inquiryText(title: string, price: number, mode: string | null | undefined, shopName: string): string {
   const m = asPriceMode(mode);

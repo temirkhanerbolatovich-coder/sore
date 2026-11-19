@@ -37,7 +37,7 @@ for (const input of ["mouse", "touch"]) test(`Task 5: каталог, перет
     await page.getByLabel("Найти товар").fill("втор");
     await expect(catalog.locator("li")).toHaveCount(1);
     await page.getByLabel("Найти товар").fill("");
-    await catalog.getByRole("button", { name: "Проверить цену", exact: true }).click();
+    await catalog.getByRole("button", { name: "Цена не проверена", exact: true }).click();
     await expect(catalog.locator("li")).toHaveCount(1);
     await expect(catalog.locator("li")).toContainText("Третий");
     await catalog.getByRole("button", { name: "Все", exact: true }).click();
