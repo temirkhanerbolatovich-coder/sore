@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(118);
+select plan(122);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -65,6 +65,14 @@ select lives_ok($test$
 $test$, 'shop accepts 30 orders in the hour');
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000021','','')$$,'%rate limit exceeded%','shop rejects order 31 even with a fresh phone');
 select lives_ok($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000021','','')$$,'shop quota does not affect other shops');
+reset role;
+update public.shops set accepting_orders = false where id = 'b0000000-0000-4000-8000-000000000002';
+set local role anon;
+select throws_like($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000022','','')$$,'%orders paused%','paused shop rejects orders');
+reset role;
+update public.shops set accepting_orders = true where id = 'b0000000-0000-4000-8000-000000000002';
+set local role anon;
+select lives_ok($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000023','','')$$,'resumed shop accepts orders again');
 select lives_ok($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000008')$$,'inquiry about a price-on-request item is recorded');
 select lives_ok($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000008')$$,'repeated inquiry about the same item is accepted, notification is throttled silently');
 select throws_like($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000008')$$,'%product unavailable%','inquiry rejected for a fixed-price item');
@@ -173,6 +181,8 @@ select lives_ok($$update public.shops set payment_info='Kaspi-перевод', d
 select is((select payment_info from public.shops where id='a0000000-0000-4000-8000-000000000002'), 'Kaspi-перевод', 'payment info is saved');
 select throws_like($$update public.shops set payment_info=repeat('x',301) where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_payment_info_check%', 'payment info over 300 characters rejected');
 select throws_like($$update public.shops set delivery_info=repeat('x',301) where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_delivery_info_check%', 'delivery info over 300 characters rejected');
+select lives_ok($$update public.shops set accepting_orders=false where id='a0000000-0000-4000-8000-000000000002'$$, 'owner can pause own shop orders');
+select lives_ok($$update public.shops set accepting_orders=true where id='a0000000-0000-4000-8000-000000000002'$$, 'owner can resume own shop orders');
 select lives_ok($$update public.shops set about='hijack' where id='b0000000-0000-4000-8000-000000000002'$$, 'update of a foreign shop is silently ignored');
 reset role;
 select is((select about from public.shops where id='b0000000-0000-4000-8000-000000000002'), null, 'foreign shop info is unchanged');

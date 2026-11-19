@@ -15,7 +15,7 @@ import { PhotoViewer } from "@/components/photo-viewer";
 import { DocumentLanguage } from "@/components/document-language";
 import { productJsonLd, publicAlternates, publicUrl, serializeJsonLd } from "@/lib/shop-seo";
 import { isDemoSlug } from "@/lib/slug";
-import { DemoActionStub, DemoNotice } from "@/components/demo-notice";
+import { DemoActionStub, DemoNotice, PausedActionStub, PausedNotice } from "@/components/demo-notice";
 import { BackIcon } from "@/components/icons";
 import { ShelfFrames } from "@/components/shelf-frames";
 import { asBBox } from "@/lib/bbox";
@@ -73,6 +73,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <ShareButton title={`${product.title} — ${shop.name}`} label={t.share} copiedLabel={t.shared} />
       </div>
       {demo && <DemoNotice lang={lang} className="mx-5 mb-3 md:mx-5" />}
+      {!shop.accepting_orders && <PausedNotice lang={lang} className="mx-5 mb-3 md:mx-5" />}
 
       <div className="md:grid md:grid-cols-2 md:items-start md:gap-6 md:px-5">
         {product.photo_url ? (
@@ -105,6 +106,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
                 />
                 <p className="text-center text-caption text-muted">{t.askHint}</p>
               </div>
+            ) : !shop.accepting_orders && product.in_stock ? (
+              <PausedActionStub lang={lang} className="h-12 text-base" />
             ) : variants.length > 0 && product.in_stock ? (
               <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} />
             ) : (
