@@ -8,8 +8,8 @@
 
 Ключ, токен или пароль, попавший в коммит, считается скомпрометированным, даже если коммит удалён или переписан.
 
-1. **Сразу отзовите** секрет у поставщика и выпустите новый: Supabase (API-ключи, пароль базы), Vercel, Telegram (`/revoke` у @BotFather), Gemini, OpenRouter, Anthropic.
-2. Обновите значения в Vercel (Project → Settings → Environment Variables) и пересоберите сайт.
+1. **Сразу отзовите** секрет у поставщика и выпустите новый: Supabase (API-ключи, пароль базы), Netlify, Telegram (`/revoke` у @BotFather), Gemini, OpenRouter, Anthropic.
+2. Обновите значения в Netlify (Project configuration → Environment variables) и пересоберите сайт.
 3. Сообщите владельцу репозитория. Историю git переписывать не нужно, достаточно отзыва ключа.
 
 В CI работает проверка `secrets` (gitleaks), она ловит ключи в коммитах и PR. Файл `.env.example` содержит только пустые значения и заглушки.
