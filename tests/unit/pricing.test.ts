@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { asPriceMode, inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
+import { asPriceMode, contactText, inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 
 it("подписи цены: точная, «от» и «по запросу» на двух языках", () => {
   expect(priceLabel(12000, "fixed")).toBe("12 000 ₸");
@@ -23,4 +23,10 @@ it("текст обращения на русском, с ценой «от», �
   expect(inquiryText("Торты на заказ", 0, "request", "Магазин")).not.toContain("₸");
   const url = whatsappUrl("+7 778 543 02 20", text);
   expect(url.startsWith("https://wa.me/77785430220?text=")).toBe(true);
+});
+
+it("сообщение «Написать продавцу» называет магазин и не упоминает товар или цену", () => {
+  const text = contactText("Ою сувенир");
+  expect(text).toContain("«Ою сувенир»");
+  expect(text).not.toContain("₸");
 });
