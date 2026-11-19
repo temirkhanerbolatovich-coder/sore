@@ -173,14 +173,14 @@ isOneToOne: true
                   ]
                 },"shops": {
                   Row: {
-                    "about": string | null,"address": string | null,"avatar_url": string | null,"city": string | null,"created_at": string,"hours": string | null,"id": string,"instagram": string | null,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"slug": string,"telegram_username": string | null,"whatsapp": string
+                    "about": string | null,"address": string | null,"avatar_url": string | null,"city": string | null,"created_at": string,"delivery_info": string | null,"hours": string | null,"id": string,"instagram": string | null,"lead_days": number,"name": string,"next_order_number": number,"owner_id": string,"payment_info": string | null,"slug": string,"telegram_username": string | null,"whatsapp": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"slug": string,"telegram_username"?: string | null,"whatsapp": string
+                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"delivery_info"?: string | null,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name": string,"next_order_number"?: number,"owner_id": string,"payment_info"?: string | null,"slug": string,"telegram_username"?: string | null,"whatsapp": string
                   }
                   Update: {
-                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"slug"?: string,"telegram_username"?: string | null,"whatsapp"?: string
+                    "about"?: string | null,"address"?: string | null,"avatar_url"?: string | null,"city"?: string | null,"created_at"?: string,"delivery_info"?: string | null,"hours"?: string | null,"id"?: string,"instagram"?: string | null,"lead_days"?: number,"name"?: string,"next_order_number"?: number,"owner_id"?: string,"payment_info"?: string | null,"slug"?: string,"telegram_username"?: string | null,"whatsapp"?: string
                   }
                   Relationships: [
                     

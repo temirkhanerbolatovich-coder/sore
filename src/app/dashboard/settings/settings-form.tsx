@@ -51,6 +51,12 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
         <Field label="График работы" htmlFor="hours"><input id="hours" name="hours" className="input" maxLength={120} placeholder="Ежедневно 9:00–20:00" defaultValue={shop.hours || ""} /></Field>
         <Field label="Instagram (ник или ссылка)" htmlFor="instagram"><input id="instagram" name="instagram" className="input" maxLength={120} autoCapitalize="none" autoCorrect="off" placeholder="@aliya.sweets" defaultValue={shop.instagram ? `@${shop.instagram}` : ""} /></Field>
       </fieldset>
+      <fieldset className="flex min-w-0 flex-col gap-4 rounded-2xl border border-line p-4">
+        <legend className="px-1 text-sm font-bold">Оплата и доставка (видно покупателям)</legend>
+        <Field label="Как оплатить (до 300 символов)" htmlFor="payment_info"><textarea id="payment_info" name="payment_info" className="input min-h-20 py-3" maxLength={300} rows={2} placeholder="Перевод на Kaspi, наличными при получении" defaultValue={shop.payment_info || ""} /></Field>
+        <Field label="Доставка и самовывоз (до 300 символов)" htmlFor="delivery_info"><textarea id="delivery_info" name="delivery_info" className="input min-h-20 py-3" maxLength={300} rows={2} placeholder="По городу 1500 ₸, бесплатно от 20 000 ₸. Самовывоз: левый берег" defaultValue={shop.delivery_info || ""} /></Field>
+        <p className="text-caption text-muted">Оплата в приложении не принимается: покупатель сам договаривается с вами в WhatsApp.</p>
+      </fieldset>
       <Field label="Адрес ссылки (не меняется)" htmlFor="slug"><input id="slug" className="input" readOnly value={shop.slug} /></Field>
       <input type="hidden" name="avatar_url" value={avatar} />
       {avatar && <button type="button" className="min-h-11 self-start text-sm font-semibold text-accent-dark underline" onClick={() => { setAvatar(""); setDirtyFor(state); }}>Убрать фото магазина</button>}
