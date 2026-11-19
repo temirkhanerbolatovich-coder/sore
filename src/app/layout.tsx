@@ -3,12 +3,17 @@ import "@fontsource/onest/400.css";
 import "@fontsource/onest/600.css";
 import "@fontsource/onest/700.css";
 import "@fontsource/onest/800.css";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeInitializer } from "@/components/theme-toggle";
 import "./globals.css";
 import "./motion.css";
 
+
+const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_ID;
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+const UMAMI_DOMAIN = siteUrl && URL.canParse(siteUrl) ? new URL(siteUrl).hostname : undefined;
 
 export const metadata: Metadata = {
   icons: { apple: "/apple-touch-icon.png" },
@@ -44,6 +49,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#main-content" className="skip-link"><span lang="ru">К содержимому</span><span lang="kk">Негізгі мазмұнға өту</span></a>
         <ThemeInitializer />
         {children}
+        {/* Umami Cloud: без cookie, уважает Do Not Track, считает только боевой домен. Включается переменной NEXT_PUBLIC_UMAMI_ID. */}
+        {UMAMI_ID && (
+          <Script
+            src="https://cloud.umami.is/script.js"
+            strategy="afterInteractive"
+            data-website-id={UMAMI_ID}
+            data-do-not-track="true"
+            {...(UMAMI_DOMAIN ? { "data-domains": UMAMI_DOMAIN } : {})}
+          />
+        )}
         {/* Счётчики Vercel работают только на Vercel; на других хостингах их запросы дали бы 404. */}
         {process.env.VERCEL === "1" && (
           <>
