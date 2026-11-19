@@ -1,0 +1,7 @@
+# Пробный деплой на Netlify (запасной хостинг: на Vercel Hobby коммерция запрещена условиями).
+# Netlify сам определяет Next.js и ставит свой адаптер; здесь только версия Node и команда сборки.
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "24"

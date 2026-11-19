@@ -48,3 +48,6 @@ next-env.d.ts
 !/reports/stage-3/
 !/reports/ui-polish/
 /HANDOFF.md
+
+# Local Netlify folder
+.netlify
