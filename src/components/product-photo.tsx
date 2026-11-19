@@ -4,6 +4,13 @@ import { thumbUrl } from "@/lib/photos";
 
 const TINTS = ["var(--thumb)", "var(--thumb-2)", "var(--thumb-3)", "var(--thumb-4)", "var(--thumb-5)", "var(--thumb-6)"];
 
+/** Устойчивый номер оттенка по названию: у соседних товаров без фото заглушки разного цвета, но у одного товара всегда одинаковая. */
+function tintOf(text: string): number {
+  let h = 0;
+  for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return h;
+}
+
 /** Фото товара или цветная заглушка с первой буквой названия, если фото нет. */
 export function ProductPhoto({
   url,
@@ -29,6 +36,7 @@ export function ProductPhoto({
   transitionName?: string;
 }) {
   const letter = (initial ?? alt).trim().charAt(0).toUpperCase();
+  const tint = seed || tintOf((initial ?? alt).trim());
   const small = url && thumbnail ? thumbUrl(url) : url;
   const imageProps = {
     loading: priority || eager ? "eager" : "lazy",
@@ -39,7 +47,7 @@ export function ProductPhoto({
   const frame = (
     <div
       className={`flex items-center justify-center overflow-hidden ${className}`}
-      style={{ background: TINTS[seed % TINTS.length] }}
+      style={{ background: TINTS[tint % TINTS.length] }}
       role={!url && alt ? "img" : undefined}
       aria-label={!url && alt ? alt : undefined}
     >

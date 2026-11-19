@@ -47,7 +47,7 @@ export function AddToCart({
             variantTitle: variant?.title ?? null,
           })
         }
-        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-sm font-bold text-cream"
+        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-ink bg-surface text-sm font-bold text-ink transition-colors hover:bg-ink hover:text-cream"
       >
         <CartIcon size={18} />
         {t.add}

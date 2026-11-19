@@ -42,7 +42,7 @@ test("продавец → фото → ИИ → покупатель → WhatsA
     await page.getByLabel("Цена, ₸").fill("12000");
     await page.getByRole("button", { name: "Сохранить товар" }).click();
     await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
-    await page.getByRole("link", { name: "Магазин", exact: true }).click();
+    await page.getByRole("link", { name: "Настройки", exact: true }).click();
     await page.getByLabel("Город").fill("Алматы");
     await page.getByRole("button", { name: "Сохранить настройки" }).click();
     await expect(page.getByRole("status")).toContainText("Настройки сохранены");

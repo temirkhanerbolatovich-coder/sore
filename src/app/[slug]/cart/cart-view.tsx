@@ -345,7 +345,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
               <p className="text-center text-caption text-muted">{t.orderHint}</p>
             </>
           )}
-          <p className="text-center text-[12px] text-muted">
+          <p className="text-center text-caption text-muted">
             {t.consent}{" "}
             <Link href="/privacy" className="underline">
               {t.consentLink}

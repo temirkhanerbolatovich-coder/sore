@@ -35,7 +35,7 @@
   --thumb-6: #f0d2c0;
   --switch-off: #8a7b6e;
   --shine: rgb(255 255 255 / 0.38);
-  --focus: #7442b3;
+  --focus: var(--ink);
 
   /* Движение (используется в motion.css) */
   --ease-key: cubic-bezier(0.22, 0.8, 0.28, 1);
@@ -72,7 +72,7 @@
   --thumb-6: #3e2c24;
   --switch-off: #6d5f53;
   --shine: rgb(255 255 255 / 0.22);
-  --focus: #d2a8ff;
+  --focus: var(--ink);
 
   color-scheme: dark;
 }
@@ -112,7 +112,7 @@
   --color-ok-ink: var(--ok-ink);
   --color-thumb: var(--thumb);
   --color-switch-off: var(--switch-off);
-  --text-caption: 0.8125rem;
+  --text-caption: 0.875rem;
   --text-body: 0.9375rem;
   --text-lead: 1.0625rem;
   --text-stat: 1.75rem;
