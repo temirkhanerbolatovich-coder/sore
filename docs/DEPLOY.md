@@ -112,7 +112,7 @@ src/proxy.ts обновляет сессию и перенаправляет г�
 | Telegram-уведомления | Создать бота и задать переменные: [docs/TELEGRAM.md](TELEGRAM.md). Пока не настроено, карточка в «Магазин» скрыта |
 | Vercel Analytics и Speed Insights | Пакеты подключены. Включить в Vercel: Project → Analytics → Enable (и Speed Insights). Без этого данные не собираются |
 | Вход через Google | Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web). Authorized redirect URI: `https://pcgvyxwueshxksoffodf.supabase.co/auth/v1/callback`. Client ID и Secret внести в Supabase → Authentication → Providers → Google. Затем в Vercel `NEXT_PUBLIC_GOOGLE_LOGIN=1` |
-| Контактная почта в условиях | `NEXT_PUBLIC_CONTACT_EMAIL` в Vercel. Без неё в документах указан способ удаления через кабинет |
+| Контактная почта в условиях | `NEXT_PUBLIC_CONTACT_EMAIL` в Netlify. Без неё в документах указан способ удаления через кабинет |
 | Вход по коду из письма | Нужен свой SMTP и шаблоны из `docs/email-templates/`, затем `NEXT_PUBLIC_EMAIL_CODE=1` |
 
 Миграция `0010` включает расширение `pg_net`: оно нужно триггеру уведомлений о заказах. Триггер ничего не делает, пока `npm run telegram:setup` не сохранит в базе адрес уведомлений.
