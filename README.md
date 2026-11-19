@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/temirkhanerbolatovich-coder/sore/actions/workflows/ci.yml/badge.svg)](https://github.com/temirkhanerbolatovich-coder/sore/actions/workflows/ci.yml)
 
-**Статус:** MVP на боевой среде, идёт пилот. Сайт: https://dukenai.vercel.app (адрес сменится вместе с доменом). Репозиторий приватный, лицензия не определена.
+**Статус:** MVP на боевой среде, идёт пилот. Сайт: https://sore-kz.netlify.app (адрес сменится вместе с доменом; старый dukenai.vercel.app перенаправляет). Репозиторий приватный, лицензия не определена.
 
 ## Что умеет
 
@@ -21,7 +21,7 @@
 
 ## Скриншоты
 
-Снято с боевого сайта на [демо-магазинах](https://dukenai.vercel.app/demo-bauyrsak), телефон 390 px.
+Снято с боевого сайта на [демо-магазинах](https://sore-kz.netlify.app/demo-bauyrsak), телефон 390 px.
 
 | Главная | Витрина | Тёмная тема | Карточка товара | Корзина |
 |---|---|---|---|---|
@@ -33,13 +33,13 @@
 
 | Фото полки: ИИ нашёл товары | Импорт прайса из Excel |
 |---|---|
-| <img src="reports/stage-3/04-shelf-frames-light.jpg" width="190" alt="Фото полки с рамками найденных товаров"> | <img src="reports/stage-3/08-import-result-light.jpg" width="190" alt="Итог импорта прайса с отчётом об ошибках"> |
+| <img src="docs/screenshots/cabinet-shelf-frames.jpg" width="190" alt="Фото полки с рамками найденных товаров"> | <img src="docs/screenshots/cabinet-import-result.jpg" width="190" alt="Итог импорта прайса с отчётом об ошибках"> |
 
-Демо-магазины вымышленные, фото со стока Pexels; заказы из них не отправляются. Заполняет их `npm run seed:demo`, снимки обновляет `npx tsx scripts/readme-screenshots.ts`. Все снимки кабинета в обеих темах: [`reports/stage-3`](reports/stage-3).
+Демо-магазины вымышленные, фото со стока Pexels; заказы из них не отправляются. Заполняет их `npm run seed:demo`, снимки обновляет `npx tsx scripts/readme-screenshots.ts`.
 
 ## Как устроено
 
-- **Сайт и API:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4. Хостинг: Vercel.
+- **Сайт и API:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4. Хостинг: Netlify (подробнее docs/NETLIFY.md).
 - **База, вход, файлы:** Supabase (Postgres с RLS, Auth, Storage). Цены, лимиты и квоты считает база, а не клиент.
 - **ИИ:** цепочка провайдеров Gemini, OpenRouter и Anthropic с резервированием квоты на каждый запрос.
 - **Каналы:** WhatsApp (ссылка `wa.me`), Telegram (уведомления продавцу через бота, ссылка на личный чат для покупателя).
@@ -78,6 +78,8 @@ npm run dev      # http://localhost:3000
 | `npm run ai:check -- фото.jpg` | проверка ключей ИИ на настоящем фото |
 | `npm run telegram:setup` | регистрация вебхука бота, меню команд и адреса уведомлений |
 | `npm run bot` | бот SÖRE локально (long polling), см. [docs/TELEGRAM.md](docs/TELEGRAM.md) |
+| `npm run funnel -- --allow-remote` | воронка продавцов по боевой базе (магазин → товар → просмотры → заказ) |
+| `npm run seed:demo` | демо-магазины (вымышленные); `-- --allow-remote` для облака |
 
 Перед каждым PR: `npm run lint`, `npx next typegen && npm run typecheck`, `npm test`, а при правках SQL ещё `npm run test:rls`. CI повторяет всё это на GitHub, включая сборку и e2e.
 
@@ -91,12 +93,12 @@ supabase/           миграции, сид, SQL-тесты (pgTAP), config.tom
 tests/              unit/ (Vitest) и e2e/ (Playwright)
 docs/               документация (индекс: docs/README.md)
 scripts/            служебные скрипты: проверка ИИ, пилот, вебхук Telegram
-reports/            скриншоты и отчёты проверок
+.github/            CI, резервные копии базы, шаблоны PR и Issues, Dependabot
 ```
 
 ## Как работать с репозиторием
 
-- Основная ветка разработки **`develop`**, боевая **`main`** (с неё Vercel сам выкладывает сайт). Работаем в ветках от `develop`, в `main` попадает релиз через PR из `develop`.
+- Основная ветка разработки **`develop`**, боевая **`main`** (с неё Netlify сам выкладывает сайт). Работаем в ветках от `develop`, в `main` попадает релиз через PR из `develop`.
 - Коммиты и PR на русском, формат `тип(область): суть` (`feat(shelf): …`, `fix(import): …`, `docs: …`).
 - Задачи ведём в [Issues](https://github.com/temirkhanerbolatovich-coder/sore/issues) с метками и вехами (**Запуск (MVP)**, **Telegram-бот**).
 
@@ -108,16 +110,13 @@ reports/            скриншоты и отчёты проверок
 
 - [Архитектура](docs/ARCHITECTURE.md) и [решения](docs/DECISIONS.md)
 - [Быстрый старт разработчика](docs/ONBOARDING.md)
-- [Деплой и эксплуатация](docs/DEPLOY.md)
+- [Хостинг на Netlify](docs/NETLIFY.md) и [деплой, Supabase, письма входа](docs/DEPLOY.md)
+- [Резервные копии базы](docs/BACKUP.md)
+- [Стратегия и аналоги](docs/STRATEGY.md), [план запуска](docs/LAUNCH.md)
+- [UX-аудит](docs/UX_AUDIT.md) и [план улучшений UI](docs/UI_PLAN.md)
 - [Контракт для Telegram-бота](docs/BOT_CONTRACT.md)
 - [Результаты проверок](docs/VALIDATION.md)
 
 ## Команда
 
 Владелец репозитория: [@temirkhanerbolatovich-coder](https://github.com/temirkhanerbolatovich-coder). Участники: [@Aikyn800](https://github.com/Aikyn800), [@megaknight707](https://github.com/megaknight707).
-
-## UI/UX — Task 5
-
-[Отчёт и ограничения](docs/CODEX_REPORT_4.md), [скриншоты обеих тем, 390/768/1440 px](reports/ui-polish/).
-
-Для воспроизведения: локальная Supabase → `npx supabase db reset` → `npm run build` → в PowerShell `$env:E2E_SCREENSHOTS='1'; npm run test:e2e -- tests/e2e/screenshots.spec.ts`.
