@@ -16,7 +16,7 @@ import { ShareButton } from "@/components/share-button";
 import { DocumentLanguage } from "@/components/document-language";
 import { publicAlternates, publicUrl, serializeJsonLd, shopTitle, storeJsonLd } from "@/lib/shop-seo";
 import { isDemoSlug } from "@/lib/slug";
-import { DemoActionStub, DemoNotice } from "@/components/demo-notice";
+import { DemoActionStub, DemoNotice, PausedActionStub, PausedNotice } from "@/components/demo-notice";
 import { shopDescription } from "@/lib/shop-info";
 import { ShopAbout } from "@/components/shop-about";
 import { ProductFilter } from "@/components/product-filter";
@@ -109,6 +109,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
             {shop.city && <div className="text-body text-muted">{shop.city}</div>}
           </div>
         </div>
+        {!shop.accepting_orders && <PausedNotice lang={lang} />}
         {demo ? (
           <DemoNotice lang={lang} />
         ) : (
@@ -190,6 +191,8 @@ export default async function ShopPage({ params, searchParams }: Props) {
                     >
                       {t.pick}
                     </Link>
+                  ) : !shop.accepting_orders && p.in_stock ? (
+                    <PausedActionStub lang={lang} />
                   ) : (
                     <AddToCart slug={shop.slug} product={p} lang={lang} />
                   )}

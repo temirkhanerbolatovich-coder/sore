@@ -4,7 +4,7 @@ import Link from "next/link";
 import QRCode from "qrcode";
 import { requireShop } from "@/lib/shop";
 import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
-import { CopyLink } from "./copy-link";
+import { CopyBio, CopyLink } from "./copy-link";
 import { SavedToast } from "./saved-toast";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { AddProducts } from "./add-products";
@@ -13,6 +13,7 @@ import { telegramConfigured } from "@/lib/telegram";
 import { getStats } from "@/lib/stats";
 import { CameraIcon, PlusIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ProductPhoto } from "@/components/product-photo";
 
 export const metadata = { title: "Кабинет — SÖRE" };
 
@@ -50,7 +51,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <DashboardNav active="products" newOrders={stats.newOrders} desktop />
       <div className="px-5 pb-3 pt-6">
           <div className="flex items-center gap-3">
-            <div className="size-11 flex-none rounded-full bg-thumb" />
+            <ProductPhoto url={shop.avatar_url} alt="" initial={shop.name} thumbnail className="size-11 flex-none rounded-full" />
             <div className="min-w-0 flex-1">
               <div className="truncate text-xl font-extrabold">{shop.name}</div>
               {shop.city && <div className="text-sm text-muted">{shop.city}</div>}
@@ -72,7 +73,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         {saved && SAVED[saved] && <SavedToast message={saved === "batch" ? `Добавлено товаров: ${Number(n) || ""}` : SAVED[saved]} />}
         {products.length === 0 && <AddProducts />}
         <HomeScreenHint />
-        <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} />
+        <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} profileDone={Boolean(shop.avatar_url || shop.about)} />
 
         <div className="flex items-center justify-between px-5 pt-2">
           <h2 className="text-lg font-bold">Товары · {products.length}</h2>
@@ -80,6 +81,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             Лимит Free: {products.length} из {FREE_PRODUCT_LIMIT}
           </span>
         </div>
+
+        {full && (
+          <section className="card mx-5 mt-2 flex flex-col gap-1 p-4" aria-label="Лимит товаров">
+            <h3 className="font-bold">Достигнут лимит бесплатного тарифа: {FREE_PRODUCT_LIMIT} товаров</h3>
+            <p className="text-sm text-muted">Чтобы добавить новый товар, скройте или удалите ненужный. Скрытые товары не видны покупателям, но остаются в кабинете. Расширенный тариф появится позже: ваши товары сохранятся.</p>
+          </section>
+        )}
 
         {!full && (
           <div className="flex flex-col gap-2 px-5 pt-2">
@@ -132,6 +140,7 @@ function ShopSummary({ fullUrl, shown, qr, stats, desktop = false }: {
         <div className="min-w-0 flex-1 truncate text-body font-semibold">{shown}</div>
         <CopyLink url={fullUrl} />
       </div>
+      <CopyBio url={fullUrl} />
       {desktop && <div className="rounded-2xl border border-line bg-surface p-4 text-center">
         <div role="img" aria-label={`QR-код витрины: ${fullUrl}`} className="mx-auto w-40 overflow-hidden rounded-xl [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: qr }} />
         <Link href="/dashboard/poster" className="mt-2 inline-flex min-h-11 items-center font-semibold underline">Плакат с QR-кодом</Link>

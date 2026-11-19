@@ -5,7 +5,7 @@ import Link from "next/link";
 import { publicRpc } from "@/lib/public-rpc";
 import { lineKey, useCart, useHydrated, useShopLines, type StoredLine } from "@/lib/cart";
 import { T, shopHref, type Lang } from "@/lib/lang";
-import { DemoActionStub, DemoNotice } from "@/components/demo-notice";
+import { DemoActionStub, DemoNotice, PausedNotice } from "@/components/demo-notice";
 import { buildOrderText, formatPhoneInput, formatPrice, normalizePhone, orderTotal, whatsappUrl, type CartLine } from "@/lib/order";
 import { ProductPhoto } from "@/components/product-photo";
 
@@ -18,7 +18,7 @@ import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
-type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number; paymentInfo?: string | null; deliveryInfo?: string | null; demo?: boolean };
+type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number; acceptingOrders?: boolean; paymentInfo?: string | null; deliveryInfo?: string | null; demo?: boolean };
 
 export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang; products: Product[] }) {
   const t = T[lang];
@@ -125,7 +125,7 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
     if (rpcError || !row) {
       setSending(false);
       const message = rpcError?.message || "";
-      setError(message.includes("rate limit") ? t.rateLimit : message.includes("unavailable") ? t.unavailable : message.includes("invalid phone") ? t.phoneError : message.includes("invalid items") || message.includes("quantity") ? t.invalidItems : message.includes("date too early") ? t.dateTooEarly : message.includes("date required") ? t.dateRequired : message.includes("total too large") ? t.tooLarge : t.orderError);
+      setError(message.includes("orders paused") ? t.paused : message.includes("rate limit") ? t.rateLimit : message.includes("unavailable") ? t.unavailable : message.includes("invalid phone") ? t.phoneError : message.includes("invalid items") || message.includes("quantity") ? t.invalidItems : message.includes("date too early") ? t.dateTooEarly : message.includes("date required") ? t.dateRequired : message.includes("total too large") ? t.tooLarge : t.orderError);
       return;
     }
 
@@ -337,7 +337,8 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
             </>
           ) : (
             <>
-              <button type="submit" disabled={sending} className="btn-wa h-14 text-lg disabled:opacity-60">
+              {shop.acceptingOrders === false && <PausedNotice lang={lang} />}
+              <button type="submit" disabled={sending || shop.acceptingOrders === false} className="btn-wa h-14 text-lg disabled:opacity-60">
                 <WhatsAppIcon />
                 {sending ? t.sending : t.order}
               </button>

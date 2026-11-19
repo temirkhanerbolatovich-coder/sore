@@ -39,6 +39,13 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
   }
   return <div className="flex flex-col gap-5">
     <form onSubmit={onSubmit} onChange={() => setDirtyFor(state)} className="flex flex-col gap-4">
+      <label className="flex min-h-11 items-start gap-3 rounded-2xl border border-line p-4">
+        <input id="accepting_orders" name="accepting_orders" type="checkbox" className="mt-1 size-5 flex-none accent-[var(--accent)]" defaultChecked={shop.accepting_orders} />
+        <span>
+          <span className="block font-bold">Принимаю заказы</span>
+          <span className="block text-sm text-muted">Снимите галочку на время отпуска или если нет сырья: витрина останется открытой, но заказ оформить будет нельзя. Вопросы и «Узнать цену» продолжат работать.</span>
+        </span>
+      </label>
       <Field label="Название магазина" htmlFor="name"><input id="name" name="name" className="input" required minLength={2} maxLength={60} defaultValue={shop.name} /></Field>
       <Field label="Город" htmlFor="city"><input id="city" name="city" className="input" maxLength={60} defaultValue={shop.city || ""} /></Field>
       <Field label="WhatsApp" htmlFor="whatsapp"><input id="whatsapp" name="whatsapp" type="tel" className="input" required defaultValue={shop.whatsapp} /></Field>
