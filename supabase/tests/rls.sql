@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(117);
+select plan(118);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -66,6 +66,7 @@ $test$, 'shop accepts 30 orders in the hour');
 select throws_like($$select public.create_order('a0000000-0000-4000-8000-000000000002','[{"id":"a0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000021','','')$$,'%rate limit exceeded%','shop rejects order 31 even with a fresh phone');
 select lives_ok($$select public.create_order('b0000000-0000-4000-8000-000000000002','[{"id":"b0000000-0000-4000-8000-000000000003","qty":1}]','Buyer','77040000021','','')$$,'shop quota does not affect other shops');
 select lives_ok($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000008')$$,'inquiry about a price-on-request item is recorded');
+select lives_ok($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000006','a0000000-0000-4000-8000-000000000008')$$,'repeated inquiry about the same item is accepted, notification is throttled silently');
 select throws_like($$select public.record_inquiry('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000008')$$,'%product unavailable%','inquiry rejected for a fixed-price item');
 reset role;
 insert into public.products(shop_id,title,price) select 'a0000000-0000-4000-8000-000000000002','Extra '||n,1 from generate_series(1,11) n;
