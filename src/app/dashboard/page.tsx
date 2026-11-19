@@ -136,9 +136,14 @@ function ShopSummary({ fullUrl, shown, qr, stats, desktop = false }: {
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="card flex items-center gap-2 p-1.5 pl-3.5">
-        <div className="min-w-0 flex-1 truncate text-body font-semibold">{shown}</div>
-        <CopyLink url={fullUrl} />
+      <div className="card flex flex-col gap-3 p-3.5">
+        <div className="break-all text-body font-semibold">{shown}</div>
+        <div className="grid grid-cols-2 gap-2">
+          <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="btn-outline h-11 min-h-11 px-2 text-sm">
+            Открыть витрину
+          </a>
+          <CopyLink url={fullUrl} />
+        </div>
       </div>
       <CopyBio url={fullUrl} />
       {desktop && <div className="rounded-2xl border border-line bg-surface p-4 text-center">

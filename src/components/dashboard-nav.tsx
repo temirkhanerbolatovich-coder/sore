@@ -4,7 +4,7 @@ import { BoxIcon, CartIcon, ShopIcon } from "@/components/icons";
 const items = [
   { key: "products", label: "Товары", href: "/dashboard", Icon: BoxIcon },
   { key: "orders", label: "Заказы", href: "/dashboard/orders", Icon: CartIcon },
-  { key: "settings", label: "Магазин", href: "/dashboard/settings", Icon: ShopIcon },
+  { key: "settings", label: "Настройки", href: "/dashboard/settings", Icon: ShopIcon },
 ] as const;
 
 export function DashboardNav({ active, newOrders = 0, desktop = false }: { active: "products" | "orders" | "settings"; newOrders?: number; desktop?: boolean }) {
@@ -21,7 +21,7 @@ export function DashboardNav({ active, newOrders = 0, desktop = false }: { activ
             <i.Icon size={18} />
             {i.label}
             {i.key === "orders" && newOrders > 0 && (
-              <span className="rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-bold leading-none text-on-accent">
+              <span className="rounded-full bg-accent px-1.5 py-0.5 text-xs font-bold leading-none text-on-accent">
                 {newOrders}
               </span>
             )}

@@ -16,7 +16,7 @@ export function CopyLink({ url }: { url: string }) {
   }
 
   return (
-    <button type="button" onClick={copy} className="h-11 flex-none rounded-[10px] bg-ink px-3.5 text-sm font-semibold text-cream">
+    <button type="button" onClick={copy} className="h-11 w-full rounded-xl bg-ink px-3 text-sm font-semibold text-cream">
       {copied ? "Скопировано" : "Копировать"}
     </button>
   );
