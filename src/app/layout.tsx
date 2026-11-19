@@ -44,8 +44,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#main-content" className="skip-link"><span lang="ru">К содержимому</span><span lang="kk">Негізгі мазмұнға өту</span></a>
         <ThemeInitializer />
         {children}
-        <Analytics />
-        <SpeedInsights />
+        {/* Счётчики Vercel работают только на Vercel; на других хостингах их запросы дали бы 404. */}
+        {process.env.VERCEL === "1" && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );

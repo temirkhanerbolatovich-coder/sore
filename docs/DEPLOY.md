@@ -1,5 +1,7 @@
 # Деплой: Vercel + Supabase
 
+> С 19.11.2026 основной хостинг сайта: Netlify, см. [NETLIFY.md](NETLIFY.md) (на Vercel Hobby коммерческое использование запрещено). Остальные разделы (база, SMTP, Google, переменные) остаются актуальными; вместо «Vercel» читайте «Netlify».
+
 ## База
 
 1. Создайте Supabase-проект. Примените все supabase/migrations/*.sql по порядку через SQL Editor либо `npx supabase link --project-ref <ref>` и `npx supabase db push`. Перед обновлением существующей БД сделайте резервную копию. Не выполняйте db reset на production.
