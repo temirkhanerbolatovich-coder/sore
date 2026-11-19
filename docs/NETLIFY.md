@@ -36,11 +36,11 @@
 3. Google Cloud Console → Credentials → клиент OAuth: добавить Authorized JavaScript origin с адресом Netlify (redirect URI Supabase не меняется).
 4. `npm run telegram:setup` с новым `NEXT_PUBLIC_SITE_URL`: переносит webhook бота и адрес уведомлений в базе на Netlify.
 5. Проверить: вход по письму, вход из бота, ИИ-карточка, заказ и уведомление в Telegram, `/api/cron/storage-cleanup` с `CRON_SECRET`, витрины, фото.
-6. Старый адрес `dukenai.vercel.app` оставить только как перенаправление на новый (ссылки продавцов в био не должны сломаться). Vercel Hobby для коммерции не использовать.
+6. Старый адрес `dukenai.vercel.app` только перенаправляет на Netlify (`vercel.json` → `redirects`, временный 307: адрес сменится вместе с доменом). Ссылки продавцов в био продолжают работать. Раздел `crons` из `vercel.json` убран: уборку фото делает Netlify. Vercel Hobby для коммерции не использовать.
 
 ## Откат
 
-Вернуть `NEXT_PUBLIC_SITE_URL` и Auth URLs на `https://dukenai.vercel.app`, выполнить `npm run telegram:setup` и убрать перенаправление в Vercel. Данные в Supabase не трогаются, их менять не нужно.
+Убрать `redirects` из `vercel.json` (и вернуть `crons`: `{"path": "/api/cron/storage-cleanup", "schedule": "30 21 * * *"}`), вернуть `NEXT_PUBLIC_SITE_URL` и Auth URLs на `https://dukenai.vercel.app`, выполнить `npm run telegram:setup`. Данные в Supabase не трогаются, их менять не нужно.
 
 ## Ограничения бесплатного Netlify
 
