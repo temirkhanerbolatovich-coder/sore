@@ -4,8 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
 import { T, parseLang, shopHref } from "@/lib/lang";
-import { inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
+import { contactText, inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 import { InquiryButton } from "@/components/inquiry-button";
+import { WhatsAppIcon } from "@/components/icons";
 import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
@@ -108,7 +109,19 @@ export default async function ShopPage({ params, searchParams }: Props) {
             {shop.city && <div className="text-body text-muted">{shop.city}</div>}
           </div>
         </div>
-        {demo && <DemoNotice lang={lang} />}
+        {demo ? (
+          <DemoNotice lang={lang} />
+        ) : (
+          <a
+            href={whatsappUrl(shop.whatsapp, contactText(shop.name))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-outline h-12 w-full md:w-auto md:self-start"
+          >
+            <WhatsAppIcon />
+            {t.writeSeller}
+          </a>
+        )}
       </header>
       {categories.length > 0 && (
         <div className="sticky top-0 z-20 border-b border-line bg-surface">
