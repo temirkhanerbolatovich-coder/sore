@@ -13,10 +13,10 @@ export function normalizeInstagram(input: string): string | null {
 
 export const instagramUrl = (handle: string) => `https://www.instagram.com/${encodeURIComponent(handle)}/`;
 
-type ShopInfoFields = { about?: string | null; address?: string | null; hours?: string | null; instagram?: string | null };
+type ShopInfoFields = { about?: string | null; address?: string | null; hours?: string | null; instagram?: string | null; payment_info?: string | null; delivery_info?: string | null };
 
 /** Есть ли у магазина что показать в блоке «О магазине». */
-export const hasShopInfo = (shop: ShopInfoFields) => Boolean(shop.about || shop.address || shop.hours || shop.instagram);
+export const hasShopInfo = (shop: ShopInfoFields) => Boolean(shop.about || shop.address || shop.hours || shop.instagram || shop.payment_info || shop.delivery_info);
 
 /** Описание для поисковиков и соцсетей: свой текст магазина, если он есть, иначе общая подпись каталога. */
 export function shopDescription(shop: ShopInfoFields, fallback: string): string {

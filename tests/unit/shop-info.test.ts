@@ -26,6 +26,8 @@ describe("блок «О магазине»", () => {
   it("показывается, когда заполнено хотя бы одно поле", () => {
     expect(hasShopInfo({})).toBe(false);
     expect(hasShopInfo({ about: null, hours: "" })).toBe(false);
+    expect(hasShopInfo({ payment_info: "Kaspi" })).toBe(true);
+    expect(hasShopInfo({ delivery_info: "Самовывоз" })).toBe(true);
     expect(hasShopInfo({ hours: "9:00–20:00" })).toBe(true);
   });
 

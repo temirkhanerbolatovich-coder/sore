@@ -24,6 +24,9 @@ export type DemoShop = {
   hours: string;
   about: string;
   lead_days: number;
+  /** Условия оплаты и доставки (видны покупателям, до 300 символов). */
+  payment: string;
+  delivery: string;
   bg: string;
   /** Аватар магазина: фото Pexels, как у товаров. */
   avatar: string;
@@ -41,6 +44,8 @@ export const DEMO_SHOPS: DemoShop[] = [
     hours: "Каждый день 8:00–20:00",
     about: "Домашняя выпечка по семейным рецептам: баурсаки, самса, табанан и торты к празднику.",
     lead_days: 0,
+    payment: "Kaspi-перевод или наличными при получении",
+    delivery: "По городу от 1000 ₸, самовывоз бесплатно",
     bg: "#f3e2cf",
     avatar: "lepeshka-uzbek-bread-20045238",
     products: [
@@ -72,6 +77,8 @@ export const DEMO_SHOPS: DemoShop[] = [
     hours: "Пн–Вс 9:00–21:00",
     about: "Свежие цветы и комнатные растения, соберём букет к нужному часу.",
     lead_days: 0,
+    payment: "Kaspi-перевод, предоплата 50% за букет на заказ",
+    delivery: "Доставка по городу 1500 ₸, бесплатно от 25 000 ₸",
     bg: "#f7e1e6",
     avatar: "vibrant-bouquet-of-red-roses-and-baby-s-breath-35568784",
     products: [
@@ -103,6 +110,8 @@ export const DEMO_SHOPS: DemoShop[] = [
     hours: "Пн–Сб 10:00–19:00",
     about: "Сувениры и подарки с казахским орнаментом ручной работы.",
     lead_days: 1,
+    payment: "Kaspi-перевод, наличными при самовывозе",
+    delivery: "Самовывоз из мастерской; по Казахстану отправляем почтой",
     bg: "#e3ecf5",
     avatar: "kazakh-dombyra-with-traditional-ornamentation-30472401",
     products: [
@@ -149,6 +158,8 @@ export const DEMO_SHOPS: DemoShop[] = [
     hours: "Пн–Сб 8:00–20:00",
     about: "Уборка квартир и домов, химчистка мебели и ковров на дому. Своя химия и техника.",
     lead_days: 1,
+    payment: "Kaspi-перевод после выполнения работ",
+    delivery: "Выезжаем по городу, стоимость выезда входит в услугу",
     bg: "#dff1f0",
     avatar: "person-cleaning-window-with-squeegee-and-gloves-31435403",
     products: [
@@ -180,6 +191,8 @@ export const DEMO_SHOPS: DemoShop[] = [
     hours: "Пн–Пт 10:00–19:00",
     about: "Натуральная косметика ручной работы: мыло на верблюжьем молоке, кремы и скрабы.",
     lead_days: 0,
+    payment: "Kaspi-перевод или наличными",
+    delivery: "Самовывоз или курьер по городу 1200 ₸",
     bg: "#f4ece4",
     avatar: "stack-of-natural-soaps-placed-on-table-6621497",
     products: [
@@ -211,6 +224,8 @@ export const DEMO_SHOPS: DemoShop[] = [
     hours: "Заказы до четверга",
     about: "Фермерские продукты из аула: конина, молочное и мёд. Привозим раз в неделю.",
     lead_days: 2,
+    payment: "Kaspi-перевод, наличными при встрече",
+    delivery: "Доставка по городу 1500 ₸, в другие города транспортной компанией",
     bg: "#eef0dc",
     avatar: "honey-in-glass-jars-5865194",
     products: [

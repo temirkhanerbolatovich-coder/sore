@@ -18,6 +18,8 @@ const schema = z.object({
   about: z.string().trim().max(300).default(""),
   address: z.string().trim().max(120).default(""),
   hours: z.string().trim().max(120).default(""),
+  payment_info: z.string().trim().max(300).default(""),
+  delivery_info: z.string().trim().max(300).default(""),
   instagram: z.string().trim().max(120).default(""),
   telegram: z.string().trim().max(120).default(""),
 });
@@ -40,6 +42,8 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
     about: d.about || null,
     address: d.address || null,
     hours: d.hours || null,
+    payment_info: d.payment_info || null,
+    delivery_info: d.delivery_info || null,
     instagram,
     telegram_username: telegram,
   }).eq("id", shop.id);

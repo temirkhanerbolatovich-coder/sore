@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(113);
+select plan(117);
 insert into auth.users(id,email) values ('a0000000-0000-4000-8000-000000000001','rls-a@example.test'),('b0000000-0000-4000-8000-000000000001','rls-b@example.test');
 insert into public.shops(id,owner_id,name,slug,whatsapp) values
 ('a0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000001','Shop A','rls-shop-a','77011111111'),
@@ -168,6 +168,10 @@ select lives_ok($$update public.shops set about='Печём торты', address
 select is((select instagram from public.shops where id='a0000000-0000-4000-8000-000000000002'), 'aliya.sweets', 'shop info is saved');
 select throws_like($$update public.shops set instagram='bad handle!' where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_instagram_check%', 'invalid Instagram handle rejected');
 select throws_like($$update public.shops set about=repeat('x',301) where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_about_check%', 'about over 300 characters rejected');
+select lives_ok($$update public.shops set payment_info='Kaspi-перевод', delivery_info='По городу 1500 ₸' where id='a0000000-0000-4000-8000-000000000002'$$, 'owner updates payment and delivery info');
+select is((select payment_info from public.shops where id='a0000000-0000-4000-8000-000000000002'), 'Kaspi-перевод', 'payment info is saved');
+select throws_like($$update public.shops set payment_info=repeat('x',301) where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_payment_info_check%', 'payment info over 300 characters rejected');
+select throws_like($$update public.shops set delivery_info=repeat('x',301) where id='a0000000-0000-4000-8000-000000000002'$$, '%shops_delivery_info_check%', 'delivery info over 300 characters rejected');
 select lives_ok($$update public.shops set about='hijack' where id='b0000000-0000-4000-8000-000000000002'$$, 'update of a foreign shop is silently ignored');
 reset role;
 select is((select about from public.shops where id='b0000000-0000-4000-8000-000000000002'), null, 'foreign shop info is unchanged');

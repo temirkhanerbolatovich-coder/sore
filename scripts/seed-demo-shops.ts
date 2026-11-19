@@ -148,7 +148,7 @@ async function seedShop(admin: SupabaseClient, shop: DemoShop, whatsapp: string)
     owner = data.user;
   }
 
-  const fields = { name: shop.name, slug: shop.slug, whatsapp, city: shop.city, about: shop.about, address: shop.address, hours: shop.hours, lead_days: shop.lead_days };
+  const fields = { name: shop.name, slug: shop.slug, whatsapp, city: shop.city, about: shop.about, address: shop.address, hours: shop.hours, lead_days: shop.lead_days, payment_info: shop.payment, delivery_info: shop.delivery };
   const { data: existing } = await admin.from("shops").select("id").eq("owner_id", owner.id).maybeSingle();
   let shopId = existing?.id as string | undefined;
   if (shopId) {
