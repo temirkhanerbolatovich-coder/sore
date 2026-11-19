@@ -14,6 +14,24 @@ export function DemoNotice({ lang, className = "" }: { lang: Lang; className?: s
   );
 }
 
+/** Плашка «магазин не принимает заказы» (переключатель продавца). */
+export function PausedNotice({ lang, className = "" }: { lang: Lang; className?: string }) {
+  return (
+    <div role="note" className={`rounded-xl border border-line bg-surface px-4 py-3 text-sm font-semibold ${className}`}>
+      {T[lang].paused}
+    </div>
+  );
+}
+
+/** Вместо кнопки «В корзину», пока магазин не принимает заказы. */
+export function PausedActionStub({ lang, className = "h-11 text-sm" }: { lang: Lang; className?: string }) {
+  return (
+    <span aria-disabled="true" className={`flex w-full items-center justify-center rounded-xl border-[1.5px] border-dashed border-field px-3 text-center font-bold text-muted ${className}`}>
+      {T[lang].pausedShort}
+    </span>
+  );
+}
+
 /** Вместо кнопки WhatsApp в демо-магазине: видно, где была бы кнопка, но никуда не ведёт. */
 export function DemoActionStub({ lang, className = "h-11 text-sm" }: { lang: Lang; className?: string }) {
   return (
