@@ -432,8 +432,9 @@ enabled = true
 project_id = "pcgvyxwueshxksoffodf"
 
 [remotes.production.auth]
-site_url = "https://dukenai.vercel.app"
-additional_redirect_urls = ["https://dukenai.vercel.app/auth/callback"]
+site_url = "https://sore-kz.netlify.app"
+# Старый адрес Vercel оставлен на время переезда (docs/NETLIFY.md), потом его можно убрать.
+additional_redirect_urls = ["https://sore-kz.netlify.app/auth/callback", "https://dukenai.vercel.app/auth/callback"]
 
 # Остальные значения совпадают с тем, что уже стоит в облаке, чтобы push менял только адреса возврата,
 # а не ослаблял защиту (частота писем, подтверждение почты, MFA).
