@@ -8,7 +8,7 @@
 Покупатель ─────────┐                                    ┌──► Telegram Bot API (уведомления продавцу)
 (витрина, корзина)  │                                    │
                     ▼                                    │
-Продавец ──► Next.js на Vercel (App Router) ──► Supabase ┴──► Postgres + RLS, Auth, Storage
+Продавец ──► Next.js на Netlify (App Router) ──► Supabase ┴──► Postgres + RLS, Auth, Storage
 (кабинет)          │   │                         ▲
                    │   └─ ИИ: Gemini → OpenRouter → Anthropic
                    └──────── pg_net триггер заказа ──┘ (→ /api/telegram/notify)

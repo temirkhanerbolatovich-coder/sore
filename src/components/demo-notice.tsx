@@ -17,7 +17,7 @@ export function DemoNotice({ lang, className = "" }: { lang: Lang; className?: s
 /** Плашка «магазин не принимает заказы» (переключатель продавца). */
 export function PausedNotice({ lang, className = "" }: { lang: Lang; className?: string }) {
   return (
-    <div role="note" className={`rounded-xl border border-line bg-surface px-4 py-3 text-sm font-semibold ${className}`}>
+    <div role="note" className={`rounded-xl bg-accent-soft px-4 py-3 text-sm font-semibold text-accent-dark ${className}`}>
       {T[lang].paused}
     </div>
   );

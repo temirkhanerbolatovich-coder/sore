@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { mailProvider } from "@/lib/mail-provider";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -72,13 +73,19 @@ export function LoginForm({ failed }: { failed: boolean }) {
   }
 
   if (status === "sent") {
+    const mail = mailProvider(email);
     return (
       <div className="card flex flex-col gap-2 p-5" role="status">
         <div className="text-lg font-bold">Проверьте почту</div>
         <p className="leading-relaxed text-muted">
-          Мы отправили ссылку для входа на <b className="text-ink">{email}</b>. Откройте письмо на
-          этом же телефоне.
+          Мы отправили ссылку для входа на <b className="text-ink">{email}</b>.{" "}
+          {EMAIL_CODE ? "Нажмите ссылку в письме на этом устройстве или введите код." : "Откройте письмо на этом же устройстве."}
         </p>
+        {mail && (
+          <a href={mail.url} target="_blank" rel="noopener noreferrer" className="btn-outline h-12 w-full">
+            Открыть {mail.name}
+          </a>
+        )}
         {EMAIL_CODE && (
         <form onSubmit={onCode} className="mt-2 flex flex-col gap-2 border-t border-line pt-3">
           <label htmlFor="otp" className="text-sm font-semibold">
