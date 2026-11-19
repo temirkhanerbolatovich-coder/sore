@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildOrderNotification, escapeHtml, sendTelegram } from "@/lib/telegram";
+import { buildInquiryNotification, buildOrderNotification, escapeHtml, sendTelegram } from "@/lib/telegram";
 import { reportError } from "@/lib/monitoring";
 
 const order = {
@@ -83,5 +83,20 @@ describe("отправка и мониторинг", () => {
     vi.stubGlobal("fetch", fetchMock);
     expect(await reportError("client", "x")).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("уведомление об обращении «Узнать цену»", () => {
+  it("называет магазин, товар и цену, экранирует чужой текст и не обещает, что покупатель написал", () => {
+    const { text, buttons } = buildInquiryNotification({ title: "Торт <на заказ>", price: 15000, price_mode: "from" }, "Сладкий & дом", "https://sore-kz.netlify.app");
+    expect(text).toContain("<b>Спросили цену</b> · Сладкий &amp; дом");
+    expect(text).toContain("Торт &lt;на заказ&gt; (от 15 000 ₸)");
+    expect(text).toContain("Если он его отправит");
+    expect(buttons).toEqual([{ text: "Открыть кабинет", url: "https://sore-kz.netlify.app/dashboard" }]);
+  });
+
+  it("для цены по запросу пишет «Цена по запросу»", () => {
+    const { text } = buildInquiryNotification({ title: "Банкет", price: 0, price_mode: "request" }, "Повар", "https://x.kz");
+    expect(text).toContain("Банкет (Цена по запросу)");
   });
 });

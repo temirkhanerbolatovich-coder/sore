@@ -1,4 +1,4 @@
-import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
+import { formatNeeded, formatPrice, priceLabel, whatsappUrl } from "@/lib/order";
 
 /** Адрес API Telegram можно подменить (тесты поднимают свой сервер). */
 const apiBase = () => process.env.TELEGRAM_API_BASE ?? "https://api.telegram.org";
@@ -51,6 +51,23 @@ export type OrderForMessage = {
   needed_date: string | null;
   needed_time: string | null;
 };
+
+/** Уведомление об обращении «Узнать цену»: покупатель открыл WhatsApp с готовым текстом, но мог его не отправить. */
+export function buildInquiryNotification(
+  product: { title: string; price: number; price_mode: string | null },
+  shopName: string,
+  siteUrl: string,
+) {
+  const text = [
+    `<b>Спросили цену</b> · ${escapeHtml(shopName)}`,
+    "",
+    `${escapeHtml(product.title)} (${priceLabel(product.price, product.price_mode)})`,
+    "",
+    "Покупатель открыл WhatsApp с готовым сообщением. Если он его отправит, ответ придёт туда.",
+  ].join("\n");
+  const buttons: InlineButton[] = [{ text: "Открыть кабинет", url: `${siteUrl}/dashboard` }];
+  return { text, buttons };
+}
 
 const phone = (p: string) => p.replace(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5");
 
