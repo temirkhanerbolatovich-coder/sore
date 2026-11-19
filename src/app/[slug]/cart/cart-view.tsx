@@ -18,7 +18,7 @@ import { TelegramContact } from "@/components/telegram-contact";
 
 const MIN_ORDER_FORM_AGE_MS = 2000;
 
-type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number; demo?: boolean };
+type ShopInfo = { id: string; slug: string; name: string; whatsapp: string; telegram: string | null; leadDays: number; paymentInfo?: string | null; deliveryInfo?: string | null; demo?: boolean };
 
 export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang; products: Product[] }) {
   const t = T[lang];
@@ -274,6 +274,13 @@ export function CartView({ shop, lang, products }: { shop: ShopInfo; lang: Lang;
 
             <p className="text-sm text-muted">{t.savedHint}</p>
             <button type="button" className="min-h-11 text-sm underline" onClick={() => { try { localStorage.removeItem("sore-customer"); } catch {} setName(""); setPhone(""); }}>{t.clearDetails}</button>
+            {(shop.paymentInfo || shop.deliveryInfo) && (
+              <section aria-label={t.termsTitle} className="flex flex-col gap-1 rounded-xl border border-line bg-surface p-3 text-sm">
+                <h3 className="font-bold">{t.termsTitle}</h3>
+                {shop.paymentInfo && <p className="whitespace-pre-line"><span className="font-semibold">{t.payment}:</span> {shop.paymentInfo}</p>}
+                {shop.deliveryInfo && <p className="whitespace-pre-line"><span className="font-semibold">{t.deliveryTerms}:</span> {shop.deliveryInfo}</p>}
+              </section>
+            )}
             <div className="grid grid-cols-2 gap-2" role="group" aria-label={t.method}>
               {(["delivery", "pickup"] as const).map((v) => (
                 <button

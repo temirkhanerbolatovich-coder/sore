@@ -5,7 +5,7 @@ import type { Shop } from "@/lib/types";
 const LONG_ABOUT = 140;
 
 /** Блок «О магазине» под шапкой витрины: описание, график, адрес и Instagram. */
-export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address" | "hours" | "instagram">; lang: Lang }) {
+export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address" | "hours" | "instagram" | "payment_info" | "delivery_info">; lang: Lang }) {
   if (!hasShopInfo(shop)) return null;
   const t = T[lang];
   const about = shop.about ? <p className="whitespace-pre-line leading-snug">{shop.about}</p> : null;
@@ -24,7 +24,7 @@ export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address"
       ) : (
         about
       )}
-      {(shop.hours || shop.address || shop.instagram) && (
+      {(shop.hours || shop.address || shop.instagram || shop.payment_info || shop.delivery_info) && (
         <dl className="flex flex-col gap-1 text-muted">
           {shop.hours && (
             <div className="flex gap-2">
@@ -36,6 +36,18 @@ export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address"
             <div className="flex gap-2">
               <dt className="flex-none font-semibold text-ink">{t.address}:</dt>
               <dd>{shop.address}</dd>
+            </div>
+          )}
+          {shop.payment_info && (
+            <div className="flex gap-2">
+              <dt className="flex-none font-semibold text-ink">{t.payment}:</dt>
+              <dd className="whitespace-pre-line">{shop.payment_info}</dd>
+            </div>
+          )}
+          {shop.delivery_info && (
+            <div className="flex gap-2">
+              <dt className="flex-none font-semibold text-ink">{t.deliveryTerms}:</dt>
+              <dd className="whitespace-pre-line">{shop.delivery_info}</dd>
             </div>
           )}
           {shop.instagram && (
