@@ -12,7 +12,7 @@
 | Сборка | `npm run build`, Node 24 (`netlify.toml`), адаптер Next.js ставит Netlify сам |
 | Деплой | автоматически при каждом пуше в `main` |
 | Cron | `netlify/functions/storage-cleanup.mts` вызывает `/api/cron/storage-cleanup` в 21:30 UTC; работает только на опубликованном деплое, нужен `CRON_SECRET` |
-| Регион функций | по умолчанию `us-east-2` (США), а база во Франкфурте: каждый запрос к базе идёт через океан. Сменить на `eu-central-1` можно в Netlify → Site configuration → Functions → Region (через API это не удалось, на бесплатном плане может быть недоступно); без этого страницы медленнее |
+| Регион функций | **CMH (Огайо, США)**; на бесплатном плане сменить нельзя (в Netlify → Functions → Region кнопка «Upgrade to customize», проверено 19.11.2026). База Supabase во Франкфурте, поэтому запросы к ней идут через океан. Замер `/demo-oyu` с компьютера разработчика: в среднем 2,3 с (от 1,2 до 6,4 с, выбросы это холодный старт функции). Регион Frankfurt станет доступен на платном плане Netlify или на Vercel Pro (регион `fra1` уже задан в `vercel.json` истории) |
 
 ## Переменные окружения (Site configuration → Environment variables)
 
