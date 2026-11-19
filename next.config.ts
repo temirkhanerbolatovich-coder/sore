@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     const devScripts = dev ? " 'unsafe-eval' https://va.vercel-scripts.com" : "";
     // Счётчик Umami Cloud разрешаем в политике только когда он включён (NEXT_PUBLIC_UMAMI_ID).
     const umamiScript = process.env.NEXT_PUBLIC_UMAMI_ID ? " https://cloud.umami.is" : "";
-    const umamiConnect = process.env.NEXT_PUBLIC_UMAMI_ID ? " https://cloud.umami.is https://api-gateway.umami.dev" : "";
+    const umamiConnect = process.env.NEXT_PUBLIC_UMAMI_ID ? " https://cloud.umami.is https://gateway.umami.is https://api-gateway.umami.dev" : "";
     const policy = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${devScripts}${umamiScript}`,
