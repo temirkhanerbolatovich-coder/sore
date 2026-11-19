@@ -43,6 +43,7 @@
 - **База, вход, файлы:** Supabase (Postgres с RLS, Auth, Storage). Цены, лимиты и квоты считает база, а не клиент.
 - **ИИ:** цепочка провайдеров Gemini, OpenRouter и Anthropic с резервированием квоты на каждый запрос.
 - **Каналы:** WhatsApp (ссылка `wa.me`), Telegram (уведомления продавцу через бота, ссылка на личный чат для покупателя).
+- **Эксплуатация:** `/api/health` (проверка живости и базы), монитор UptimeRobot, счётчик посетителей Umami без cookie (включается `NEXT_PUBLIC_UMAMI_ID`), ежедневные зашифрованные резервные копии базы в GitHub Actions.
 - **Тесты:** Vitest (юнит), pgTAP (политики RLS), Playwright (e2e на настоящем локальном Supabase).
 
 Подробно: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -112,6 +113,7 @@ scripts/            служебные скрипты: проверка ИИ, п
 - [Быстрый старт разработчика](docs/ONBOARDING.md)
 - [Хостинг на Netlify](docs/NETLIFY.md) и [деплой, Supabase, письма входа](docs/DEPLOY.md)
 - [Резервные копии базы](docs/BACKUP.md)
+- [Дорожная карта](docs/ROADMAP.md) и [история изменений](CHANGELOG.md)
 - [Стратегия и аналоги](docs/STRATEGY.md), [план запуска](docs/LAUNCH.md)
 - [UX-аудит](docs/UX_AUDIT.md) и [план улучшений UI](docs/UI_PLAN.md)
 - [Контракт для Telegram-бота](docs/BOT_CONTRACT.md)

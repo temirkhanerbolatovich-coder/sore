@@ -54,7 +54,7 @@ Long polling с теми же модулями. Polling снимает webhook �
 
 1. В Telegram откройте [@BotFather](https://t.me/BotFather), команда `/newbot`, придумайте имя и адрес бота (должен заканчиваться на `bot`). BotFather выдаст **токен**. Не публикуйте его и не присылайте в чаты.
 2. Узнайте свой chat id для сообщений об ошибках: напишите боту любое сообщение, затем откройте в браузере `https://api.telegram.org/bot<ТОКЕН>/getUpdates` и найдите `"chat":{"id":ЧИСЛО`.
-3. Задайте переменные в Vercel (Project → Settings → Environment Variables, окружение Production) или командой `npx vercel env add ИМЯ production`:
+3. Задайте переменные в Netlify (Project configuration → Environment variables):
 
 | Переменная | Значение |
 | --- | --- |
