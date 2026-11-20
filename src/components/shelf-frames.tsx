@@ -13,6 +13,7 @@ export function ShelfFrames({
   lazy = false,
   onSelect,
   highlighted,
+  goLabel = "Перейти к товару",
   className = "",
 }: {
   src: string;
@@ -21,6 +22,8 @@ export function ShelfFrames({
   lazy?: boolean;
   onSelect?: (index: number) => void;
   highlighted?: number;
+  /** Подпись кнопки рамки для чтения с экрана: «Перейти к товару N». */
+  goLabel?: string;
   className?: string;
 }) {
   return (
@@ -39,7 +42,7 @@ export function ShelfFrames({
             height: `${(f.bbox.y2 - f.bbox.y1) * 100}%`,
           }}
         >
-          {onSelect && <button type="button" onClick={() => onSelect(i)} aria-label={`Перейти к товару ${i + 1}`} aria-pressed={highlighted === i} className="absolute inset-0 min-h-11 min-w-11" />}
+          {onSelect && <button type="button" onClick={() => onSelect(i)} aria-label={`${goLabel} ${i + 1}`} aria-pressed={highlighted === i} className="absolute inset-0 min-h-11 min-w-11" />}
           {f.label && (
             <span
               className={`pointer-events-none absolute left-1 top-1 min-w-6 rounded-full px-1.5 text-center text-xs font-extrabold leading-6 ${f.active === false ? "bg-cream/80 text-muted" : "bg-accent text-on-accent"}`}

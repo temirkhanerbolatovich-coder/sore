@@ -29,7 +29,10 @@ test("«О магазине» и поиск по витрине", async ({ page,
 
     // Витрина обновилась сразу: блок «О магазине» виден покупателю.
     await page.goto(`/${slug}`);
-    await expect(page.getByText("Печём торты и пироги на заказ в Алматы.")).toBeVisible();
+    // Блок свёрнут: сначала виден краткий текст, подробности открываются нажатием.
+    await expect(page.getByText("Печём торты и пироги на заказ в Алматы.").first()).toBeVisible();
+    await page.getByText("Подробнее", { exact: true }).click();
+    await expect(page.getByText("Печём торты и пироги на заказ в Алматы.").last()).toBeVisible();
     await expect(page.getByText("Ежедневно 9:00–20:00")).toBeVisible();
     await expect(page.getByText("Алматы, Бостандыкский район")).toBeVisible();
     const instagram = page.getByRole("link", { name: "@aliya.sweets" });

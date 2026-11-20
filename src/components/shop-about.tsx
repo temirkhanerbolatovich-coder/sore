@@ -2,29 +2,23 @@ import { T, type Lang } from "@/lib/lang";
 import { hasShopInfo, instagramUrl } from "@/lib/shop-info";
 import type { Shop } from "@/lib/types";
 
-const LONG_ABOUT = 140;
-
 /** Блок «О магазине» под шапкой витрины: описание, график, адрес и Instagram. */
 export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address" | "hours" | "instagram" | "payment_info" | "delivery_info">; lang: Lang }) {
   if (!hasShopInfo(shop)) return null;
   const t = T[lang];
   const about = shop.about ? <p className="whitespace-pre-line leading-snug">{shop.about}</p> : null;
-  const longAbout = (shop.about?.length ?? 0) > LONG_ABOUT;
+    const hasDetails = Boolean(shop.hours || shop.address || shop.instagram || shop.payment_info || shop.delivery_info);
 
+  // Блок свёрнут: покупателю на телефоне сначала нужны товары, а график и условия открываются одним нажатием.
   return (
-    <section className="mx-4 mt-3 flex flex-col gap-2 rounded-2xl border border-line bg-surface p-4 text-body">
-      {about && longAbout ? (
-        <details className="group">
-          <summary className="flex min-h-11 cursor-pointer list-none flex-col justify-center">
-            <span className="line-clamp-2 leading-snug group-open:hidden">{shop.about}</span>
-            <span className="text-sm font-semibold text-accent underline">{t.more}</span>
-          </summary>
-          <p className="whitespace-pre-line leading-snug">{shop.about}</p>
-        </details>
-      ) : (
-        about
-      )}
-      {(shop.hours || shop.address || shop.instagram || shop.payment_info || shop.delivery_info) && (
+    <details className="group mx-4 mt-3 rounded-2xl border border-line bg-surface px-4 text-body">
+      <summary className="flex min-h-11 cursor-pointer list-none flex-col justify-center py-2">
+        <span className="line-clamp-2 leading-snug group-open:hidden">{shop.about || shop.hours || shop.address}</span>
+        <span className="text-sm font-semibold text-accent underline">{t.more}</span>
+      </summary>
+      <div className="flex flex-col gap-2 pb-4">
+      {about}
+      {hasDetails && (
         <dl className="flex flex-col gap-1 text-muted">
           {shop.hours && (
             <div className="flex gap-2">
@@ -67,6 +61,7 @@ export function ShopAbout({ shop, lang }: { shop: Pick<Shop, "about" | "address"
           )}
         </dl>
       )}
-    </section>
+      </div>
+    </details>
   );
 }

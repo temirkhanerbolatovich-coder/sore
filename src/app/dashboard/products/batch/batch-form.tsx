@@ -8,6 +8,7 @@ import { uploadProductPhoto } from "@/lib/image";
 import { ownedPhotoPath, thumbPath } from "@/lib/photos";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { saveBatch, type BatchState } from "./actions";
+import { useTr } from "@/components/ui-lang";
 
 type Item = {
   id: string;
@@ -27,6 +28,7 @@ const MAX_AT_ONCE = 12;
 
 /** Выбор нескольких фото → загрузка и ИИ-карточки по каждому → проверка списка → сохранить всё сразу. */
 export function BatchForm({ slots, categories }: { slots: number; categories: string[] }) {
+  const tr = useTr();
   const [state, onSubmit, saving] = useStatefulAction(saveBatch, initial);
   const [items, setItems] = useState<Item[]>([]);
   const [message, setMessage] = useState("");
@@ -43,11 +45,11 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
     if (picked.length === 0) return;
     const room = limit - items.length;
     if (room <= 0) {
-      setMessage(`Больше добавить нельзя: на бесплатном тарифе осталось мест — ${slots}, за раз до ${MAX_AT_ONCE}.`);
+      setMessage(tr(`Больше добавить нельзя: на бесплатном тарифе осталось мест — ${slots}, за раз до ${MAX_AT_ONCE}.`, `Көбірек қосуға болмайды: тегін тарифте ${slots} орын қалды, бір рет ${MAX_AT_ONCE}-ге дейін.`));
       return;
     }
     const files = picked.slice(0, room);
-    setMessage(picked.length > room ? `Взяли первые ${room} из ${picked.length}: больше мест нет.` : "");
+    setMessage(picked.length > room ? tr(`Взяли первые ${room} из ${picked.length}: больше мест нет.`, `${picked.length} фотоның алғашқы ${room}-і алынды: орын жоқ.`) : "");
 
     const created: Item[] = files.map(() => ({
       id: crypto.randomUUID(), photoUrl: "", title: "", descRu: "", descKz: "", category: "", mode: "request", price: "", status: "working", note: "",
@@ -87,13 +89,13 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
               descKz: c.description_kz,
               category: c.category,
               status: "ready",
-              note: json.kzDropped ? "Казахское описание не получилось." : "",
+              note: json.kzDropped ? tr("Казахское описание не получилось.", "Қазақша сипаттама шықпады.") : "",
             });
           } catch (e) {
-            patch(target.id, { status: "ready", note: `ИИ не помог${e instanceof Error && e.message !== "ai" ? `: ${e.message}` : ""}. Впишите название сами.` });
+            patch(target.id, { status: "ready", note: `${tr("ИИ не помог", "ЖИ көмектеспеді")}${e instanceof Error && e.message !== "ai" ? `: ${e.message}` : ""}. ${tr("Впишите название сами.", "Атауын өзіңіз жазыңыз.")}` });
           }
         } catch {
-          patch(target.id, { status: "ready", photoUrl: "", note: "Фото не загрузилось. Удалите карточку и добавьте фото ещё раз." });
+          patch(target.id, { status: "ready", photoUrl: "", note: tr("Фото не загрузилось. Удалите карточку и добавьте фото ещё раз.", "Фото жүктелмеді. Карточканы жойып, фотоны қайта қосыңыз.") });
         }
       }
     }
@@ -112,7 +114,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
       const { error } = await supabase.storage.from("product-photos").remove([...new Set([path, thumbPath(path)])]);
       if (error) throw error;
     } catch {
-      setMessage("Карточка убрана, но фото не удалось удалить.");
+      setMessage(tr("Карточка убрана, но фото не удалось удалить.", "Карточка жойылды, бірақ фотоны өшіру мүмкін болмады."));
     }
   }
 
@@ -135,19 +137,19 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (
           <p className="card p-4 text-body leading-relaxed text-muted">
-            Бесплатный лимит товаров исчерпан. Удалите ненужные позиции или дождитесь тарифа Pro.
+            {tr("Бесплатный лимит товаров исчерпан. Удалите ненужные позиции или дождитесь тарифа Pro.", "Тегін тауар шегі таусылды. Қажетсіз позицияларды жойыңыз немесе Pro тарифін күтіңіз.")}
           </p>
         ) : (
           <>
             <p className="text-body leading-relaxed text-muted">
-              Выберите до {limit} фото: ИИ составит название и описание на русском и казахском по каждому. Цены вы укажете сами.
+              {tr(`Выберите до ${limit} фото: ИИ составит название и описание на русском и казахском по каждому. Цены вы укажете сами.`, `${limit} фотоға дейін таңдаңыз: ЖИ әрқайсысына орысша және қазақша атау мен сипаттама жасайды. Бағаны өзіңіз көрсетесіз.`)}
             </p>
             <input ref={fileRef} id="batch-files" type="file" accept="image/*" multiple className="sr-only" onChange={onFiles} disabled={working || items.length >= limit} />
             <label
               htmlFor="batch-files"
               className="flex h-14 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-surface text-base font-bold has-[:disabled]:opacity-50"
             >
-              {working ? "Обрабатываем фото…" : items.length > 0 ? "Добавить ещё фото" : "Выбрать фото"}
+              {working ? tr("Обрабатываем фото…", "Фото өңделуде…") : items.length > 0 ? tr("Добавить ещё фото", "Тағы фото қосу") : tr("Выбрать фото", "Фото таңдау")}
             </label>
           </>
         )}
@@ -164,27 +166,27 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
                 <div className="size-20 flex-none overflow-hidden rounded-xl bg-thumb">
                   {item.photoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.photoUrl} alt={`Фото ${index + 1}`} className="size-full object-cover" />
+                    <img src={item.photoUrl} alt={`${tr("Фото", "Фото")} ${index + 1}`} className="size-full object-cover" />
                   )}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   {item.status === "working" ? (
                     <p role="status" className="py-2 text-sm font-semibold text-muted">
-                      {item.photoUrl ? "ИИ пишет карточку…" : "Загружаем фото…"}
+                      {item.photoUrl ? tr("ИИ пишет карточку…", "ЖИ карточканы жазуда…") : tr("Загружаем фото…", "Фото жүктелуде…")}
                     </p>
                   ) : (
                     <>
                       <input
-                        aria-label={`Название ${index + 1}`}
-                        placeholder="Название"
+                        aria-label={`${tr("Название", "Атауы")} ${index + 1}`}
+                        placeholder={tr("Название", "Атауы")}
                         maxLength={120}
                         value={item.title}
                         onChange={(e) => patch(item.id, { title: e.target.value })}
                         className="input h-11"
                       />
                       <input
-                        aria-label={`Категория ${index + 1}`}
-                        placeholder="Категория"
+                        aria-label={`${tr("Категория", "Санат")} ${index + 1}`}
+                        placeholder={tr("Категория", "Санат")}
                         maxLength={60}
                         value={item.category}
                         onChange={(e) => patch(item.id, { category: e.target.value })}
@@ -195,7 +197,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
                 </div>
                 <button
                   type="button"
-                  aria-label={`Убрать карточку ${index + 1}`}
+                  aria-label={`${tr("Убрать карточку", "Карточканы жою")} ${index + 1}`}
                   onClick={() => void remove(item)}
                   disabled={item.status === "working" && !item.photoUrl}
                   className="min-h-11 min-w-11 flex-none self-start rounded-xl text-xl font-bold text-muted disabled:opacity-50"
@@ -207,11 +209,11 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
                 <>
                   {item.note && <p className="text-caption font-semibold text-accent-dark">{item.note}</p>}
                   <div className="flex items-center gap-2">
-                    <div className="grid flex-1 grid-cols-2 gap-2" role="group" aria-label={`Цена ${index + 1}`}>
+                    <div className="grid flex-1 grid-cols-2 gap-2" role="group" aria-label={`${tr("Цена", "Баға")} ${index + 1}`}>
                       {(
                         [
-                          ["request", "По запросу"],
-                          ["fixed", "Точная"],
+                          ["request", tr("По запросу", "Сұраныс бойынша")],
+                          ["fixed", tr("Точная", "Нақты")],
                         ] as const
                       ).map(([value, label]) => (
                         <button
@@ -227,7 +229,7 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
                     </div>
                     {item.mode === "fixed" && (
                       <input
-                        aria-label={`Цена ${index + 1}, ₸`}
+                        aria-label={`${tr("Цена", "Баға")} ${index + 1}, ₸`}
                         placeholder="₸"
                         inputMode="numeric"
                         value={item.price}
@@ -251,13 +253,13 @@ export function BatchForm({ slots, categories }: { slots: number; categories: st
 
       <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-surface p-5">
         <button type="submit" disabled={saving || working || items.length === 0 || invalid} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
-          {saving ? "Сохраняем…" : items.length > 0 ? `Сохранить ${items.length} ${items.length === 1 ? "товар" : "товаров"}` : "Сохранить"}
+          {saving ? tr("Сохраняем…", "Сақталуда…") : items.length > 0 ? tr(`Сохранить ${items.length} ${items.length === 1 ? "товар" : "товаров"}`, `${items.length} тауарды сақтау`) : tr("Сохранить", "Сақтау")}
         </button>
         {items.length > 0 && invalid && !working && (
-          <p className="text-center text-caption text-muted">Укажите название у каждого товара и цену там, где выбрана «Точная».</p>
+          <p className="text-center text-caption text-muted">{tr("Укажите название у каждого товара и цену там, где выбрана «Точная».", "Әрбір тауарға атау, ал «Нақты» таңдалған жерге баға көрсетіңіз.")}</p>
         )}
         <Link href="/dashboard" className="btn-outline h-12 w-full">
-          Отмена
+          {tr("Отмена", "Бас тарту")}
         </Link>
       </div>
     </form>

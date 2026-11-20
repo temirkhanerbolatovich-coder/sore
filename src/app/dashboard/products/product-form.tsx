@@ -5,7 +5,7 @@ import { useStatefulAction } from "@/lib/use-stateful-action";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProductPhoto } from "@/lib/image";
-import type { Product } from "@/lib/types";
+import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
 import { deleteProduct, saveProduct, type ProductState } from "./actions";
 
 import { Field } from "@/components/field";
@@ -13,10 +13,12 @@ import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { newVariantId, variantsOf } from "@/lib/variants";
 import { ActionForm } from "@/components/action-form";
 import { AiIcon, BackIcon } from "@/components/icons";
+import { useTr } from "@/components/ui-lang";
 
 const initial: ProductState = {};
 
-export function ProductForm({ product }: { product?: Product }) {
+export function ProductForm({ product, enhanceAvailable = false, atLimit = false }: { product?: Product; enhanceAvailable?: boolean; atLimit?: boolean }) {
+  const tr = useTr();
   const [state, onSubmit, pending] = useStatefulAction(saveProduct, initial);
   const [photoUrl, setPhotoUrl] = useState(product?.photo_url ?? "");
   const [uploading, setUploading] = useState(false);
@@ -29,6 +31,21 @@ export function ProductForm({ product }: { product?: Product }) {
   const [descKz, setDescKz] = useState(product?.description_kz ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
   const [touched, setTouched] = useState(false);
+  // Поля, которые пользователь заполнил или поправил сам: повторная генерация их не трогает.
+  const userEdited = useRef(
+    new Set<string>(
+      (
+        [
+          ["title", product?.title],
+          ["descRu", product?.description_ru],
+          ["descKz", product?.description_kz],
+          ["category", product?.category],
+        ] as const
+      )
+        .filter(([, v]) => v)
+        .map(([k]) => k),
+    ),
+  );
   const [variants, setVariants] = useState<{ id: string; title: string; price: string }[]>(() =>
     variantsOf(product ?? {}).map((v) => ({ id: v.id, title: v.title, price: String(v.price) })),
   );
@@ -38,11 +55,17 @@ export function ProductForm({ product }: { product?: Product }) {
   const [aiBackup, setAiBackup] = useState<{ title: string; descRu: string; descKz: string; category: string } | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   useUnsavedGuard(touched && !pending);
+  // Улучшение фото: оригинал остаётся в photoUrl, пока продавец не согласится на результат.
+  const [enhanced, setEnhanced] = useState<string | null>(null);
+  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
+  const [enhanceBusy, setEnhanceBusy] = useState(false);
+  const [enhanceMessage, setEnhanceMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [aiMessage, setAiMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function fillWithAi() {
     setAiBusy(true);
     setAiMessage(null);
+    setEnhanceMessage((m) => (m && !m.ok ? null : m));
     try {
       const res = await fetch("/api/ai/product-card", {
         method: "POST",
@@ -54,25 +77,80 @@ export function ProductForm({ product }: { product?: Product }) {
       const c = json.card;
       setAiBackup({ title, descRu, descKz, category });
       setTouched(true);
-      setTitle(c.title);
-      setDescRu(c.description_ru);
-      setDescKz(c.description_kz);
-      setCategory(c.category);
+      const kept = userEdited.current;
+      const skipped: string[] = [];
+      const apply = (key: string, label: string, set: (v: string) => void, value: string) => {
+        if (kept.has(key)) skipped.push(label);
+        else set(value);
+      };
+      apply("title", tr("название", "атауы"), setTitle, c.title);
+      apply("descRu", tr("описание RU", "RU сипаттамасы"), setDescRu, c.description_ru);
+      apply("descKz", tr("описание KZ", "KZ сипаттамасы"), setDescKz, c.description_kz);
+      apply("category", tr("категорию", "санатты"), setCategory, c.category);
       const notes = [
-        json.kzDropped ? "Казахское описание не получилось, заполните его вручную." : "",
-        json.provider === "openrouter" ? "Текст составила резервная модель: особенно проверьте казахское описание." : "",
+        skipped.length ? tr(`Ваши правки сохранены: ${skipped.join(", ")} не менялись.`, `Сіздің түзетулеріңіз сақталды: ${skipped.join(", ")} өзгертілмеді.`) : "",
+        json.kzDropped ? tr("Казахское описание не получилось, заполните его вручную.", "Қазақша сипаттама шықпады, оны қолмен толтырыңыз.") : "",
+        json.provider === "openrouter" ? tr("Текст составила резервная модель: особенно проверьте казахское описание.", "Мәтінді резервтік модель жасады: әсіресе қазақша сипаттаманы тексеріңіз.") : "",
       ].filter(Boolean).join(" ");
       setAiMessage({
         ok: true,
-        text: `ИИ заполнил поля. Проверьте текст и укажите цену — её ИИ не угадывает. ${notes} Осталось генераций: ${json.remaining}.`.replace(/\s+/g, " "),
+        text: tr(`ИИ заполнил поля. Проверьте текст и укажите цену — её ИИ не угадывает. ${notes} Осталось генераций: ${json.remaining}.`, `ЖИ өрістерді толтырды. Мәтінді тексеріп, бағаны көрсетіңіз — оны ЖИ болжамайды. ${notes} Қалған генерация саны: ${json.remaining}.`).replace(/\s+/g, " "),
       });
     } catch (e) {
       setAiMessage({
         ok: false,
-        text: e instanceof Error && e.message !== "error" ? e.message : "Не удалось связаться с ИИ. Заполните вручную.",
+        text: e instanceof Error && e.message !== "error" ? e.message : tr("Не удалось связаться с ИИ. Заполните вручную.", "ЖИ-мен байланысу мүмкін болмады. Қолмен толтырыңыз."),
       });
     } finally {
       setAiBusy(false);
+    }
+  }
+
+  async function enhancePhoto() {
+    setEnhanceBusy(true);
+    setEnhanceMessage(null);
+    setAiMessage((m) => (m && !m.ok ? null : m));
+    try {
+      const res = await fetch("/api/ai/photo-enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo_url: photoUrl }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "error");
+      setEnhanced(json.image);
+      setEnhanceMessage({ ok: true, text: tr(`Сравните фото. Осталось ИИ-запросов на сегодня: ${json.remaining}.`, `Фотоларды салыстырыңыз. Бүгінге қалған ЖИ сұраныстары: ${json.remaining}.`) });
+    } catch (e) {
+      setEnhanceMessage({
+        ok: false,
+        text: e instanceof Error && e.message !== "error" ? e.message : tr("Не удалось связаться с ИИ. Оставьте фото как есть.", "ЖИ-мен байланысу мүмкін болмады. Фотоны сол қалпында қалдырыңыз."),
+      });
+    } finally {
+      setEnhanceBusy(false);
+    }
+  }
+
+  async function acceptEnhanced() {
+    if (!enhanced) return;
+    setUploading(true);
+    setPhotoError("");
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("no user");
+      const blob = await (await fetch(enhanced)).blob();
+      const url = await uploadProductPhoto(supabase, user.id, new File([blob], "enhanced", { type: blob.type }));
+      setOriginalUrl(photoUrl);
+      setPhotoUrl(url);
+      setEnhanced(null);
+      setEnhanceMessage({ ok: true, text: tr("Фото заменено.", "Фото ауыстырылды.") });
+      setTouched(true);
+    } catch {
+      setPhotoError(tr("Не удалось сохранить улучшенное фото. Попробуйте ещё раз.", "Жақсартылған фотоны сақтау мүмкін болмады. Қайталап көріңіз."));
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -89,9 +167,12 @@ export function ProductForm({ product }: { product?: Product }) {
       if (!user) throw new Error("no user");
 
       setPhotoUrl(await uploadProductPhoto(supabase, user.id, file));
+      setEnhanced(null);
+      setOriginalUrl(null);
+      setEnhanceMessage(null);
       setTouched(true);
     } catch {
-      setPhotoError("Не удалось загрузить фото. Попробуйте другое или проверьте интернет.");
+      setPhotoError(tr("Не удалось загрузить фото. Попробуйте другое или проверьте интернет.", "Фотоны жүктеу мүмкін болмады. Басқасын таңдаңыз немесе интернетті тексеріңіз."));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -106,14 +187,25 @@ export function ProductForm({ product }: { product?: Product }) {
         <input type="hidden" name="variants" value={JSON.stringify(variants)} />
 
         <div className="flex flex-1 flex-col gap-4 p-5">
-          <h2 className="text-lg font-bold">Основное</h2>
+          {atLimit && (
+            <section role="alert" className="flex flex-col gap-2 rounded-xl border border-line bg-accent-soft p-3.5 text-sm leading-snug">
+              <h2 className="font-bold text-accent-dark">{tr("Достигнут лимит бесплатного тарифа", "Тегін тариф шегіне жеттіңіз")}: {FREE_PRODUCT_LIMIT} {tr("товаров", "тауар")}</h2>
+              <p>
+                {tr("Новый товар сохранить не получится. Скройте или удалите ненужный товар в списке, и место освободится. Скрытые товары покупатели не видят, но они остаются в кабинете.", "Жаңа тауарды сақтау мүмкін емес. Тізімдегі қажетсіз тауарды жасырыңыз немесе жойыңыз, сонда орын босайды. Жасырын тауарларды сатып алушылар көрмейді, бірақ олар кабинетте қалады.")}
+              </p>
+              <Link href="/dashboard" className="btn-outline h-11 w-full">
+                {tr("К списку товаров", "Тауарлар тізіміне")}
+              </Link>
+            </section>
+          )}
+          <h2 className="text-lg font-bold">{tr("Основное", "Негізгі")}</h2>
           <div className="flex items-center gap-3.5">
             <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-thumb text-center text-caption text-muted">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoUrl} alt="Фото товара" className="size-full object-cover" />
+                <img src={photoUrl} alt={tr("Фото товара", "Тауар фотосы")} className="size-full object-cover" />
               ) : (
-                "Нет фото"
+                tr("Нет фото", "Фото жоқ")
               )}
             </div>
             <div className="flex flex-1 flex-col gap-2">
@@ -130,11 +222,11 @@ export function ProductForm({ product }: { product?: Product }) {
                 htmlFor="photo"
                 className="flex h-11 cursor-pointer items-center justify-center rounded-xl border-[1.5px] border-ink bg-surface text-body font-semibold has-[:disabled]:opacity-60"
               >
-                {uploading ? "Загружаем…" : photoUrl ? "Заменить фото" : "Сделать или выбрать фото"}
+                {uploading ? tr("Загружаем…", "Жүктелуде…") : photoUrl ? tr("Заменить фото", "Фотоны ауыстыру") : tr("Сделать или выбрать фото", "Фото түсіру немесе таңдау")}
               </label>
               {photoUrl && !uploading && (
-                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
-                  Убрать фото
+                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setEnhanced(null); setOriginalUrl(null); setEnhanceMessage(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
+                  {tr("Убрать фото", "Фотоны жою")}
                 </button>
               )}
               <button
@@ -144,15 +236,73 @@ export function ProductForm({ product }: { product?: Product }) {
                 className="flex h-11 items-center justify-center gap-2 rounded-xl bg-ink text-body font-bold text-cream disabled:opacity-50"
               >
                 <AiIcon size={18} />
-                {aiBusy ? "ИИ думает…" : "Заполнить с ИИ"}
+                {aiBusy ? tr("ИИ думает…", "ЖИ ойланып жатыр…") : tr("Заполнить с ИИ", "ЖИ-мен толтыру")}
               </button>
-              {!photoUrl && <p className="text-caption leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
+              {enhanceAvailable && (
+              <button
+                type="button"
+                onClick={enhancePhoto}
+                disabled={!photoUrl || uploading || aiBusy || enhanceBusy || enhanced !== null}
+                className="flex h-11 items-center justify-center gap-2 rounded-xl border-[1.5px] border-ink bg-surface text-body font-bold disabled:opacity-50"
+              >
+                <AiIcon size={18} />
+                {enhanceBusy ? tr("Улучшаем…", "Жақсартылуда…") : tr("Сделать фото продающим", "Фотоны сатылымды ету")}
+              </button>
+              )}
+              {!photoUrl && <p className="text-caption leading-snug text-muted">{tr("ИИ работает по фото: сначала добавьте его.", "ЖИ фото бойынша жұмыс істейді: алдымен оны қосыңыз.")}</p>}
             </div>
           </div>
           {photoError && (
             <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="text-sm font-semibold text-accent-dark">
               {photoError}
             </p>
+          )}
+          {enhanceMessage && (
+            <p
+              role={enhanceMessage.ok ? "status" : "alert"}
+              className={`rounded-xl border px-3.5 py-3 text-sm leading-snug ${
+                enhanceMessage.ok ? "border-ok-line bg-ok-bg text-ok-ink" : "border-line bg-accent-soft font-semibold text-accent-dark"
+              }`}
+            >
+              {enhanceMessage.text}
+              {enhanceMessage.ok && originalUrl && !enhanced && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    className="min-h-11 font-semibold underline"
+                    onClick={() => { setPhotoUrl(originalUrl); setOriginalUrl(null); setEnhanceMessage(null); setTouched(true); }}
+                  >
+                    {tr("Вернуть оригинал", "Түпнұсқаны қайтару")}
+                  </button>
+                </>
+              )}
+            </p>
+          )}
+          {enhanced && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <figure className="flex flex-col gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photoUrl} alt={tr("Фото до улучшения", "Жақсартуға дейінгі фото")} className="aspect-square w-full rounded-2xl object-cover" />
+                  <figcaption className="text-caption text-muted">{tr("До", "Дейін")}</figcaption>
+                </figure>
+                <figure className="flex flex-col gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={enhanced} alt={tr("Фото после улучшения", "Жақсартудан кейінгі фото")} className="aspect-square w-full rounded-2xl object-cover" />
+                  <figcaption className="text-caption text-muted">{tr("После", "Кейін")}</figcaption>
+                </figure>
+              </div>
+              <p className="text-caption leading-snug text-muted">{tr("Проверьте, что товар на фото не изменился: цвет, форма, надписи.", "Фотодағы тауар өзгермегенін тексеріңіз: түсі, пішіні, жазулары.")}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={acceptEnhanced} disabled={uploading} className="btn-accent h-11 disabled:opacity-60">
+                  {uploading ? tr("Сохраняем…", "Сақталуда…") : tr("Взять новое", "Жаңасын алу")}
+                </button>
+                <button type="button" onClick={() => { setEnhanced(null); setEnhanceMessage(null); }} className="btn-outline h-11">
+                  {tr("Оставить как есть", "Сол қалпында қалдыру")}
+                </button>
+              </div>
+            </div>
           )}
           {aiMessage && (
             <p
@@ -170,56 +320,57 @@ export function ProductForm({ product }: { product?: Product }) {
                     className="min-h-11 font-semibold underline"
                     onClick={() => {
                       setTitle(aiBackup.title); setDescRu(aiBackup.descRu); setDescKz(aiBackup.descKz); setCategory(aiBackup.category);
+                      userEdited.current = new Set(([["title", aiBackup.title], ["descRu", aiBackup.descRu], ["descKz", aiBackup.descKz], ["category", aiBackup.category]] as const).filter(([, v]) => v).map(([k]) => k));
                       setAiBackup(null); setAiMessage(null);
                     }}
                   >
-                    Вернуть как было
+                    {tr("Вернуть как было", "Бұрынғыдай қайтару")}
                   </button>
                 </>
               )}
             </p>
           )}
 
-          <Field label="Название" htmlFor="title">
-            <input id="title" name="title" required maxLength={120} value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
+          <Field label={tr("Название", "Атауы")} htmlFor="title">
+            <input id="title" name="title" required maxLength={120} value={title} onChange={(e) => { userEdited.current.add("title"); setTitle(e.target.value); }} className="input" />
           </Field>
 
-          <p className="text-sm text-muted">Название: {title.length}/120</p>
-          <h2 className="text-lg font-bold">Описание</h2>
-          <Field label="Описание · RU" htmlFor="description_ru">
+          <p className="text-sm text-muted">{tr("Название", "Атауы")}: {title.length}/120</p>
+          <h2 className="text-lg font-bold">{tr("Описание", "Сипаттама")}</h2>
+          <Field label={tr("Описание · RU", "Сипаттама · RU")} htmlFor="description_ru">
             <textarea
               id="description_ru"
               name="description_ru"
               rows={3}
               maxLength={1000}
               value={descRu}
-              onChange={(e) => setDescRu(e.target.value)}
+              onChange={(e) => { userEdited.current.add("descRu"); setDescRu(e.target.value); }}
               className="input h-auto resize-none py-2.5 text-body leading-snug"
             />
           </Field>
 
-          <Field label="Описание · KZ" htmlFor="description_kz">
+          <Field label={tr("Описание · KZ", "Сипаттама · KZ")} htmlFor="description_kz">
             <textarea
               id="description_kz"
               name="description_kz"
               rows={3}
               maxLength={1000}
               value={descKz}
-              onChange={(e) => setDescKz(e.target.value)}
+              onChange={(e) => { userEdited.current.add("descKz"); setDescKz(e.target.value); }}
               className="input h-auto resize-none py-2.5 text-body leading-snug"
             />
           </Field>
 
           <p className="text-sm text-muted">RU: {descRu.length}/1000 · KZ: {descKz.length}/1000</p>
-          <h2 className="text-lg font-bold">Цена</h2>
+          <h2 className="text-lg font-bold">{tr("Цена", "Баға")}</h2>
           <fieldset className="flex min-w-0 flex-col gap-1.5">
-            <legend className="mb-1.5 text-sm font-semibold">Цена</legend>
+            <legend className="mb-1.5 text-sm font-semibold">{tr("Цена", "Баға")}</legend>
             <div className="grid grid-cols-3 gap-2">
               {(
                 [
-                  ["fixed", "Точная"],
-                  ["from", "От"],
-                  ["request", "По запросу"],
+                  ["fixed", tr("Точная", "Нақты")],
+                  ["from", tr("От", "Бастап")],
+                  ["request", tr("По запросу", "Сұраныс бойынша")],
                 ] as const
               ).map(([value, label]) => (
                 <label
@@ -238,17 +389,17 @@ export function ProductForm({ product }: { product?: Product }) {
             </div>
             {priceMode !== "fixed" && (
               <p className="text-caption leading-snug text-muted">
-                Такую позицию покупатель не добавляет в корзину: кнопка «Узнать цену» открывает ваш WhatsApp с готовым сообщением.
+                {tr("Такую позицию покупатель не добавляет в корзину: кнопка «Узнать цену» открывает ваш WhatsApp с готовым сообщением.", "Мұндай позицияны сатып алушы себетке қоспайды: «Бағасын сұрау» батырмасы дайын хабарламасы бар WhatsApp-ты ашады.")}
               </p>
             )}
           </fieldset>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Категория" htmlFor="category">
-              <input id="category" name="category" maxLength={60} value={category} onChange={(e) => setCategory(e.target.value)} className="input" />
+            <Field label={tr("Категория", "Санат")} htmlFor="category">
+              <input id="category" name="category" maxLength={60} value={category} onChange={(e) => { userEdited.current.add("category"); setCategory(e.target.value); }} className="input" />
             </Field>
             {priceMode !== "request" && variants.length === 0 && (
-              <Field label={priceMode === "from" ? "Цена от, ₸" : "Цена, ₸"} htmlFor="price">
+              <Field label={priceMode === "from" ? tr("Цена от, ₸", "Бағасы (бастап), ₸") : tr("Цена, ₸", "Баға, ₸")} htmlFor="price">
                 <input type="hidden" name="price" value={price} />
                 <input
                   id="price"
@@ -256,7 +407,7 @@ export function ProductForm({ product }: { product?: Product }) {
                   onChange={(event) => setPrice(event.target.value.replace(/\D/g, ""))}
                   required
                   inputMode="numeric"
-                  placeholder="12000"
+                  placeholder={tr("Например, 12 000", "Мысалы, 12 000")}
                   className="input"
                 />
               </Field>
@@ -265,21 +416,21 @@ export function ProductForm({ product }: { product?: Product }) {
 
           {priceMode === "fixed" && (
             <fieldset className="flex min-w-0 flex-col gap-2">
-              <legend className="mb-1 text-sm font-semibold">Варианты: вес, размер</legend>
+              <legend className="mb-1 text-sm font-semibold">{tr("Варианты: вес, размер", "Нұсқалар: салмақ, өлшем")}</legend>
               {variants.length === 0 ? (
                 <button
                   type="button"
                   className="min-h-11 self-start text-sm font-semibold underline"
                   onClick={() => setVariants([{ id: newVariantId(), title: "", price: "" }])}
                 >
-                  + У товара несколько цен (например, 1 кг и 2 кг)
+                  {tr("+ У товара несколько цен (например, 1 кг и 2 кг)", "+ Тауардың бірнеше бағасы бар (мысалы, 1 кг және 2 кг)")}
                 </button>
               ) : (
                 <>
                   {variants.map((v, i) => (
                     <div key={v.id} className="flex gap-2">
                       <input
-                        aria-label={`Название варианта ${i + 1}`}
+                        aria-label={`${tr("Название варианта", "Нұсқа атауы")} ${i + 1}`}
                         placeholder="1 кг"
                         maxLength={40}
                         required
@@ -288,8 +439,8 @@ export function ProductForm({ product }: { product?: Product }) {
                         className="input min-w-0"
                       />
                       <input
-                        aria-label={`Цена варианта ${i + 1}, ₸`}
-                        placeholder="12000"
+                        aria-label={`${tr("Цена варианта", "Нұсқа бағасы")} ${i + 1}, ₸`}
+                        placeholder={tr("Цена", "Баға")}
                         inputMode="numeric"
                         required
                         value={v.price}
@@ -298,7 +449,7 @@ export function ProductForm({ product }: { product?: Product }) {
                       />
                       <button
                         type="button"
-                        aria-label={`Убрать вариант ${i + 1}`}
+                        aria-label={`${tr("Убрать вариант", "Нұсқаны жою")} ${i + 1}`}
                         className="min-h-11 min-w-11 flex-none rounded-xl border-[1.5px] border-field text-lg font-bold"
                         onClick={() => setVariants((list) => list.filter((x) => x.id !== v.id))}
                       >
@@ -313,22 +464,22 @@ export function ProductForm({ product }: { product?: Product }) {
                         className="min-h-11 text-sm font-semibold underline"
                         onClick={() => setVariants((list) => [...list, { id: newVariantId(), title: "", price: "" }])}
                       >
-                        + Ещё вариант
+                        {tr("+ Ещё вариант", "+ Тағы нұсқа")}
                       </button>
                     )}
                     <button type="button" className="min-h-11 text-sm font-semibold text-muted underline" onClick={() => setVariants([])}>
-                      Убрать все варианты
+                      {tr("Убрать все варианты", "Барлық нұсқаны жою")}
                     </button>
                   </div>
-                  <p className="text-caption leading-snug text-muted">В магазине покупатель выберет вариант, а на витрине будет «от» самой низкой цены.</p>
+                  <p className="text-caption leading-snug text-muted">{tr("В магазине покупатель выберет вариант, а на витрине будет «от» самой низкой цены.", "Дүкенде сатып алушы нұсқаны таңдайды, ал витринада ең төмен баға «бастап» болып көрсетіледі.")}</p>
                 </>
               )}
             </fieldset>
           )}
 
-          <h2 className="text-lg font-bold">Дополнительно</h2>
+          <h2 className="text-lg font-bold">{tr("Дополнительно", "Қосымша")}</h2>
           <label className="flex cursor-pointer items-center justify-between py-1 text-base font-semibold">
-            В наличии
+            {tr("В наличии", "Бар")}
             <input
               type="checkbox"
               name="in_stock"
@@ -348,24 +499,24 @@ export function ProductForm({ product }: { product?: Product }) {
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-surface p-5">
-          <button type="submit" disabled={pending || uploading || aiBusy} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
-            {pending ? "Сохраняем…" : "Сохранить товар"}
-          </button>
-          <Link href="/dashboard" className="btn-outline h-12 w-full">
-            Отмена
+        <div className="sticky bottom-0 flex gap-2 border-t border-line bg-surface px-5 py-3">
+          <Link href="/dashboard" className="btn-outline h-12 flex-none px-5">
+            {tr("Отмена", "Бас тарту")}
           </Link>
+          <button type="submit" disabled={pending || uploading || aiBusy || atLimit} className="btn-accent h-12 min-w-0 flex-1 text-lg disabled:opacity-60">
+            {pending ? tr("Сохраняем…", "Сақталуда…") : tr("Сохранить товар", "Тауарды сақтау")}
+          </button>
         </div>
       </form>
 
       {product && (
         <ActionForm
-          action={async (form) => { if (confirm("Удалить товар? Это нельзя отменить.")) await deleteProduct(form); }}
+          action={async (form) => { if (confirm(tr("Удалить товар? Это нельзя отменить.", "Тауарды жою керек пе? Мұны қайтару мүмкін емес."))) await deleteProduct(form); }}
           className="bg-surface px-5 pb-6"
         >
           <input type="hidden" name="id" value={product.id} />
           <button type="submit" className="w-full py-2 text-body font-semibold text-accent-dark underline">
-            Удалить товар
+            {tr("Удалить товар", "Тауарды жою")}
           </button>
         </ActionForm>
       )}
@@ -374,9 +525,10 @@ export function ProductForm({ product }: { product?: Product }) {
 }
 
 export function FormHeader({ title }: { title: string }) {
+  const tr = useTr();
   return (
     <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-4">
-      <Link href="/dashboard" aria-label="Назад" className="flex size-11 items-center justify-center">
+      <Link href="/dashboard" aria-label={tr("Назад", "Артқа")} className="flex size-11 items-center justify-center">
         <BackIcon size={24} />
       </Link>
       <h1 className="text-xl font-extrabold">{title}</h1>

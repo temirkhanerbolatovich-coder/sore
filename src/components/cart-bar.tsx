@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useShopLines } from "@/lib/cart";
-import { T, shopHref, type Lang } from "@/lib/lang";
+import { tFor, shopHref, type Lang } from "@/lib/lang";
 import { formatPrice, orderTotal } from "@/lib/order";
 
-export function CartBar({ slug, lang }: { slug: string; lang: Lang }) {
+export function CartBar({ slug, lang, booking = false }: { slug: string; lang: Lang; booking?: boolean }) {
   const lines = useShopLines(slug);
   if (lines.length === 0) return null;
 
@@ -16,7 +16,7 @@ export function CartBar({ slug, lang }: { slug: string; lang: Lang }) {
       className="fixed inset-x-4 bottom-4 z-10 mx-auto flex h-[60px] max-w-md items-center justify-between rounded-2xl bg-accent px-5 text-lead font-bold text-on-accent shadow-lg"
     >
       <span key={count} className="bump">
-        {T[lang].cart} · {count}
+        {tFor(lang, booking).cart} · {count}
       </span>
       <span>{formatPrice(orderTotal(lines))}</span>
     </Link>

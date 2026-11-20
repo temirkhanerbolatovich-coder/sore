@@ -3,10 +3,11 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
-import { T, parseLang, shopHref } from "@/lib/lang";
+import { parseLang, shopHref, tFor } from "@/lib/lang";
 import { contactText, inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 import { InquiryButton } from "@/components/inquiry-button";
-import { WhatsAppIcon } from "@/components/icons";
+import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
 import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
@@ -53,11 +54,11 @@ export default async function ShopPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
   const lang = parseLang(sp.lang);
-  const t = T[lang];
 
   const data = await getShopBySlug(slug);
   if (!data) notFound();
   const { shop, products } = data;
+  const t = tFor(lang, shop.booking_mode);
 
   const base = `/${shop.slug}`;
   const demo = isDemoSlug(shop.slug);
@@ -72,11 +73,17 @@ export default async function ShopPage({ params, searchParams }: Props) {
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
       <DocumentLanguage lang={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
-      <header className="flex flex-col gap-4 border-b border-line bg-surface px-5 pb-4 pt-6 md:gap-3 md:py-4">
+      <header className="flex flex-col gap-3 border-b border-line bg-surface px-5 pb-3 pt-4 md:py-4">
+        {demo && (
+          <BackLink fallback={shopHref("/", lang)} className="-ml-2 flex min-h-11 items-center gap-1 self-start px-2 font-semibold">
+            <BackIcon size={22} />
+            {t.backHome}
+          </BackLink>
+        )}
         <div className="flex items-center justify-between">
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex items-center gap-2">
-          <ThemeToggle className="size-11" />
+          <ThemeToggle className="size-11 border-field" />
           <div className="flex rounded-full border-[1.5px] border-field text-caption font-bold" role="group" aria-label="Язык">
             <Link
               href={shopHref(base, "ru", activeCat)}
@@ -102,10 +109,10 @@ export default async function ShopPage({ params, searchParams }: Props) {
             alt=""
             initial={shop.name}
             eager
-            className="size-[72px] flex-none rounded-full"
+            className="size-14 flex-none rounded-full"
           />
           <div className="min-w-0">
-            <h1 className="text-2xl font-extrabold leading-tight tracking-tight">{shop.name}</h1>
+            <h1 className="text-xl font-extrabold leading-tight tracking-tight">{shop.name}</h1>
             {shop.city && <div className="text-body text-muted">{shop.city}</div>}
           </div>
         </div>
@@ -117,7 +124,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
             href={whatsappUrl(shop.whatsapp, contactText(shop.name))}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-outline h-12 w-full md:w-auto md:self-start"
+            className="btn-outline h-11 min-h-11 w-full md:w-auto md:self-start"
           >
             <WhatsAppIcon />
             {t.writeSeller}
@@ -194,7 +201,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
                   ) : !shop.accepting_orders && p.in_stock ? (
                     <PausedActionStub lang={lang} />
                   ) : (
-                    <AddToCart slug={shop.slug} product={p} lang={lang} />
+                    <AddToCart slug={shop.slug} product={p} lang={lang} booking={shop.booking_mode} />
                   )}
                 </div>
               </li>
@@ -205,7 +212,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
 
         <p className="mt-8 text-center text-caption text-muted">
           {t.madeWith}{" "}
-          <Link href="/" className="font-bold text-accent underline">
+          <Link href="/" className="inline-flex min-h-11 items-center font-bold text-accent underline">
             SÖRE
           </Link>{" "}
           · {t.createOwn}
@@ -220,7 +227,7 @@ export default async function ShopPage({ params, searchParams }: Props) {
         </p>
       </section>
 
-      <CartBar slug={shop.slug} lang={lang} />
+      <CartBar slug={shop.slug} lang={lang} booking={shop.booking_mode} />
       <ViewTracker shopId={shop.id} />
     </main>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { mailProvider } from "@/lib/mail-provider";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useTr } from "@/components/ui-lang";
 
 /** Вход по коду работает, только если письмо содержит код ({{ .Token }}): нужен свой SMTP и шаблоны из docs/email-templates. */
 const EMAIL_CODE = process.env.NEXT_PUBLIC_EMAIL_CODE === "1";
@@ -11,12 +12,13 @@ const EMAIL_CODE = process.env.NEXT_PUBLIC_EMAIL_CODE === "1";
 const GOOGLE_LOGIN = process.env.NEXT_PUBLIC_GOOGLE_LOGIN === "1";
 
 export function LoginForm({ failed }: { failed: boolean }) {
+  const tr = useTr();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     failed ? "error" : "idle",
   );
   const [message, setMessage] = useState(
-    failed ? "Ссылка устарела или уже использована. Запросите новую." : "",
+    failed ? tr("Ссылка устарела или уже использована. Запросите новую.", "Сілтеменің мерзімі өтті немесе ол қолданылған. Жаңасын сұраңыз.") : "",
   );
 
   const router = useRouter();
@@ -32,14 +34,14 @@ export function LoginForm({ failed }: { failed: boolean }) {
     try {
       const { error } = await createClient().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
       if (error) {
-        setCodeError("Код не подошёл или устарел. Проверьте письмо или отправьте новый.");
+        setCodeError(tr("Код не подошёл или устарел. Проверьте письмо или отправьте новый.", "Код сәйкес келмеді немесе ескірді. Хатты тексеріңіз немесе жаңасын сұраңыз."));
         setVerifying(false);
         return;
       }
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setCodeError("Не удалось связаться с сервером. Повторите попытку.");
+      setCodeError(tr("Не удалось связаться с сервером. Повторите попытку.", "Серверге қосылу мүмкін болмады. Қайталап көріңіз."));
       setVerifying(false);
     }
   }
@@ -61,14 +63,14 @@ export function LoginForm({ failed }: { failed: boolean }) {
     });
     if (error) {
       setStatus("error");
-      setMessage("Не удалось отправить письмо. Проверьте адрес и попробуйте ещё раз.");
+      setMessage(tr("Не удалось отправить письмо. Проверьте адрес и попробуйте ещё раз.", "Хатты жіберу мүмкін болмады. Мекенжайды тексеріп, қайталап көріңіз."));
     } else {
       setStatus("sent");
       setCooldown(60);
     }
     } catch {
       setStatus("error");
-      setMessage("Не удалось связаться с сервером. Проверьте соединение и повторите попытку.");
+      setMessage(tr("Не удалось связаться с сервером. Проверьте соединение и повторите попытку.", "Серверге қосылу мүмкін болмады. Байланысты тексеріп, қайталап көріңіз."));
     }
   }
 
@@ -76,20 +78,20 @@ export function LoginForm({ failed }: { failed: boolean }) {
     const mail = mailProvider(email);
     return (
       <div className="card flex flex-col gap-2 p-5" role="status">
-        <div className="text-lg font-bold">Проверьте почту</div>
+        <div className="text-lg font-bold">{tr("Проверьте почту", "Поштаңызды тексеріңіз")}</div>
         <p className="leading-relaxed text-muted">
-          Мы отправили ссылку для входа на <b className="text-ink">{email}</b>.{" "}
-          {EMAIL_CODE ? "Нажмите ссылку в письме на этом устройстве или введите код." : "Откройте письмо на этом же устройстве."}
+          {tr("Мы отправили ссылку для входа на ", "Кіру сілтемесін мына мекенжайға жібердік: ")}<b className="text-ink">{email}</b>.{" "}
+          {EMAIL_CODE ? tr("Нажмите ссылку в письме на этом устройстве или введите код.", "Хаттағы сілтемені осы құрылғыда басыңыз немесе кодты енгізіңіз.") : tr("Откройте письмо на этом же устройстве.", "Хатты осы құрылғыда ашыңыз.")}
         </p>
         {mail && (
           <a href={mail.url} target="_blank" rel="noopener noreferrer" className="btn-outline h-12 w-full">
-            Открыть {mail.name}
+            {tr("Открыть", "Ашу:")} {mail.name}
           </a>
         )}
         {EMAIL_CODE && (
         <form onSubmit={onCode} className="mt-2 flex flex-col gap-2 border-t border-line pt-3">
           <label htmlFor="otp" className="text-sm font-semibold">
-            Или введите код из письма
+            {tr("Или введите код из письма", "Немесе хаттағы кодты енгізіңіз")}
           </label>
           <div className="flex gap-2">
             <input
@@ -104,7 +106,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
               className="input tracking-[0.2em]"
             />
             <button type="submit" disabled={verifying || code.length < 6} className="btn-dark flex-none disabled:opacity-60">
-              {verifying ? "…" : "Войти"}
+              {verifying ? "…" : tr("Войти", "Кіру")}
             </button>
           </div>
           {codeError && (
@@ -116,10 +118,10 @@ export function LoginForm({ failed }: { failed: boolean }) {
         )}
         <div className="mt-2 flex flex-wrap items-center gap-x-5">
           <button type="button" className="min-h-11 font-semibold text-accent underline" onClick={() => setStatus("idle")}>
-            Указать другую почту
+            {tr("Указать другую почту", "Басқа пошта көрсету")}
           </button>
           <button type="button" disabled={cooldown > 0} className="min-h-11 font-semibold text-accent underline disabled:no-underline disabled:opacity-60" onClick={() => void onSubmit()}>
-            {cooldown > 0 ? `Отправить ещё раз через ${cooldown} с` : "Отправить ещё раз"}
+            {cooldown > 0 ? tr(`Отправить ещё раз через ${cooldown} с`, `${cooldown} с кейін қайта жіберу`) : tr("Отправить ещё раз", "Қайта жіберу")}
           </button>
         </div>
       </div>
@@ -137,11 +139,11 @@ export function LoginForm({ failed }: { failed: boolean }) {
             }
             className="btn-outline h-14 text-lg"
           >
-            Войти через Google
+            {tr("Войти через Google", "Google арқылы кіру")}
           </button>
           <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
             <span className="h-px flex-1 bg-line" />
-            или по почте
+            {tr("или по почте", "немесе пошта арқылы")}
             <span className="h-px flex-1 bg-line" />
           </div>
         </>
@@ -149,7 +151,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
         <label htmlFor="email" className="text-body font-semibold">
-          Электронная почта
+          {tr("Электронная почта", "Электрондық пошта")}
         </label>
         <input
           id="email"
@@ -168,7 +170,7 @@ export function LoginForm({ failed }: { failed: boolean }) {
         </p>
       )}
       <button type="submit" disabled={status === "sending"} className="btn-accent h-14 text-lg disabled:opacity-60">
-        {status === "sending" ? "Отправляем…" : "Получить ссылку для входа"}
+        {status === "sending" ? tr("Отправляем…", "Жіберілуде…") : tr("Получить ссылку для входа", "Кіру сілтемесін алу")}
       </button>
     </form>
     </div>

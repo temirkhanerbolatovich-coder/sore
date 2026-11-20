@@ -29,8 +29,9 @@ export function slugify(input: string): string {
     .replace(/-+$/g, "");
 }
 
-export function slugError(slug: string): string | null {
-  if (!SLUG_RE.test(slug)) return "Адрес: 3–30 символов, латиница, цифры и дефис";
-  if (RESERVED_SLUGS.has(slug) || isDemoSlug(slug)) return "Этот адрес зарезервирован, выберите другой";
+export function slugError(slug: string, lang: "ru" | "kz" = "ru"): string | null {
+  const kz = lang === "kz";
+  if (!SLUG_RE.test(slug)) return kz ? "Мекенжай: 3–30 таңба, латын әріптері, цифрлар және дефис" : "Адрес: 3–30 символов, латиница, цифры и дефис";
+  if (RESERVED_SLUGS.has(slug) || isDemoSlug(slug)) return kz ? "Бұл мекенжай сақталған, басқасын таңдаңыз" : "Этот адрес зарезервирован, выберите другой";
   return null;
 }

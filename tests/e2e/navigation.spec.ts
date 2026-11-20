@@ -36,7 +36,7 @@ test("создание магазина: можно вернуться на гл
   }
 });
 
-test("форма товара: уход с несохранёнными правками спрашивает подтверждение, ИИ можно откатить", async ({ page, request }) => {
+test("форма товара: уход с несохранёнными правками спрашивает подтверждение, ИИ не стирает ручные правки и его можно откатить", async ({ page, request }) => {
   const s = stamp();
   const email = `nav-form-${s}@example.test`;
   await seedShop(admin, { email, slug: `nav-form-${s}` });
@@ -66,9 +66,12 @@ test("форма товара: уход с несохранёнными прав
       route.fulfill({ json: { card: { title: "Торт тестовый", description_ru: "Описание", description_kz: "Сипаттама", category: "Торты", tags: [] }, remaining: 5 } }),
     );
     await page.getByRole("button", { name: "Заполнить с ИИ" }).click();
-    await expect(page.getByLabel("Название", { exact: true })).toHaveValue("Торт тестовый");
+    // Название, введённое вручную, ИИ не перезаписывает; пустые поля заполняет.
+    await expect(page.getByLabel("Название", { exact: true })).toHaveValue("Мой черновик");
+    await expect(page.getByLabel("Описание · RU")).toHaveValue("Описание");
     await page.getByRole("button", { name: "Вернуть как было" }).click();
     await expect(page.getByLabel("Название", { exact: true })).toHaveValue("Мой черновик");
+    await expect(page.getByLabel("Описание · RU")).toHaveValue("");
 
     // Фото можно убрать.
     await page.getByRole("button", { name: "Убрать фото" }).click();

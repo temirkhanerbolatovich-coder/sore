@@ -11,6 +11,8 @@ export type OrderInput = {
   neededTime?: string | null;
   /** Ссылка покупателя на статус заказа (остаётся у него в переписке с продавцом). */
   statusUrl?: string;
+  /** Режим записи: услуги без количества и доставки, время «желаемое». */
+  booking?: boolean;
 };
 
 const nf = new Intl.NumberFormat("ru-RU");
@@ -40,7 +42,22 @@ export function formatPhoneInput(raw: string): string {
   return ["+7", ...parts].join(" ");
 }
 
+function buildBookingText(o: OrderInput): string {
+  const parts = [
+    `Здравствуйте! Хочу записаться${o.number ? ` (SÖRE №${o.number})` : ""}`,
+    "",
+    ...o.lines.map((l, i) => `${i + 1}. ${l.title} — ${formatPrice(l.price)}`),
+    "",
+    `Имя: ${o.name}`,
+  ];
+  if (o.neededDate) parts.push(`Желаемое время: ${formatNeeded(o.neededDate, o.neededTime)}`);
+  if (o.comment) parts.push(`Комментарий: ${o.comment}`);
+  if (o.statusUrl) parts.push("", `Статус заявки: ${o.statusUrl}`);
+  return parts.join("\n");
+}
+
 export function buildOrderText(o: OrderInput): string {
+  if (o.booking) return buildBookingText(o);
   const head = `Здравствуйте! Заказ из SÖRE${o.number ? ` (№${o.number})` : ""}`;
   const lines = o.lines.map(
     (l, i) => `${i + 1}. ${l.title} × ${l.qty} — ${formatPrice(l.price * l.qty)}`,
