@@ -29,6 +29,21 @@ export function ProductForm({ product }: { product?: Product }) {
   const [descKz, setDescKz] = useState(product?.description_kz ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
   const [touched, setTouched] = useState(false);
+  // Поля, которые пользователь заполнил или поправил сам: повторная генерация их не трогает.
+  const userEdited = useRef(
+    new Set<string>(
+      (
+        [
+          ["title", product?.title],
+          ["descRu", product?.description_ru],
+          ["descKz", product?.description_kz],
+          ["category", product?.category],
+        ] as const
+      )
+        .filter(([, v]) => v)
+        .map(([k]) => k),
+    ),
+  );
   const [variants, setVariants] = useState<{ id: string; title: string; price: string }[]>(() =>
     variantsOf(product ?? {}).map((v) => ({ id: v.id, title: v.title, price: String(v.price) })),
   );
@@ -38,6 +53,11 @@ export function ProductForm({ product }: { product?: Product }) {
   const [aiBackup, setAiBackup] = useState<{ title: string; descRu: string; descKz: string; category: string } | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   useUnsavedGuard(touched && !pending);
+  // Улучшение фото: оригинал остаётся в photoUrl, пока продавец не согласится на результат.
+  const [enhanced, setEnhanced] = useState<string | null>(null);
+  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
+  const [enhanceBusy, setEnhanceBusy] = useState(false);
+  const [enhanceMessage, setEnhanceMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [aiMessage, setAiMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function fillWithAi() {
@@ -54,11 +74,18 @@ export function ProductForm({ product }: { product?: Product }) {
       const c = json.card;
       setAiBackup({ title, descRu, descKz, category });
       setTouched(true);
-      setTitle(c.title);
-      setDescRu(c.description_ru);
-      setDescKz(c.description_kz);
-      setCategory(c.category);
+      const kept = userEdited.current;
+      const skipped: string[] = [];
+      const apply = (key: string, label: string, set: (v: string) => void, value: string) => {
+        if (kept.has(key)) skipped.push(label);
+        else set(value);
+      };
+      apply("title", "название", setTitle, c.title);
+      apply("descRu", "описание RU", setDescRu, c.description_ru);
+      apply("descKz", "описание KZ", setDescKz, c.description_kz);
+      apply("category", "категорию", setCategory, c.category);
       const notes = [
+        skipped.length ? `Ваши правки сохранены: ${skipped.join(", ")} не менялись.` : "",
         json.kzDropped ? "Казахское описание не получилось, заполните его вручную." : "",
         json.provider === "openrouter" ? "Текст составила резервная модель: особенно проверьте казахское описание." : "",
       ].filter(Boolean).join(" ");
@@ -76,6 +103,53 @@ export function ProductForm({ product }: { product?: Product }) {
     }
   }
 
+  async function enhancePhoto() {
+    setEnhanceBusy(true);
+    setEnhanceMessage(null);
+    try {
+      const res = await fetch("/api/ai/photo-enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo_url: photoUrl }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "error");
+      setEnhanced(json.image);
+      setEnhanceMessage({ ok: true, text: `Сравните фото. Осталось ИИ-запросов на сегодня: ${json.remaining}.` });
+    } catch (e) {
+      setEnhanceMessage({
+        ok: false,
+        text: e instanceof Error && e.message !== "error" ? e.message : "Не удалось связаться с ИИ. Оставьте фото как есть.",
+      });
+    } finally {
+      setEnhanceBusy(false);
+    }
+  }
+
+  async function acceptEnhanced() {
+    if (!enhanced) return;
+    setUploading(true);
+    setPhotoError("");
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("no user");
+      const blob = await (await fetch(enhanced)).blob();
+      const url = await uploadProductPhoto(supabase, user.id, new File([blob], "enhanced", { type: blob.type }));
+      setOriginalUrl(photoUrl);
+      setPhotoUrl(url);
+      setEnhanced(null);
+      setEnhanceMessage({ ok: true, text: "Фото заменено." });
+      setTouched(true);
+    } catch {
+      setPhotoError("Не удалось сохранить улучшенное фото. Попробуйте ещё раз.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -89,6 +163,9 @@ export function ProductForm({ product }: { product?: Product }) {
       if (!user) throw new Error("no user");
 
       setPhotoUrl(await uploadProductPhoto(supabase, user.id, file));
+      setEnhanced(null);
+      setOriginalUrl(null);
+      setEnhanceMessage(null);
       setTouched(true);
     } catch {
       setPhotoError("Не удалось загрузить фото. Попробуйте другое или проверьте интернет.");
@@ -133,7 +210,7 @@ export function ProductForm({ product }: { product?: Product }) {
                 {uploading ? "Загружаем…" : photoUrl ? "Заменить фото" : "Сделать или выбрать фото"}
               </label>
               {photoUrl && !uploading && (
-                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
+                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setEnhanced(null); setOriginalUrl(null); setEnhanceMessage(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
                   Убрать фото
                 </button>
               )}
@@ -146,6 +223,15 @@ export function ProductForm({ product }: { product?: Product }) {
                 <AiIcon size={18} />
                 {aiBusy ? "ИИ думает…" : "Заполнить с ИИ"}
               </button>
+              <button
+                type="button"
+                onClick={enhancePhoto}
+                disabled={!photoUrl || uploading || aiBusy || enhanceBusy || enhanced !== null}
+                className="flex h-11 items-center justify-center gap-2 rounded-xl border-[1.5px] border-ink bg-surface text-body font-bold disabled:opacity-50"
+              >
+                <AiIcon size={18} />
+                {enhanceBusy ? "Улучшаем…" : "Сделать фото продающим"}
+              </button>
               {!photoUrl && <p className="text-caption leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
             </div>
           </div>
@@ -153,6 +239,53 @@ export function ProductForm({ product }: { product?: Product }) {
             <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="text-sm font-semibold text-accent-dark">
               {photoError}
             </p>
+          )}
+          {enhanceMessage && (
+            <p
+              role={enhanceMessage.ok ? "status" : "alert"}
+              className={`rounded-xl border px-3.5 py-3 text-sm leading-snug ${
+                enhanceMessage.ok ? "border-ok-line bg-ok-bg text-ok-ink" : "border-line bg-accent-soft font-semibold text-accent-dark"
+              }`}
+            >
+              {enhanceMessage.text}
+              {enhanceMessage.ok && originalUrl && !enhanced && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    className="min-h-11 font-semibold underline"
+                    onClick={() => { setPhotoUrl(originalUrl); setOriginalUrl(null); setEnhanceMessage(null); setTouched(true); }}
+                  >
+                    Вернуть оригинал
+                  </button>
+                </>
+              )}
+            </p>
+          )}
+          {enhanced && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <figure className="flex flex-col gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photoUrl} alt="Фото до улучшения" className="aspect-square w-full rounded-2xl object-cover" />
+                  <figcaption className="text-caption text-muted">До</figcaption>
+                </figure>
+                <figure className="flex flex-col gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={enhanced} alt="Фото после улучшения" className="aspect-square w-full rounded-2xl object-cover" />
+                  <figcaption className="text-caption text-muted">После</figcaption>
+                </figure>
+              </div>
+              <p className="text-caption leading-snug text-muted">Проверьте, что товар на фото не изменился: цвет, форма, надписи.</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={acceptEnhanced} disabled={uploading} className="btn-accent h-11 disabled:opacity-60">
+                  {uploading ? "Сохраняем…" : "Взять новое"}
+                </button>
+                <button type="button" onClick={() => { setEnhanced(null); setEnhanceMessage(null); }} className="btn-outline h-11">
+                  Оставить как есть
+                </button>
+              </div>
+            </div>
           )}
           {aiMessage && (
             <p
@@ -170,6 +303,7 @@ export function ProductForm({ product }: { product?: Product }) {
                     className="min-h-11 font-semibold underline"
                     onClick={() => {
                       setTitle(aiBackup.title); setDescRu(aiBackup.descRu); setDescKz(aiBackup.descKz); setCategory(aiBackup.category);
+                      userEdited.current = new Set(([["title", aiBackup.title], ["descRu", aiBackup.descRu], ["descKz", aiBackup.descKz], ["category", aiBackup.category]] as const).filter(([, v]) => v).map(([k]) => k));
                       setAiBackup(null); setAiMessage(null);
                     }}
                   >
@@ -181,7 +315,7 @@ export function ProductForm({ product }: { product?: Product }) {
           )}
 
           <Field label="Название" htmlFor="title">
-            <input id="title" name="title" required maxLength={120} value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
+            <input id="title" name="title" required maxLength={120} value={title} onChange={(e) => { userEdited.current.add("title"); setTitle(e.target.value); }} className="input" />
           </Field>
 
           <p className="text-sm text-muted">Название: {title.length}/120</p>
@@ -193,7 +327,7 @@ export function ProductForm({ product }: { product?: Product }) {
               rows={3}
               maxLength={1000}
               value={descRu}
-              onChange={(e) => setDescRu(e.target.value)}
+              onChange={(e) => { userEdited.current.add("descRu"); setDescRu(e.target.value); }}
               className="input h-auto resize-none py-2.5 text-body leading-snug"
             />
           </Field>
@@ -205,7 +339,7 @@ export function ProductForm({ product }: { product?: Product }) {
               rows={3}
               maxLength={1000}
               value={descKz}
-              onChange={(e) => setDescKz(e.target.value)}
+              onChange={(e) => { userEdited.current.add("descKz"); setDescKz(e.target.value); }}
               className="input h-auto resize-none py-2.5 text-body leading-snug"
             />
           </Field>
@@ -245,7 +379,7 @@ export function ProductForm({ product }: { product?: Product }) {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Категория" htmlFor="category">
-              <input id="category" name="category" maxLength={60} value={category} onChange={(e) => setCategory(e.target.value)} className="input" />
+              <input id="category" name="category" maxLength={60} value={category} onChange={(e) => { userEdited.current.add("category"); setCategory(e.target.value); }} className="input" />
             </Field>
             {priceMode !== "request" && variants.length === 0 && (
               <Field label={priceMode === "from" ? "Цена от, ₸" : "Цена, ₸"} htmlFor="price">

@@ -25,6 +25,7 @@ export const serverEnvSchema = z.object({
   AI_MODEL: setting.optional(),
   GEMINI_API_KEY: setting.optional(),
   GEMINI_MODELS: setting.optional(),
+  GEMINI_IMAGE_MODEL: setting.optional(),
   OPENROUTER_API_KEY: setting.optional(),
   OPENROUTER_MODELS: setting.optional(),
   ANTHROPIC_API_KEY: setting.optional(),
