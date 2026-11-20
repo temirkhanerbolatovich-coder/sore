@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { ownedPhotoPath, MAX_PHOTO_BYTES, PHOTO_TYPES } from "@/lib/photos";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendTelegram } from "@/lib/telegram";
+import { PRO_AI_DAILY_LIMIT, isPro } from "@/lib/types";
 
 /**
  * Общее для ИИ-маршрутов (карточка по фото и фото полки): проверка фото продавца, квоты и уборка попытки.
@@ -55,7 +56,10 @@ export async function reserveAi(
   shopId: string,
   manual: string,
 ): Promise<{ ok: true; reserved: string; remaining: number; release: () => Promise<void> } | Failure> {
-  const { limit, globalLimit } = aiLimits();
+  const { limit: freeLimit, globalLimit } = aiLimits();
+  // Pro даёт повышенную личную квоту; общий потолок сервиса остаётся прежним. Срок Pro публичен, как и вся строка магазина.
+  const { data: plan } = await supabase.from("shops").select("pro_until").eq("id", shopId).maybeSingle();
+  const limit = isPro(plan?.pro_until) ? Math.max(freeLimit, PRO_AI_DAILY_LIMIT) : freeLimit;
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   // Число генераций магазина используется для подсказки об оставшейся квоте.
   const { count } = await supabase

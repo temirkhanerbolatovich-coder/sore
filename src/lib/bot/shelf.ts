@@ -7,11 +7,11 @@ import { aiConfigured } from "@/lib/ai-providers";
 import { reserveAi, shopCategories } from "@/lib/ai-request";
 import { generateShelf, ShelfEmptyError } from "@/lib/ai-shelf";
 import { asDraftPayload, draftToProduct, type DraftItem, type DraftPayload } from "@/lib/bot/drafts";
+import { productLimit } from "@/lib/types";
 import { findLinkedShop, refreshStorefront, type LinkedShop } from "@/lib/bot/shop-link";
 import { ownedPhotoPath, THUMB_QUALITY, THUMB_WIDTH, thumbPath } from "@/lib/photos";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { cropShelfPhoto } from "@/lib/shelf-crops";
-import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 
 /** Снимок полки хранится так же, как после сжатия в браузере: до 1200 px по большей стороне. */
 const SHELF_MAX_SIDE = 1200;
@@ -142,9 +142,10 @@ export async function publishDraft(
 
   const { count } = await db.from("products").select("id", { count: "exact", head: true }).eq("shop_id", shop.id);
   const have = count ?? 0;
-  const room = Math.max(0, FREE_PRODUCT_LIMIT - have);
+  const limit = productLimit(shop.pro_until);
+  const room = Math.max(0, limit - have);
   if (selected.length > room) {
-    return fail(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Сейчас ${have}, можно добавить ещё ${room}: снимите лишние отметки.`);
+    return fail(`В вашем тарифе до ${limit} товаров. Сейчас ${have}, можно добавить ещё ${room}: снимите лишние отметки.`);
   }
 
   const rows = selected.map((item, idx) => draftToProduct(item, shop.id, source, have + idx));
@@ -152,7 +153,7 @@ export async function publishDraft(
   if (error) {
     return fail(
       error.message.includes("free product limit")
-        ? `На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Снимите лишние отметки.`
+        ? `В вашем тарифе до ${limit} товаров. Снимите лишние отметки.`
         : "Не удалось сохранить товары. Попробуйте ещё раз.",
     );
   }

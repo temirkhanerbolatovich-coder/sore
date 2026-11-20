@@ -3,7 +3,8 @@ import { ProductCatalog } from "./product-catalog";
 import Link from "next/link";
 import QRCode from "qrcode";
 import { requireShop } from "@/lib/shop";
-import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
+import { productLimit, type Product } from "@/lib/types";
+import { PlanCard } from "./plan-card";
 import { CopyBio, CopyLink } from "./copy-link";
 import { SavedToast } from "./saved-toast";
 import { DashboardNav } from "@/components/dashboard-nav";
@@ -49,7 +50,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const fullUrl = `${site}/${shop.slug}`;
   const shown = fullUrl.replace(/^https?:\/\//, "");
-  const full = products.length >= FREE_PRODUCT_LIMIT;
+  const limit = productLimit(shop.pro_until);
+  const full = products.length >= limit;
   const qr = await QRCode.toString(fullUrl, { type: "svg", margin: 1, errorCorrectionLevel: "M" });
 
   return (
@@ -80,21 +82,22 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         {saved && SAVED[saved] && <SavedToast message={saved === "batch" ? `${tr(lang, "Добавлено товаров", "Қосылған тауар саны")}: ${Number(n) || ""}` : tr(lang, SAVED[saved][0], SAVED[saved][1])} />}
         {products.length === 0 && <AddProducts />}
         <HomeScreenHint />
+        <PlanCard slug={shop.slug} proUntil={shop.pro_until} lang={lang} />
         <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} profileDone={Boolean(shop.avatar_url || shop.about)} />
 
         {products.length > 0 && (
           <div className="flex items-center justify-between px-5 pt-2">
             <h2 className="text-lg font-bold">{shop.booking_mode ? tr(lang, "Услуги", "Қызметтер") : tr(lang, "Товары", "Тауарлар")} · {products.length}</h2>
             <span className="text-sm text-muted">
-              {tr(lang, "Лимит Free", "Free шегі")}: {products.length} {tr(lang, "из", "/")} {FREE_PRODUCT_LIMIT}
+              {tr(lang, "Лимит тарифа", "Тариф шегі")}: {products.length} {tr(lang, "из", "/")} {limit}
             </span>
           </div>
         )}
 
         {full && (
           <section className="card mx-5 mt-2 flex flex-col gap-1 p-4" aria-label={tr(lang, "Лимит товаров", "Тауар шегі")}>
-            <h3 className="font-bold">{tr(lang, "Достигнут лимит бесплатного тарифа", "Тегін тариф шегіне жеттіңіз")}: {FREE_PRODUCT_LIMIT} {tr(lang, "товаров", "тауар")}</h3>
-            <p className="text-sm text-muted">{tr(lang, "Чтобы добавить новый товар, скройте или удалите ненужный. Скрытые товары не видны покупателям, но остаются в кабинете. Расширенный тариф появится позже: ваши товары сохранятся.", "Жаңа тауар қосу үшін қажетсізін жасырыңыз немесе жойыңыз. Жасырын тауарларды сатып алушылар көрмейді, бірақ олар кабинетте қалады. Кеңейтілген тариф кейін шығады: тауарларыңыз сақталады.")}</p>
+            <h3 className="font-bold">{tr(lang, "Достигнут лимит бесплатного тарифа", "Тегін тариф шегіне жеттіңіз")}: {limit} {tr(lang, "товаров", "тауар")}</h3>
+            <p className="text-sm text-muted">{tr(lang, "Чтобы добавить новый товар, скройте или удалите ненужный. Скрытые товары не видны покупателям, но остаются в кабинете. Или снимите ограничение тарифом Pro: карточка с кнопкой выше.", "Жаңа тауар қосу үшін қажетсізін жасырыңыз немесе жойыңыз. Жасырын тауарларды сатып алушылар көрмейді, бірақ олар кабинетте қалады. Немесе Pro тарифімен шектеуді алыңыз: жоғарыдағы батырмалы карточка.")}</p>
           </section>
         )}
 

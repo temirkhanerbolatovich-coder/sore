@@ -17,7 +17,7 @@ import { useTr } from "@/components/ui-lang";
 
 const initial: ProductState = {};
 
-export function ProductForm({ product, enhanceAvailable = false, atLimit = false }: { product?: Product; enhanceAvailable?: boolean; atLimit?: boolean }) {
+export function ProductForm({ product, enhanceAvailable = false, atLimit = false, proUrl = null, cap = FREE_PRODUCT_LIMIT }: { product?: Product; enhanceAvailable?: boolean; atLimit?: boolean; proUrl?: string | null; cap?: number }) {
   const tr = useTr();
   const [state, onSubmit, pending] = useStatefulAction(saveProduct, initial);
   const [photoUrl, setPhotoUrl] = useState(product?.photo_url ?? "");
@@ -189,10 +189,15 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
         <div className="flex flex-1 flex-col gap-4 p-5">
           {atLimit && (
             <section role="alert" className="flex flex-col gap-2 rounded-xl border border-line bg-accent-soft p-3.5 text-sm leading-snug">
-              <h2 className="font-bold text-accent-dark">{tr("Достигнут лимит бесплатного тарифа", "Тегін тариф шегіне жеттіңіз")}: {FREE_PRODUCT_LIMIT} {tr("товаров", "тауар")}</h2>
+              <h2 className="font-bold text-accent-dark">{tr("Достигнут лимит тарифа", "Тариф шегіне жеттіңіз")}: {cap} {tr("товаров", "тауар")}</h2>
               <p>
                 {tr("Новый товар сохранить не получится. Скройте или удалите ненужный товар в списке, и место освободится. Скрытые товары покупатели не видят, но они остаются в кабинете.", "Жаңа тауарды сақтау мүмкін емес. Тізімдегі қажетсіз тауарды жасырыңыз немесе жойыңыз, сонда орын босайды. Жасырын тауарларды сатып алушылар көрмейді, бірақ олар кабинетте қалады.")}
               </p>
+              {proUrl && (
+                <a href={proUrl} target="_blank" rel="noopener noreferrer" className="btn-wa h-11 min-h-11 w-full">
+                  {tr("Снять ограничения: Pro", "Шектеуді алу: Pro")}
+                </a>
+              )}
               <Link href="/dashboard" className="btn-outline h-11 w-full">
                 {tr("К списку товаров", "Тауарлар тізіміне")}
               </Link>

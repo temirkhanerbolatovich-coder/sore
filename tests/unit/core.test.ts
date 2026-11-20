@@ -91,3 +91,30 @@ describe("buildOrderText: режим записи", () => {
     expect(text).not.toMatch(/Доставка|Итого|×/);
   });
 });
+
+describe("тариф Pro", () => {
+  it("лимит товаров зависит от срока Pro", async () => {
+    const { FREE_PRODUCT_LIMIT, PRO_PRODUCT_LIMIT, isPro, productLimit, proDaysLeft } = await import("@/lib/types");
+    const future = new Date(Date.now() + 5 * 86_400_000).toISOString();
+    const past = new Date(Date.now() - 86_400_000).toISOString();
+    expect(productLimit(null)).toBe(FREE_PRODUCT_LIMIT);
+    expect(productLimit(past)).toBe(FREE_PRODUCT_LIMIT);
+    expect(productLimit(future)).toBe(PRO_PRODUCT_LIMIT);
+    expect(isPro(future)).toBe(true);
+    expect(isPro(undefined)).toBe(false);
+    expect(proDaysLeft(future)).toBe(5);
+    expect(proDaysLeft(past)).toBe(0);
+  });
+
+  it("ссылка на покупку Pro ведёт в WhatsApp владельца с адресом магазина", async () => {
+    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP = "+7 775 220 82 31";
+    process.env.NEXT_PUBLIC_SITE_URL = "https://example.test";
+    const { proRequestUrl } = await import("@/lib/support");
+    const url = proRequestUrl("aliya-sweets") ?? "";
+    expect(url.startsWith("https://wa.me/77752208231?text=")).toBe(true);
+    expect(decodeURIComponent(url)).toContain("https://example.test/aliya-sweets");
+    expect(decodeURIComponent(proRequestUrl("aliya-sweets", true) ?? "")).toContain("продлить");
+    delete process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP;
+    expect(proRequestUrl("aliya-sweets")).toBeNull();
+  });
+});

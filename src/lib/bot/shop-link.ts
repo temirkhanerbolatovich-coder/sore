@@ -4,7 +4,7 @@ import { hashedRateKey } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { invalidateShopFromRoute } from "@/lib/shop-data";
 
-export type LinkedShop = { id: string; slug: string; name: string; owner_id: string };
+export type LinkedShop = { id: string; slug: string; name: string; owner_id: string; pro_until: string | null };
 
 export const admin = (): SupabaseClient => createAdminClient();
 
@@ -21,7 +21,7 @@ export async function findLinkedShop(db: SupabaseClient, chatId: number): Promis
     .limit(1)
     .maybeSingle();
   if (!link) return null;
-  const { data: shop } = await db.from("shops").select("id,slug,name,owner_id").eq("id", link.shop_id).maybeSingle();
+  const { data: shop } = await db.from("shops").select("id,slug,name,owner_id,pro_until").eq("id", link.shop_id).maybeSingle();
   return (shop as LinkedShop | null) ?? null;
 }
 

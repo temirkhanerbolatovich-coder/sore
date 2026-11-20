@@ -12,6 +12,7 @@ export const publicEnvSchema = z.object({
   NEXT_PUBLIC_CONTACT_EMAIL: z.email().optional(),
   NEXT_PUBLIC_GOOGLE_LOGIN: flag.optional(),
   NEXT_PUBLIC_EMAIL_CODE: flag.optional(),
+  NEXT_PUBLIC_SUPPORT_WHATSAPP: z.string().regex(/^\d{10,15}$/).optional(),
   NEXT_PUBLIC_UMAMI_ID: z.uuid().optional(),
 });
 
