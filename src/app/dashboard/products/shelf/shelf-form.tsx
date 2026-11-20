@@ -11,6 +11,7 @@ import { shelfReviewReason } from "@/lib/shelf-review";
 import { ShelfFrames } from "@/components/shelf-frames";
 import { AiIcon, CameraIcon, CheckIcon } from "@/components/icons";
 import { discardShelf, saveShelf, type ShelfState } from "./actions";
+import { useTr } from "@/components/ui-lang";
 
 type Draft = {
   key: number;
@@ -42,6 +43,7 @@ const initial: ShelfState = {};
 
 /** Одно фото полки → ИИ находит товары → продавец правит черновики → публикует выбранные. */
 export function ShelfForm({ slots }: { slots: number }) {
+  const tr = useTr();
   const [state, onSubmit, saving] = useStatefulAction(saveShelf, initial);
   const [phase, setPhase] = useState<Phase>("pick");
   const [source, setSource] = useState("");
@@ -71,7 +73,7 @@ export function ShelfForm({ slots }: { slots: number }) {
   }
 
   function selectAll(selected: boolean) {
-    setMessage(selected && drafts.length > slots ? `Выбраны первые ${slots}: больше не позволяет лимит.` : "");
+    setMessage(selected && drafts.length > slots ? tr(`Выбраны первые ${slots}: больше не позволяет лимит.`, `Алғашқы ${slots} таңдалды: шек көбірек қосуға рұқсат бермейді.`) : "");
     setDrafts((list) => list.map((draft, index) => ({ ...draft, selected: selected && index < slots })));
   }
 
@@ -107,7 +109,7 @@ export function ShelfForm({ slots }: { slots: number }) {
       setSource(uploaded);
     } catch {
       setPhase("pick");
-      setMessage("Фото не загрузилось. Проверьте интернет и попробуйте ещё раз.");
+      setMessage(tr("Фото не загрузилось. Проверьте интернет и попробуйте ещё раз.", "Фото жүктелмеді. Интернетті тексеріп, қайталап көріңіз."));
       return;
     }
 
@@ -122,7 +124,7 @@ export function ShelfForm({ slots }: { slots: number }) {
         signal: controller.signal,
       });
       const json = (await res.json().catch(() => ({}))) as { items?: ApiItem[]; error?: string };
-      if (!res.ok || !json.items?.length) throw new Error(json.error || "Не удалось найти товары на фото.");
+      if (!res.ok || !json.items?.length) throw new Error(json.error || tr("Не удалось найти товары на фото.", "Фотодан тауарларды табу мүмкін болмады."));
       let left = slots;
       setDrafts(
         json.items.map((item, i) => {
@@ -148,7 +150,7 @@ export function ShelfForm({ slots }: { slots: number }) {
       if (controller.signal.aborted) return;
       await discardShelf([uploaded]).catch(() => undefined);
       reset();
-      setMessage(error instanceof Error ? error.message : "Не удалось найти товары на фото.");
+      setMessage(error instanceof Error ? error.message : tr("Не удалось найти товары на фото.", "Фотодан тауарларды табу мүмкін болмады."));
     } finally {
       abortRef.current = null;
     }
@@ -164,7 +166,7 @@ export function ShelfForm({ slots }: { slots: number }) {
 
   function toggle(draft: Draft) {
     if (!draft.selected && selectedCount >= slots) {
-      setMessage(`На бесплатном тарифе можно добавить ещё ${slots}. Снимите галочку с другого товара.`);
+      setMessage(tr(`На бесплатном тарифе можно добавить ещё ${slots}. Снимите галочку с другого товара.`, `Тегін тарифте тағы ${slots} тауар қосуға болады. Басқа тауардан белгіні алып тастаңыз.`));
       return;
     }
     setMessage("");
@@ -197,7 +199,7 @@ export function ShelfForm({ slots }: { slots: number }) {
       <div className="flex flex-1 flex-col gap-4 p-5">
         {slots === 0 ? (
           <p className="card p-4 text-body leading-relaxed text-muted">
-            Бесплатный лимит товаров исчерпан. Удалите ненужные позиции, чтобы добавить новые.
+            {tr("Бесплатный лимит товаров исчерпан. Удалите ненужные позиции, чтобы добавить новые.", "Тегін тауар шегі таусылды. Жаңаларын қосу үшін қажетсіз позицияларды жойыңыз.")}
           </p>
         ) : phase === "pick" ? (
           <>
@@ -205,16 +207,15 @@ export function ShelfForm({ slots }: { slots: number }) {
               <div className="icon-badge">
                 <CameraIcon size={24} />
               </div>
-              <p className="text-lg font-bold">Одно фото — сразу несколько товаров</p>
+              <p className="text-lg font-bold">{tr("Одно фото — сразу несколько товаров", "Бір фото — бірден бірнеше тауар")}</p>
               <p className="text-body leading-relaxed text-muted">
-                Сфотографируйте полку или витрину целиком. ИИ найдёт до 12 товаров, вырежет фото каждого и напишет
-                названия на русском и казахском. Вы проверите и выберете, что выложить. Можно добавить ещё {slots}.
+                {tr(`Сфотографируйте полку или витрину целиком. ИИ найдёт до 12 товаров, вырежет фото каждого и напишет названия на русском и казахском. Вы проверите и выберете, что выложить. Можно добавить ещё ${slots}.`, `Сөрені немесе витринаны түгел суретке түсіріңіз. ЖИ 12 тауарға дейін тауып, әрқайсысының фотосын қиып, орыс және қазақ тілінде атауларын жазады. Сіз тексеріп, нені шығаратыныңызды таңдайсыз. Тағы ${slots} тауар қосуға болады.`)}
               </p>
             </div>
             <input ref={fileRef} id="shelf-file" type="file" accept="image/*" className="sr-only" onChange={onFile} />
             <label htmlFor="shelf-file" className="btn-accent h-14 w-full cursor-pointer text-lg">
               <CameraIcon />
-              {message ? "Снять заново" : "Сфотографировать полку"}
+              {message ? tr("Снять заново", "Қайта түсіру") : tr("Сфотографировать полку", "Сөрені суретке түсіру")}
             </label>
           </>
         ) : working ? (
@@ -222,14 +223,14 @@ export function ShelfForm({ slots }: { slots: number }) {
             <div className="icon-badge">
               <AiIcon size={24} />
             </div>
-            <ol className="flex flex-wrap gap-3 text-sm" aria-label="Этапы подготовки">
-              <li aria-current={phase === "upload" ? "step" : undefined}>1. Загрузка фото</li>
-              <li aria-current={phase === "ai" ? "step" : undefined}>2. Поиск товаров</li>
-              <li>3. Проверка и публикация</li>
+            <ol className="flex flex-wrap gap-3 text-sm" aria-label={tr("Этапы подготовки", "Дайындау кезеңдері")}>
+              <li aria-current={phase === "upload" ? "step" : undefined}>{tr("1. Загрузка фото", "1. Фотоны жүктеу")}</li>
+              <li aria-current={phase === "ai" ? "step" : undefined}>{tr("2. Поиск товаров", "2. Тауарларды іздеу")}</li>
+              <li>{tr("3. Проверка и публикация", "3. Тексеру және жариялау")}</li>
             </ol>
-            <p className="text-lg font-bold">{phase === "upload" ? "Загружаем фото…" : "Ищем товары на полке…"}</p>
-            <p className="text-body text-muted">{phase === "ai" ? "Обычно это 10–30 секунд. Не закрывайте страницу." : "Сжимаем фото прямо на телефоне."}</p>
-            {source && <ShelfFrames src={source} alt="Фото полки" frames={[]} className="mt-2 w-full opacity-70" />}
+            <p className="text-lg font-bold">{phase === "upload" ? tr("Загружаем фото…", "Фото жүктелуде…") : tr("Ищем товары на полке…", "Сөредегі тауарларды іздеудеміз…")}</p>
+            <p className="text-body text-muted">{phase === "ai" ? tr("Обычно это 10–30 секунд. Не закрывайте страницу.", "Әдетте бұл 10–30 секунд алады. Бетті жаппаңыз.") : tr("Сжимаем фото прямо на телефоне.", "Фото телефонның өзінде сығылуда.")}</p>
+            {source && <ShelfFrames src={source} alt={tr("Фото полки", "Сөре фотосы")} frames={[]} className="mt-2 w-full opacity-70" />}
           </div>
         ) : (
           <>
@@ -237,18 +238,19 @@ export function ShelfForm({ slots }: { slots: number }) {
             <ShelfFrames
               highlighted={highlighted}
               onSelect={focusCard}
+              goLabel={tr("Перейти к товару", "Тауарға өту")}
               src={source}
-              alt="Фото полки с найденными товарами"
+              alt={tr("Фото полки с найденными товарами", "Табылған тауарлары бар сөре фотосы")}
               frames={drafts.map((d, i) => ({ bbox: d.bbox, label: String(i + 1), active: d.selected }))}
             />
             </div>
             <p role="status" className="text-body leading-relaxed text-muted">
-              Нашли товаров: {drafts.length}. Выбрано {selectedCount} из {drafts.length}, места: {slots}. Проверьте названия и цены.
+              {tr(`Нашли товаров: ${drafts.length}. Выбрано ${selectedCount} из ${drafts.length}, места: ${slots}. Проверьте названия и цены.`, `Табылған тауар: ${drafts.length}. Таңдалды ${selectedCount}/${drafts.length}, орын: ${slots}. Атаулар мен бағаны тексеріңіз.`)}
             </p>
           </>
         )}
 
-        {message && phase === "pick" && <Link href="/dashboard/products/new" className="btn-outline">Добавить вручную</Link>}
+        {message && phase === "pick" && <Link href="/dashboard/products/new" className="btn-outline">{tr("Добавить вручную", "Қолмен қосу")}</Link>}
         {message && (
           <p role="status" className="text-sm font-semibold text-accent-dark">
             {message}
@@ -258,8 +260,8 @@ export function ShelfForm({ slots }: { slots: number }) {
         {phase === "drafts" && (
           <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-3">
-            <button type="button" className="btn-outline" onClick={() => selectAll(true)}>Выбрать все</button>
-            <button type="button" className="btn-outline" onClick={() => selectAll(false)}>Снять все</button>
+            <button type="button" className="btn-outline" onClick={() => selectAll(true)}>{tr("Выбрать все", "Барлығын таңдау")}</button>
+            <button type="button" className="btn-outline" onClick={() => selectAll(false)}>{tr("Снять все", "Барлығын алып тастау")}</button>
           </div>
           <ul className="flex flex-col gap-3">
             {drafts.map((d, index) => (
@@ -275,7 +277,7 @@ export function ShelfForm({ slots }: { slots: number }) {
                     type="button"
                     role="checkbox"
                     aria-checked={d.selected}
-                    aria-label={`Выложить товар ${index + 1}`}
+                    aria-label={`${tr("Выложить товар", "Тауарды шығару")} ${index + 1}`}
                     onClick={() => toggle(d)}
                     className={`flex size-11 flex-none items-center justify-center rounded-xl border-2 ${d.selected ? "border-accent bg-accent text-on-accent" : "border-field text-transparent"}`}
                   >
@@ -284,26 +286,26 @@ export function ShelfForm({ slots }: { slots: number }) {
                   <div className="relative size-20 flex-none overflow-hidden rounded-xl bg-thumb">
                     {d.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={d.photoUrl} alt={`Товар ${index + 1}`} className="size-full object-cover" />
+                      <img src={d.photoUrl} alt={`${tr("Товар", "Тауар")} ${index + 1}`} className="size-full object-cover" />
                     ) : (
-                      <span className="flex size-full items-center justify-center text-xs text-muted">без вырезки</span>
+                      <span className="flex size-full items-center justify-center text-xs text-muted">{tr("без вырезки", "қиюсыз")}</span>
                     )}
-                    <button type="button" aria-label={`Показать рамку ${index + 1}`} aria-pressed={highlighted === index} onClick={() => focusFrame(index)} className="absolute left-0 top-0 min-h-11 min-w-11 rounded-full bg-accent px-1.5 text-center text-sm font-extrabold text-on-accent">
+                    <button type="button" aria-label={`${tr("Показать рамку", "Жақтауды көрсету")} ${index + 1}`} aria-pressed={highlighted === index} onClick={() => focusFrame(index)} className="absolute left-0 top-0 min-h-11 min-w-11 rounded-full bg-accent px-1.5 text-center text-sm font-extrabold text-on-accent">
                       {index + 1}
                     </button>
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <input
-                      aria-label={`Название ${index + 1}`}
-                      placeholder="Название"
+                      aria-label={`${tr("Название", "Атауы")} ${index + 1}`}
+                      placeholder={tr("Название", "Атауы")}
                       maxLength={120}
                       value={d.title}
                       onChange={(e) => patch(d.key, { title: e.target.value })}
                       className="input h-11"
                     />
                     <input
-                      aria-label={`Категория ${index + 1}`}
-                      placeholder="Категория"
+                      aria-label={`${tr("Категория", "Санат")} ${index + 1}`}
+                      placeholder={tr("Категория", "Санат")}
                       maxLength={60}
                       value={d.category}
                       onChange={(e) => patch(d.key, { category: e.target.value })}
@@ -313,18 +315,18 @@ export function ShelfForm({ slots }: { slots: number }) {
                       const reason = shelfReviewReason(d);
                       return reason ? (
                         <span role="note" className="w-fit rounded-full bg-accent-soft px-2.5 py-1 text-xs font-bold text-accent-dark">
-                          Проверьте: {reason}
+                          {tr("Проверьте", "Тексеріңіз")}: {{ "название": tr("название", "атауы"), "категория": tr("категория", "санат"), "снимок товара": tr("снимок товара", "тауар суреті") }[reason] ?? reason}
                         </span>
                       ) : null;
                     })()}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="grid flex-1 grid-cols-2 gap-2" role="group" aria-label={`Цена ${index + 1}`}>
+                  <div className="grid flex-1 grid-cols-2 gap-2" role="group" aria-label={`${tr("Цена", "Баға")} ${index + 1}`}>
                     {(
                       [
-                        ["request", "По запросу"],
-                        ["fixed", "Точная"],
+                        ["request", tr("По запросу", "Сұраныс бойынша")],
+                        ["fixed", tr("Точная", "Нақты")],
                       ] as const
                     ).map(([value, label]) => (
                       <button
@@ -342,7 +344,7 @@ export function ShelfForm({ slots }: { slots: number }) {
                     <input
                       ref={(node) => { prices.current[index] = node; }}
                       onKeyDown={(event) => nextPrice(event, index)}
-                      aria-label={`Цена ${index + 1}, ₸`}
+                      aria-label={`${tr("Цена", "Баға")} ${index + 1}, ₸`}
                       placeholder="₸"
                       inputMode="numeric"
                       value={d.price}
@@ -352,7 +354,7 @@ export function ShelfForm({ slots }: { slots: number }) {
                   )}
                 </div>
                 {d.review && d.mode === "fixed" && (
-                  <p className="text-caption font-semibold text-accent-dark">Цену прочитали с ценника — проверьте её.</p>
+                  <p className="text-caption font-semibold text-accent-dark">{tr("Цену прочитали с ценника — проверьте её.", "Бағаны бағалық белгіден оқыдық — тексеріңіз.")}</p>
                 )}
               </li>
             ))}
@@ -371,20 +373,20 @@ export function ShelfForm({ slots }: { slots: number }) {
         {phase === "drafts" && (
           <>
             <button type="submit" disabled={saving || invalid} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
-              {saving ? "Публикуем…" : `Опубликовать выбранные (${selectedCount})`}
+              {saving ? tr("Публикуем…", "Жарияланып жатыр…") : `${tr("Опубликовать выбранные", "Таңдалғандарды жариялау")} (${selectedCount})`}
             </button>
             {invalid && selectedCount > 0 && (
-              <p className="text-center text-caption text-muted">Укажите название у каждого выбранного товара и цену там, где выбрана «Точная».</p>
+              <p className="text-center text-caption text-muted">{tr("Укажите название у каждого выбранного товара и цену там, где выбрана «Точная».", "Әрбір таңдалған тауарға атау, ал «Нақты» таңдалған жерге баға көрсетіңіз.")}</p>
             )}
           </>
         )}
         {phase === "pick" ? (
           <Link href="/dashboard" className="btn-outline h-12 w-full">
-            Назад
+            {tr("Назад", "Артқа")}
           </Link>
         ) : (
           <button type="button" onClick={() => void cancel()} disabled={saving} className="btn-outline h-12 w-full">
-            Отмена
+            {tr("Отмена", "Бас тарту")}
           </button>
         )}
       </div>

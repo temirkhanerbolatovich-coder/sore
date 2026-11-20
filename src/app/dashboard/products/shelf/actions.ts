@@ -9,6 +9,7 @@ import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { invalidateShop } from "@/lib/shop-data";
 import { MAX_SHELF_ITEMS } from "@/lib/ai-shelf";
 import { FREE_PRODUCT_LIMIT } from "@/lib/types";
+import { getUiLang, tr } from "@/lib/ui-lang";
 
 export type ShelfState = { error?: string };
 
@@ -16,11 +17,11 @@ const unit = z.number().min(0).max(1);
 const bbox = z
   .object({ x1: unit, y1: unit, x2: unit, y2: unit })
   .strict()
-  .refine((b) => b.x1 < b.x2 && b.y1 < b.y2, "Неверная рамка товара");
+  .refine((b) => b.x1 < b.x2 && b.y1 < b.y2, "bad-box");
 
 const item = z.object({
   photo_url: z.string().min(1).nullable(),
-  title: z.string().trim().min(1, "У каждого выбранного товара нужно название").max(120),
+  title: z.string().trim().min(1, "title-required").max(120),
   description_ru: z.string().trim().max(1000).default(""),
   description_kz: z.string().trim().max(1000).default(""),
   category: z.string().trim().max(60).default(""),
@@ -32,7 +33,7 @@ const item = z.object({
 
 const payload = z.object({
   source_photo_url: z.string().min(1),
-  items: z.array(item).min(1, "Выберите хотя бы один товар").max(MAX_SHELF_ITEMS),
+  items: z.array(item).min(1, "pick-one").max(MAX_SHELF_ITEMS),
   discard: z.array(z.string()).max(MAX_SHELF_ITEMS).default([]),
 });
 
@@ -47,28 +48,35 @@ async function discardFiles(urls: string[]) {
 
 /** Публикует выбранные черновики с фото полки одной вставкой. Лимит тарифа дополнительно держит триггер в БД. */
 export async function saveShelf(_prev: ShelfState, formData: FormData): Promise<ShelfState> {
+  const lang = await getUiLang();
+  const t = (ru: string, kz: string) => tr(lang, ru, kz);
   let data: z.infer<typeof payload>;
   try {
     data = payload.parse(JSON.parse(String(formData.get("payload") ?? "{}")));
   } catch (e) {
     const message = e instanceof z.ZodError ? e.issues[0]?.message : undefined;
-    return { error: message ?? "Не удалось прочитать список товаров. Обновите страницу и повторите." };
+    const known: Record<string, string> = {
+      "bad-box": t("Неверная рамка товара", "Тауар жақтауы дұрыс емес"),
+      "title-required": t("У каждого выбранного товара нужно название", "Әрбір таңдалған тауардың атауы болуы керек"),
+      "pick-one": t("Выберите хотя бы один товар", "Кемінде бір тауарды таңдаңыз"),
+    };
+    return { error: (message && known[message]) || t("Не удалось прочитать список товаров. Обновите страницу и повторите.", "Тауарлар тізімін оқу мүмкін болмады. Бетті жаңартып, қайталаңыз.") };
   }
   if (data.items.some((i) => i.price_mode === "fixed" && i.price <= 0)) {
-    return { error: "У товаров с точной ценой укажите цену в тенге или выберите «По запросу»." };
+    return { error: t("У товаров с точной ценой укажите цену в тенге или выберите «По запросу».", "Нақты бағалы тауарларға теңгемен баға көрсетіңіз немесе «Сұраныс бойынша» таңдаңыз.") };
   }
 
   const { supabase, shop, user } = await requireShop();
   const source = data.source_photo_url;
   if (!ownedPhotoPath(source, user.id) || data.items.some((i) => i.photo_url !== null && !ownedPhotoPath(i.photo_url, user.id))) {
-    return { error: "Фото не найдено в вашем хранилище. Загрузите фото полки заново." };
+    return { error: t("Фото не найдено в вашем хранилище. Загрузите фото полки заново.", "Фото сіздің қоймаңыздан табылмады. Сөре фотосын қайта жүктеңіз.") };
   }
 
   const { count } = await supabase.from("products").select("id", { count: "exact", head: true }).eq("shop_id", shop.id);
   const have = count ?? 0;
   const room = Math.max(0, FREE_PRODUCT_LIMIT - have);
   if (data.items.length > room) {
-    return { error: `На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Сейчас ${have}, можно добавить ещё ${room}: снимите лишние галочки.` };
+    return { error: t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Сейчас ${have}, можно добавить ещё ${room}: снимите лишние галочки.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін. Қазір ${have}, тағы ${room} қосуға болады: артық белгілерді алып тастаңыз.`) };
   }
 
   const rows = data.items.map((i, idx) => ({
@@ -91,8 +99,8 @@ export async function saveShelf(_prev: ShelfState, formData: FormData): Promise<
   if (error) {
     return {
       error: error.message.includes("free product limit")
-        ? `На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Обновите страницу: кто-то уже добавил товары.`
-        : "Не удалось сохранить товары. Попробуйте ещё раз.",
+        ? t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Обновите страницу: кто-то уже добавил товары.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін. Бетті жаңартыңыз: біреу тауар қосып қойған.`)
+        : t("Не удалось сохранить товары. Попробуйте ещё раз.", "Тауарларды сақтау мүмкін болмады. Қайталап көріңіз."),
     };
   }
 

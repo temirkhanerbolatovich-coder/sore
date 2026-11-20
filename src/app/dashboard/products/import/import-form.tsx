@@ -5,6 +5,7 @@ import { plural } from "@/lib/plural";
 import Link from "next/link";
 import { toCsv } from "@/lib/csv-export";
 import { CheckIcon, DownloadIcon, FileIcon, UploadIcon } from "@/components/icons";
+import { useTr, useUiLang } from "@/components/ui-lang";
 
 type Report = { row: number; message: string };
 type Result = { created: number; updated: number; skipped: number; total: number; report: Report[] };
@@ -12,8 +13,8 @@ type Result = { created: number; updated: number; skipped: number; total: number
 const SHOWN_ERRORS = 8;
 
 /** Скачивает отчёт об ошибках как CSV для Excel (BOM, «;»). Строится в браузере из ответа сервера. */
-function downloadReport(report: Report[]) {
-  const csv = toCsv([["Строка", "Причина"], ...report.map((r) => [r.row, r.message])]);
+function downloadReport(report: Report[], headers: [string, string]) {
+  const csv = toCsv([headers, ...report.map((r) => [r.row, r.message])]);
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;
@@ -25,6 +26,8 @@ function downloadReport(report: Report[]) {
 
 /** Прайс из Excel или CSV: выбрать файл → загрузить → итог и отчёт об ошибках. */
 export function ImportForm({ slots }: { slots: number }) {
+  const tr = useTr();
+  const lang = useUiLang();
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -42,12 +45,12 @@ export function ImportForm({ slots }: { slots: number }) {
       body.set("file", file);
       const res = await fetch("/api/import", { method: "POST", body });
       const json = (await res.json().catch(() => ({}))) as Partial<Result> & { error?: string };
-      if (!res.ok) throw new Error(json.error || "Не удалось загрузить файл. Попробуйте ещё раз.");
+      if (!res.ok) throw new Error(json.error || tr("Не удалось загрузить файл. Попробуйте ещё раз.", "Файлды жүктеу мүмкін болмады. Қайталап көріңіз."));
       setResult(json as Result);
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
     } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : "Нет связи. Проверьте интернет и попробуйте ещё раз.");
+      setError(err instanceof Error && err.message ? err.message : tr("Нет связи. Проверьте интернет и попробуйте ещё раз.", "Байланыс жоқ. Интернетті тексеріп, қайталап көріңіз."));
     } finally {
       setBusy(false);
     }
@@ -63,22 +66,21 @@ export function ImportForm({ slots }: { slots: number }) {
             <div className="icon-badge">
               <FileIcon size={24} />
             </div>
-            <p className="text-lg font-bold leading-tight">Загрузите прайс одним файлом</p>
+            <p className="text-lg font-bold leading-tight">{tr("Загрузите прайс одним файлом", "Прайсты бір файлмен жүктеңіз")}</p>
           </div>
           <p className="text-body leading-relaxed text-muted">
-            Нужны колонки «Название» и «Цена». По желанию: «Артикул», «Категория», «Описание», «Количество». Если артикул уже есть в
-            магазине, товар обновится, а не задвоится. Бесплатно можно держать до 15 товаров, сейчас свободно мест: {slots}.
+            {tr(`Нужны колонки «Название» и «Цена». По желанию: «Артикул», «Категория», «Описание», «Количество». Если артикул уже есть в магазине, товар обновится, а не задвоится. Бесплатно можно держать до 15 товаров, сейчас свободно мест: ${slots}.`, `«Название» және «Цена» бағандары керек. Қалауыңызша: «Артикул», «Категория», «Описание», «Количество». Артикул дүкенде бар болса, тауар қайталанбай жаңарады. Тегін 15 тауарға дейін ұстауға болады, қазір бос орын: ${slots}.`)}
           </p>
           <div className="grid grid-cols-2 gap-2">
             {/* Скачивание файла: клиентская навигация Next.js здесь не подходит. */}
             <a href="/api/import/template?format=xlsx" download className="btn-outline h-11 min-h-11 px-2 text-sm">
               <DownloadIcon size={18} />
-              Шаблон .xlsx
+              {tr("Шаблон .xlsx", ".xlsx үлгісі")}
             </a>
             {/* Скачивание файла: клиентская навигация Next.js здесь не подходит. */}
             <a href="/api/import/template?format=csv" download className="btn-outline h-11 min-h-11 px-2 text-sm">
               <DownloadIcon size={18} />
-              Шаблон .csv
+              {tr("Шаблон .csv", ".csv үлгісі")}
             </a>
           </div>
         </div>
@@ -98,17 +100,17 @@ export function ImportForm({ slots }: { slots: number }) {
         />
         <label htmlFor="import-file" className="btn-dark h-14 w-full cursor-pointer text-lg has-[:disabled]:opacity-60">
           <UploadIcon />
-          {file ? "Выбрать другой файл" : "Выбрать файл"}
+          {file ? tr("Выбрать другой файл", "Басқа файл таңдау") : tr("Выбрать файл", "Файл таңдау")}
         </label>
         {file && (
           <p className="truncate text-center text-body font-semibold" title={file.name}>
-            {file.name} · {Math.max(1, Math.round(file.size / 1024))} КБ
+            {file.name} · {Math.max(1, Math.round(file.size / 1024))} {tr("КБ", "КБ")}
           </p>
         )}
 
         {busy && (
           <p role="status" className="text-center text-sm font-semibold text-muted">
-            Загружаем и проверяем строки…
+            {tr("Загружаем и проверяем строки…", "Жолдар жүктеліп, тексерілуде…")}
           </p>
         )}
 
@@ -119,36 +121,36 @@ export function ImportForm({ slots }: { slots: number }) {
         )}
 
         {result && (
-          <section role="status" aria-label="Итог загрузки" className="card rise-in flex flex-col gap-3 p-5">
+          <section role="status" aria-label={tr("Итог загрузки", "Жүктеу қорытындысы")} className="card rise-in flex flex-col gap-3 p-5">
             <div className="flex items-center gap-2 text-lg font-extrabold">
               <CheckIcon size={22} className="text-wa" />
-              {changed > 0 ? "Прайс загружен" : "Ничего не загружено"}
+              {changed > 0 ? tr("Прайс загружен", "Прайс жүктелді") : tr("Ничего не загружено", "Ештеңе жүктелмеді")}
             </div>
             <ul className="flex flex-col gap-1 text-body">
               <li>
-                Добавлено: <b>{result.created}</b>
+                {tr("Добавлено", "Қосылды")}: <b>{result.created}</b>
               </li>
               <li>
-                Обновлено: <b>{result.updated}</b>
+                {tr("Обновлено", "Жаңартылды")}: <b>{result.updated}</b>
               </li>
               <li>
-                Пропущено: <b>{result.skipped}</b> из {result.total} {plural(result.total, "строки", "строк", "строк")}
+                {tr("Пропущено", "Өткізілді")}: <b>{result.skipped}</b> {tr("из", "/")} {result.total} {lang === "kz" ? "жол" : plural(result.total, "строки", "строк", "строк")}
               </li>
             </ul>
             {result.report.length > 0 && (
               <div className="flex flex-col gap-2 border-t border-line pt-3">
-                <p className="text-sm font-bold">Что не загрузилось</p>
+                <p className="text-sm font-bold">{tr("Что не загрузилось", "Не жүктелмеді")}</p>
                 <ul className="flex flex-col gap-1 text-caption text-muted">
                   {result.report.slice(0, SHOWN_ERRORS).map((r) => (
                     <li key={`${r.row}-${r.message}`}>
-                      Строка {r.row}: {r.message}
+                      {tr("Строка", "Жол")} {r.row}: {r.message}
                     </li>
                   ))}
                 </ul>
-                {result.report.length > SHOWN_ERRORS && <p className="text-caption text-muted">…и ещё {result.report.length - SHOWN_ERRORS}. Все строки в отчёте.</p>}
-                <button type="button" onClick={() => downloadReport(result.report)} className="btn-outline h-11 min-h-11 text-sm">
+                {result.report.length > SHOWN_ERRORS && <p className="text-caption text-muted">{tr(`…и ещё ${result.report.length - SHOWN_ERRORS}. Все строки в отчёте.`, `…және тағы ${result.report.length - SHOWN_ERRORS}. Барлық жол есепте.`)}</p>}
+                <button type="button" onClick={() => downloadReport(result.report, [tr("Строка", "Жол"), tr("Причина", "Себебі")])} className="btn-outline h-11 min-h-11 text-sm">
                   <DownloadIcon size={18} />
-                  Скачать отчёт об ошибках
+                  {tr("Скачать отчёт об ошибках", "Қателер есебін жүктеу")}
                 </button>
               </div>
             )}
@@ -159,12 +161,12 @@ export function ImportForm({ slots }: { slots: number }) {
       <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-surface p-5">
         {!result && (
           <button type="submit" disabled={!file || busy || slots === 0} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
-            {busy ? "Загружаем…" : "Загрузить прайс"}
+            {busy ? tr("Загружаем…", "Жүктелуде…") : tr("Загрузить прайс", "Прайсты жүктеу")}
           </button>
         )}
-        {slots === 0 && !result && <p className="text-center text-caption text-muted">Лимит исчерпан: обновить существующие товары по артикулу можно, добавить новые нельзя.</p>}
+        {slots === 0 && !result && <p className="text-center text-caption text-muted">{tr("Лимит исчерпан: обновить существующие товары по артикулу можно, добавить новые нельзя.", "Шек таусылды: бар тауарларды артикул бойынша жаңартуға болады, жаңаларын қосуға болмайды.")}</p>}
         <Link href="/dashboard" className={`${result ? "btn-accent" : "btn-outline"} h-12 w-full`}>
-          {result ? "К товарам" : "Назад"}
+          {result ? tr("К товарам", "Тауарларға") : tr("Назад", "Артқа")}
         </Link>
       </div>
     </form>
