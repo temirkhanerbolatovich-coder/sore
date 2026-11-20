@@ -70,3 +70,24 @@ describe("ссылка на статус заказа", () => {
     expect(buildOrderText(base)).not.toContain("Статус заказа");
   });
 });
+
+describe("buildOrderText: режим записи", () => {
+  it("пишет заявку без количества, доставки и итога, с желаемым временем", () => {
+    const text = buildOrderText({
+      booking: true,
+      number: 7,
+      lines: [{ id: "a", title: "Стрижка", price: 5000, qty: 1 }],
+      name: "Айгерим",
+      delivery: "delivery",
+      address: "Запись",
+      neededDate: "2026-11-25",
+      neededTime: "18:00",
+      statusUrl: "https://example.test/o/abc",
+    });
+    expect(text).toContain("Хочу записаться (SÖRE №7)");
+    expect(text).toContain("1. Стрижка — 5 000 ₸");
+    expect(text).toContain("Желаемое время: 25 ноября, 18:00");
+    expect(text).toContain("Статус заявки: https://example.test/o/abc");
+    expect(text).not.toMatch(/Доставка|Итого|×/);
+  });
+});

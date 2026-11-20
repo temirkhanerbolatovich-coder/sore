@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireShop } from "@/lib/shop";
+import { enhanceConfigured } from "@/lib/ai-enhance";
 import type { Product } from "@/lib/types";
 import { FormHeader, ProductForm } from "../../product-form";
 
@@ -20,7 +21,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   return (
     <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col">
       <FormHeader title="Редактирование" />
-      <ProductForm product={product} />
+      <ProductForm product={product} enhanceAvailable={enhanceConfigured()} />
     </main>
   );
 }

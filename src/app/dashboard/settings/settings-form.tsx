@@ -46,6 +46,13 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
           <span className="block text-sm text-muted">Снимите галочку на время отпуска или если нет сырья: витрина останется открытой, но заказ оформить будет нельзя. Вопросы и «Узнать цену» продолжат работать.</span>
         </span>
       </label>
+      <label className="flex min-h-11 items-start gap-3 rounded-2xl border border-line p-4">
+        <input id="booking_mode" name="booking_mode" type="checkbox" className="mt-1 size-5 flex-none accent-[var(--accent)]" defaultChecked={shop.booking_mode} />
+        <span>
+          <span className="block font-bold">Режим записи (салон, барбершоп, мастер)</span>
+          <span className="block text-sm text-muted">Вместо корзины клиент выбирает услуги и оставляет заявку на дату и время. Заявка приходит вам в WhatsApp, вы подтверждаете её сами. Адрес и доставка не спрашиваются.</span>
+        </span>
+      </label>
       <Field label="Название магазина" htmlFor="name"><input id="name" name="name" className="input" required minLength={2} maxLength={60} defaultValue={shop.name} /></Field>
       <Field label="Город" htmlFor="city"><input id="city" name="city" className="input" maxLength={60} defaultValue={shop.city || ""} /></Field>
       <Field label="WhatsApp" htmlFor="whatsapp"><input id="whatsapp" name="whatsapp" type="tel" className="input" required defaultValue={shop.whatsapp} /></Field>
@@ -68,10 +75,14 @@ export function SettingsForm({ shop, url }: { shop: Shop; url: string }) {
       <input type="hidden" name="avatar_url" value={avatar} />
       {avatar && <button type="button" className="min-h-11 self-start text-sm font-semibold text-accent-dark underline" onClick={() => { setAvatar(""); setDirtyFor(state); }}>Убрать фото магазина</button>}
       {avatar && <img src={avatar} alt="Фото магазина" width={96} height={96} className="size-24 rounded-full object-cover" /> /* eslint-disable-line @next/next/no-img-element */}
-      <Field label="Фото магазина" htmlFor="avatar"><input id="avatar" type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading || pending} onChange={(e) => void upload(e.target.files?.[0])} /></Field>
-      {(error || state.error) && <p role="alert" tabIndex={-1} ref={(node) => node?.focus()}>{error || state.error}</p>}
-      {state.success && <p role="status">{state.success}</p>}
+      <div className="flex flex-col gap-1.5">
+        <input id="avatar" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={uploading || pending} onChange={(e) => void upload(e.target.files?.[0])} />
+        <label htmlFor="avatar" className="btn-outline h-12 cursor-pointer has-[:disabled]:opacity-60">{uploading ? "Загружаем…" : avatar ? "Заменить фото магазина" : "Выбрать фото магазина"}</label>
+        <p className="text-caption text-muted">JPG, PNG или WebP. Фото покажется на витрине в круге.</p>
+      </div>
+      {(error || state.error) && <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="rounded-xl border border-line bg-accent-soft px-3.5 py-3 text-sm font-semibold text-accent-dark">{error || state.error}</p>}
       <button className="btn-accent" disabled={pending || uploading}>{uploading ? "Загружаем…" : pending ? "Сохраняем…" : "Сохранить настройки"}</button>
+      {state.success && <p role="status" className="rounded-xl border border-ok-line bg-ok-bg px-3.5 py-3 text-sm font-semibold text-ok-ink">{state.success}</p>}
     </form>
     <a href={url} className="break-all underline">{url}</a><CopyLink url={url} />
     <canvas ref={canvas} aria-label="QR-код магазина" className="mx-auto" />

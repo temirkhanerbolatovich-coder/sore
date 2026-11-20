@@ -5,7 +5,7 @@ type Step = { done: boolean; title: string; text: string; href?: string; cta?: s
 /** Подсказка «Первые шаги» для нового продавца: показывается, пока что-то из списка не сделано. */
 export function FirstSteps({ hasProducts, shared, telegram, profileDone }: { hasProducts: boolean; shared: boolean; telegram: "off" | "pending" | "done"; profileDone: boolean }) {
   const steps: Step[] = [
-    { done: hasProducts, title: "Добавьте первый товар", text: "Сфотографируйте его, ИИ составит описание.", href: "/dashboard/products/new", cta: "Добавить товар" },
+    { done: hasProducts, title: "Добавьте первый товар", text: "Выберите способ в блоке выше: ИИ составит описание по фото." },
     { done: profileDone, title: "Добавьте логотип и описание", text: "Витрина с фото и парой слов о вас вызывает больше доверия, чем пустой круг с буквой.", href: "/dashboard/settings", cta: "Открыть настройки" },
     { done: shared, title: "Поделитесь ссылкой", text: "Поставьте ссылку в био Instagram или отправьте клиентам. Скопируйте её в карточке магазина." },
     ...(telegram === "off" ? [] : [{ done: telegram === "done", title: "Подключите Telegram", text: "Заказы будут приходить вам сообщением.", href: "/dashboard/settings", cta: "Подключить" }]),

@@ -98,7 +98,9 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         )}
         {orders.map((o) => {
           const st = STATUS[o.status];
-          const text = `Здравствуйте, ${o.customer_name}! Ваш заказ №${o.number} на ${formatPrice(o.total)} из магазина «${shop.name}»`;
+          const text = shop.booking_mode
+            ? `Здравствуйте, ${o.customer_name}! Ваша запись №${o.number} в «${shop.name}»`
+            : `Здравствуйте, ${o.customer_name}! Ваш заказ №${o.number} на ${formatPrice(o.total)} из магазина «${shop.name}»`;
           return (
             <li key={o.id} className="card flex flex-col gap-2.5 p-4">
               <div className="flex items-center justify-between gap-2">
@@ -110,15 +112,15 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               <ul className="text-sm leading-snug text-muted">
                 {o.items.map((i, idx) => (
                   <li key={idx}>
-                    {i.title} × {i.qty}
+                    {shop.booking_mode ? i.title : `${i.title} × ${i.qty}`}
                   </li>
                 ))}
               </ul>
               <div className="text-sm text-muted">
-                {o.address === "Самовывоз" ? "Самовывоз" : o.address ? `Доставка: ${o.address}` : null}
+                {o.address === "Запись" ? null : o.address === "Самовывоз" ? "Самовывоз" : o.address ? `Доставка: ${o.address}` : null}
               </div>
               {o.needed_date && (
-                <div className="text-sm font-semibold text-ink">Когда нужно: {formatNeeded(o.needed_date, o.needed_time)}</div>
+                <div className="text-sm font-semibold text-ink">{shop.booking_mode ? "Желаемое время" : "Когда нужно"}: {formatNeeded(o.needed_date, o.needed_time)}</div>
               )}
               {o.comment && <div className="text-sm text-muted">Комментарий: {o.comment}</div>}
               <div className="text-sm text-muted">

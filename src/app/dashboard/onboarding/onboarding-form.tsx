@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useStatefulAction } from "@/lib/use-stateful-action";
 import { createShop, type OnboardingState } from "./actions";
 import { formatPhoneInput } from "@/lib/order";
-import { slugify } from "@/lib/slug";
+import { slugError, slugify } from "@/lib/slug";
 
 const initial: OnboardingState = {};
 
@@ -14,9 +14,21 @@ export function OnboardingForm() {
   const [slug, setSlug] = useState(state.values?.slug ?? "");
   const [phone, setPhone] = useState(state.values?.whatsapp ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [slugBlurred, setSlugBlurred] = useState(false);
 
   const shownSlug = slugTouched ? slug : slugify(name);
   const errIn = (f: string) => state.field === f;
+  // Ошибку показываем рядом с полем, а не внизу формы, где её не видно на телефоне.
+  const fieldError = (f: string) => (errIn(f) ? state.error : undefined);
+  const siteHost = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/^https?:\/\//, "").replace(/\/+$/, "") || "sore.kz";
+  const liveSlugError = slugBlurred && shownSlug ? slugError(shownSlug) : null;
+  const slugMsg = fieldError("slug") ?? liveSlugError;
+  const err = (id: string, msg?: string | null) =>
+    msg ? (
+      <p id={`${id}-error`} role="alert" className="text-sm font-semibold text-accent-dark">
+        {msg}
+      </p>
+    ) : null;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
@@ -35,8 +47,10 @@ export function OnboardingForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           aria-invalid={errIn("name")}
+          aria-describedby={fieldError("name") ? "name-error" : undefined}
           className="input"
         />
+        {err("name", fieldError("name"))}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -44,7 +58,7 @@ export function OnboardingForm() {
           Адрес ссылки
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-body text-muted">sore.kz/</span>
+          <span className="text-body text-muted">{siteHost}/</span>
           <input
             id="slug"
             name="slug"
@@ -55,11 +69,14 @@ export function OnboardingForm() {
               setSlugTouched(true);
               setSlug(e.target.value.toLowerCase());
             }}
-            aria-invalid={errIn("slug")}
+            onBlur={() => setSlugBlurred(true)}
+            aria-invalid={Boolean(slugMsg)}
+            aria-describedby={slugMsg ? "slug-error" : undefined}
             className="input"
           />
         </div>
-        <p className="text-caption text-muted">Латиница, цифры и дефис. Эту ссылку вы поставите в био Instagram.</p>
+        {err("slug", slugMsg)}
+        <p className="text-caption text-muted">Латиница, цифры и дефис, от 3 символов. Эту ссылку вы поставите в био Instagram.</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -77,8 +94,10 @@ export function OnboardingForm() {
           value={phone}
           onChange={(event) => setPhone(formatPhoneInput(event.target.value))}
           aria-invalid={errIn("whatsapp")}
+          aria-describedby={fieldError("whatsapp") ? "whatsapp-error" : undefined}
           className="input"
         />
+        {err("whatsapp", fieldError("whatsapp"))}
         <p className="text-caption text-muted">Сюда будут приходить заказы.</p>
       </div>
 
@@ -89,7 +108,7 @@ export function OnboardingForm() {
         <input id="city" autoComplete="address-level2" name="city" placeholder="Алматы" defaultValue={state.values?.city} className="input" />
       </div>
 
-      {state.error && (
+      {state.error && !state.field && (
         <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="text-sm font-semibold text-accent-dark">
           {state.error}
         </p>

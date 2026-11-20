@@ -249,6 +249,11 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Письмо со ссылкой для входа: тема и текст по-русски (те же шаблоны, что на боевом проекте, см. docs/email-templates).
+[auth.email.template.magic_link]
+subject = "Вход в SÖRE"
+content_path = "./docs/email-templates/magic_link.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

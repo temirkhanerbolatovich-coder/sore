@@ -13,11 +13,13 @@ export function ProductBuy({
   product,
   variants,
   lang,
+  booking = false,
 }: {
   slug: string;
   product: Product;
   variants: Variant[];
   lang: Lang;
+  booking?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState(variants[0]?.id ?? "");
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
@@ -51,7 +53,7 @@ export function ProductBuy({
       <div className="text-2xl font-extrabold" aria-live="polite">
         {formatPrice(selected.price)}
       </div>
-      <AddToCart slug={slug} product={product} lang={lang} variant={selected} />
+      <AddToCart slug={slug} product={product} lang={lang} variant={selected} booking={booking} />
     </div>
   );
 }

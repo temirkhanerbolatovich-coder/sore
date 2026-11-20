@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BackLink } from "@/components/back-link";
 import { notFound } from "next/navigation";
 import { getShopBySlug } from "@/lib/shop-data";
-import { T, description, parseLang, shopHref } from "@/lib/lang";
+import { description, parseLang, shopHref, tFor } from "@/lib/lang";
 import { inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 import { InquiryButton } from "@/components/inquiry-button";
 import { ProductBuy } from "@/components/product-buy";
@@ -48,12 +48,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function ProductPage({ params, searchParams }: Props) {
   const { slug, id } = await params;
   const lang = parseLang((await searchParams).lang);
-  const t = T[lang];
 
   const data = await getShopBySlug(slug);
   const product = data?.products.find((p) => p.id === id);
   if (!data || !product) notFound();
   const { shop } = data;
+  const t = tFor(lang, shop.booking_mode);
   const text = description(product, lang);
   const variants = variantsOf(product);
   const shelfBox = product.source_photo_url ? asBBox(product.bbox) : null;
@@ -109,9 +109,9 @@ export default async function ProductPage({ params, searchParams }: Props) {
             ) : !shop.accepting_orders && product.in_stock ? (
               <PausedActionStub lang={lang} className="h-12 text-base" />
             ) : variants.length > 0 && product.in_stock ? (
-              <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} />
+              <ProductBuy slug={shop.slug} product={product} variants={variants} lang={lang} booking={shop.booking_mode} />
             ) : (
-              <AddToCart slug={shop.slug} product={product} lang={lang} />
+              <AddToCart slug={shop.slug} product={product} lang={lang} booking={shop.booking_mode} />
             )}
           </div>
           {shelfBox && product.source_photo_url && (
@@ -124,7 +124,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         </div>
 
       </div>
-      <CartBar slug={shop.slug} lang={lang} />
+      <CartBar slug={shop.slug} lang={lang} booking={shop.booking_mode} />
     </main>
   );
 }

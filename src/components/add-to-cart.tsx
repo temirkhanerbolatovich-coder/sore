@@ -1,10 +1,10 @@
 "use client";
 
 import { lineKey, useCart, useShopLines } from "@/lib/cart";
-import { T, type Lang } from "@/lib/lang";
+import { tFor, type Lang } from "@/lib/lang";
 import type { Product } from "@/lib/types";
 import type { Variant } from "@/lib/variants";
-import { CartIcon } from "@/components/icons";
+import { CartIcon, CheckIcon } from "@/components/icons";
 
 /** Кнопка «В корзину» и счётчик «− 1 +». Для товара с вариантами передаётся выбранный вариант. */
 export function AddToCart({
@@ -12,18 +12,20 @@ export function AddToCart({
   product,
   lang,
   variant = null,
+  booking = false,
 }: {
   slug: string;
   product: Product;
   lang: Lang;
   variant?: Variant | null;
+  booking?: boolean;
 }) {
   const add = useCart((s) => s.add);
   const setQty = useCart((s) => s.setQty);
   const lines = useShopLines(slug);
   const key = lineKey({ id: product.id, variantId: variant?.id ?? null });
   const qty = lines.find((l) => lineKey(l) === key)?.qty ?? 0;
-  const t = T[lang];
+  const t = tFor(lang, booking);
 
   if (!product.in_stock) {
     return (
@@ -51,6 +53,21 @@ export function AddToCart({
       >
         <CartIcon size={18} />
         {t.add}
+      </button>
+    );
+  }
+
+  // Запись не бывает «×2»: услуга либо выбрана, либо нет.
+  if (booking) {
+    return (
+      <button
+        type="button"
+        onClick={() => setQty(key, 0)}
+        aria-label={`${t.unselect}: ${product.title}`}
+        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-ink text-sm font-bold text-cream"
+      >
+        <CheckIcon size={18} />
+        {t.selected} · {t.unselect}
       </button>
     );
   }

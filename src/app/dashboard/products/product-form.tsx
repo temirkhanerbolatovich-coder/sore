@@ -5,7 +5,7 @@ import { useStatefulAction } from "@/lib/use-stateful-action";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProductPhoto } from "@/lib/image";
-import type { Product } from "@/lib/types";
+import { FREE_PRODUCT_LIMIT, type Product } from "@/lib/types";
 import { deleteProduct, saveProduct, type ProductState } from "./actions";
 
 import { Field } from "@/components/field";
@@ -16,7 +16,7 @@ import { AiIcon, BackIcon } from "@/components/icons";
 
 const initial: ProductState = {};
 
-export function ProductForm({ product }: { product?: Product }) {
+export function ProductForm({ product, enhanceAvailable = false, atLimit = false }: { product?: Product; enhanceAvailable?: boolean; atLimit?: boolean }) {
   const [state, onSubmit, pending] = useStatefulAction(saveProduct, initial);
   const [photoUrl, setPhotoUrl] = useState(product?.photo_url ?? "");
   const [uploading, setUploading] = useState(false);
@@ -63,6 +63,7 @@ export function ProductForm({ product }: { product?: Product }) {
   async function fillWithAi() {
     setAiBusy(true);
     setAiMessage(null);
+    setEnhanceMessage((m) => (m && !m.ok ? null : m));
     try {
       const res = await fetch("/api/ai/product-card", {
         method: "POST",
@@ -106,6 +107,7 @@ export function ProductForm({ product }: { product?: Product }) {
   async function enhancePhoto() {
     setEnhanceBusy(true);
     setEnhanceMessage(null);
+    setAiMessage((m) => (m && !m.ok ? null : m));
     try {
       const res = await fetch("/api/ai/photo-enhance", {
         method: "POST",
@@ -183,6 +185,17 @@ export function ProductForm({ product }: { product?: Product }) {
         <input type="hidden" name="variants" value={JSON.stringify(variants)} />
 
         <div className="flex flex-1 flex-col gap-4 p-5">
+          {atLimit && (
+            <section role="alert" className="flex flex-col gap-2 rounded-xl border border-line bg-accent-soft p-3.5 text-sm leading-snug">
+              <h2 className="font-bold text-accent-dark">Достигнут лимит бесплатного тарифа: {FREE_PRODUCT_LIMIT} товаров</h2>
+              <p>
+                Новый товар сохранить не получится. Скройте или удалите ненужный товар в списке, и место освободится. Скрытые товары покупатели не видят, но они остаются в кабинете.
+              </p>
+              <Link href="/dashboard" className="btn-outline h-11 w-full">
+                К списку товаров
+              </Link>
+            </section>
+          )}
           <h2 className="text-lg font-bold">Основное</h2>
           <div className="flex items-center gap-3.5">
             <div className="flex size-28 flex-none items-center justify-center overflow-hidden rounded-2xl bg-thumb text-center text-caption text-muted">
@@ -223,6 +236,7 @@ export function ProductForm({ product }: { product?: Product }) {
                 <AiIcon size={18} />
                 {aiBusy ? "ИИ думает…" : "Заполнить с ИИ"}
               </button>
+              {enhanceAvailable && (
               <button
                 type="button"
                 onClick={enhancePhoto}
@@ -232,6 +246,7 @@ export function ProductForm({ product }: { product?: Product }) {
                 <AiIcon size={18} />
                 {enhanceBusy ? "Улучшаем…" : "Сделать фото продающим"}
               </button>
+              )}
               {!photoUrl && <p className="text-caption leading-snug text-muted">ИИ работает по фото: сначала добавьте его.</p>}
             </div>
           </div>
@@ -390,7 +405,7 @@ export function ProductForm({ product }: { product?: Product }) {
                   onChange={(event) => setPrice(event.target.value.replace(/\D/g, ""))}
                   required
                   inputMode="numeric"
-                  placeholder="12000"
+                  placeholder="Например, 12 000"
                   className="input"
                 />
               </Field>
@@ -423,7 +438,7 @@ export function ProductForm({ product }: { product?: Product }) {
                       />
                       <input
                         aria-label={`Цена варианта ${i + 1}, ₸`}
-                        placeholder="12000"
+                        placeholder="Цена"
                         inputMode="numeric"
                         required
                         value={v.price}
@@ -482,13 +497,13 @@ export function ProductForm({ product }: { product?: Product }) {
           )}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-2 border-t border-line bg-surface p-5">
-          <button type="submit" disabled={pending || uploading || aiBusy} className="btn-accent h-14 w-full text-lg disabled:opacity-60">
-            {pending ? "Сохраняем…" : "Сохранить товар"}
-          </button>
-          <Link href="/dashboard" className="btn-outline h-12 w-full">
+        <div className="sticky bottom-0 flex gap-2 border-t border-line bg-surface px-5 py-3">
+          <Link href="/dashboard" className="btn-outline h-12 flex-none px-5">
             Отмена
           </Link>
+          <button type="submit" disabled={pending || uploading || aiBusy || atLimit} className="btn-accent h-12 min-w-0 flex-1 text-lg disabled:opacity-60">
+            {pending ? "Сохраняем…" : "Сохранить товар"}
+          </button>
         </div>
       </form>
 

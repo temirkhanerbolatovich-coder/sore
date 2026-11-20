@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocumentLanguage } from "@/components/document-language";
-import { T, parseLang, shopHref } from "@/lib/lang";
+import { parseLang, shopHref, tFor } from "@/lib/lang";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
 import { createPublicClient } from "@/lib/supabase/public";
 import { WhatsAppIcon } from "@/components/icons";
@@ -32,7 +32,6 @@ export default async function OrderStatusPage({
 }) {
   const { code } = await params;
   const lang = parseLang((await searchParams).lang);
-  const t = T[lang];
   if (!CODE_RE.test(code)) notFound();
 
   const { data, error } = await createPublicClient().rpc("get_order_status", { p_code: code });
@@ -40,12 +39,15 @@ export default async function OrderStatusPage({
   const order = data?.[0];
   if (!order) notFound();
 
+  // Ник Telegram продавца публичен (как и вся витрина); RPC статуса его не отдаёт, берём из публичных данных магазина.
+  const { data: seller } = await createPublicClient().from("shops").select("telegram_username, booking_mode").eq("slug", order.shop_slug).maybeSingle();
+  const booking = Boolean(seller?.booking_mode);
+  const t = tFor(lang, booking);
+
   const status = order.order_status === "done" || order.order_status === "cancelled" ? order.order_status : "new";
   const hint = { new: t.statusHintNew, done: t.statusHintDone, cancelled: t.statusHintCancelled }[status];
   const items = order.order_items as { title: string; qty: number; price: number }[];
-  const question = `Здравствуйте! Вопрос по заказу №${order.order_number}.`;
-  // Ник Telegram продавца публичен (как и вся витрина); RPC статуса его не отдаёт, берём из публичных данных магазина.
-  const { data: seller } = await createPublicClient().from("shops").select("telegram_username").eq("slug", order.shop_slug).maybeSingle();
+  const question = `Здравствуйте! Вопрос по ${booking ? "записи" : "заказу"} №${order.order_number}.`;
 
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
@@ -78,9 +80,9 @@ export default async function OrderStatusPage({
           {items.map((item, index) => (
             <li key={index} className="flex justify-between gap-3">
               <span>
-                {item.title} × {item.qty}
+                {booking ? item.title : `${item.title} × ${item.qty}`}
               </span>
-              <span className="flex-none font-semibold">{formatPrice(item.price * item.qty)}</span>
+              <span className="flex-none font-semibold">{formatPrice(item.price * (booking ? 1 : item.qty))}</span>
             </li>
           ))}
         </ul>

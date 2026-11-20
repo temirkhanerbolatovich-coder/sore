@@ -53,7 +53,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <div className="flex items-center gap-3">
             <ProductPhoto url={shop.avatar_url} alt="" initial={shop.name} thumbnail className="size-11 flex-none rounded-full" />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-xl font-extrabold">{shop.name}</div>
+              <div className="break-words text-xl font-extrabold leading-tight">{shop.name}</div>
               {shop.city && <div className="text-sm text-muted">{shop.city}</div>}
             </div>
             <ThemeToggle />
@@ -75,12 +75,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <HomeScreenHint />
         <FirstSteps hasProducts={products.length > 0} shared={stats.views > 0} telegram={telegram} profileDone={Boolean(shop.avatar_url || shop.about)} />
 
-        <div className="flex items-center justify-between px-5 pt-2">
-          <h2 className="text-lg font-bold">Товары · {products.length}</h2>
-          <span className="text-sm text-muted">
-            Лимит Free: {products.length} из {FREE_PRODUCT_LIMIT}
-          </span>
-        </div>
+        {products.length > 0 && (
+          <div className="flex items-center justify-between px-5 pt-2">
+            <h2 className="text-lg font-bold">{shop.booking_mode ? "Услуги" : "Товары"} · {products.length}</h2>
+            <span className="text-sm text-muted">
+              Лимит Free: {products.length} из {FREE_PRODUCT_LIMIT}
+            </span>
+          </div>
+        )}
 
         {full && (
           <section className="card mx-5 mt-2 flex flex-col gap-1 p-4" aria-label="Лимит товаров">
