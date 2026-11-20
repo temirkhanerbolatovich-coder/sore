@@ -94,7 +94,7 @@ for (const storage of ["available", "blocked"]) {
       await expect(hint).toHaveCount(0);
       if (storage === "available") {
         await page.reload();
-        await expect(page.getByRole("heading", { name: /Товары/ })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Как добавить товары?" })).toBeVisible();
         await expect(hint).toHaveCount(0);
       }
     } finally { await cleanupUser(admin, email); }
