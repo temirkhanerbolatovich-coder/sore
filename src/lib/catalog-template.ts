@@ -1,6 +1,5 @@
 import ExcelJS from "exceljs";
 import { TEMPLATE_EXAMPLES, TEMPLATE_HEADER } from "@/lib/catalog-file";
-import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 
 /** Шаблон прайса .xlsx: общий для кабинета (/api/import/template) и бота (/import). */
 export async function catalogTemplateXlsx(): Promise<Buffer> {
@@ -15,6 +14,6 @@ export async function catalogTemplateXlsx(): Promise<Buffer> {
 
 /** Причины пропуска строк из import_products, понятные продавцу. */
 export const IMPORT_SKIP_REASON: Record<string, string> = {
-  limit: `лимит бесплатного тарифа: ${FREE_PRODUCT_LIMIT} товаров`,
+  limit: "лимит товаров вашего тарифа",
   invalid: "база не приняла значения строки",
 };
