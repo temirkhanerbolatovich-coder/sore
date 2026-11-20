@@ -95,7 +95,7 @@ test("импорт прайса: сверх бесплатного лимита 
     const summary = page.getByRole("status", { name: "Итог загрузки" });
     await expect(summary).toContainText("Добавлено: 15");
     await expect(summary).toContainText("Пропущено: 5 из 20");
-    await expect(summary).toContainText("лимит бесплатного тарифа");
+    await expect(summary).toContainText("лимит товаров вашего тарифа");
     const { count } = await admin.from("products").select("id", { count: "exact", head: true }).eq("shop_id", shopId);
     expect(count).toBe(15);
 
