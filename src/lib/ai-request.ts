@@ -4,6 +4,7 @@ import { ownedPhotoPath, MAX_PHOTO_BYTES, PHOTO_TYPES } from "@/lib/photos";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendTelegram } from "@/lib/telegram";
 import { PRO_AI_DAILY_LIMIT, isPro } from "@/lib/types";
+import type { Lang } from "@/lib/lang";
 
 /**
  * Общее для ИИ-маршрутов (карточка по фото и фото полки): проверка фото продавца, квоты и уборка попытки.
@@ -37,12 +38,13 @@ export async function loadOwnedPhoto(
   owner: string,
   photoUrl: unknown,
   message: string,
+  lang: Lang = "ru",
 ): Promise<{ ok: true; photo: Blob } | Failure> {
   const photoPath = ownedPhotoPath(photoUrl, owner);
   if (!photoPath) return fail(400, message);
   const { data: photo, error } = await supabase.storage.from("product-photos").download(photoPath);
   if (error || !photo || photo.size > MAX_PHOTO_BYTES || !PHOTO_TYPES.includes(photo.type)) {
-    return fail(400, "Выберите JPEG, PNG или WebP до 5 МБ из своих загруженных фото.");
+    return fail(400, lang === "kz" ? "5 МБ-қа дейінгі JPEG, PNG немесе WebP форматындағы өз жүктеген фотоңызды таңдаңыз." : "Выберите JPEG, PNG или WebP до 5 МБ из своих загруженных фото.");
   }
   return { ok: true, photo };
 }
@@ -55,6 +57,7 @@ export async function reserveAi(
   supabase: SupabaseClient,
   shopId: string,
   manual: string,
+  lang: Lang = "ru",
 ): Promise<{ ok: true; reserved: string; remaining: number; release: () => Promise<void> } | Failure> {
   const { limit: freeLimit, globalLimit } = aiLimits();
   // Pro даёт повышенную личную квоту; общий потолок сервиса остаётся прежним. Срок Pro публичен, как и вся строка магазина.
@@ -71,12 +74,13 @@ export async function reserveAi(
   const { data: reserved, error } = await admin.rpc("reserve_ai", { p_shop: shopId, p_limit: limit, p_global_limit: globalLimit });
   if (error?.message === "ai global limit exceeded") {
     await notifyGlobalLimit(globalLimit);
-    return fail(503, `ИИ сегодня перегружен, ${manual}.`);
+    return fail(503, lang === "kz" ? `ЖИ бүгін шамадан тыс жүктелген, ${manual}.` : `ИИ сегодня перегружен, ${manual}.`);
   }
   if (error?.message === "ai limit exceeded") {
-    return fail(429, `Лимит ИИ на сегодня исчерпан (${limit}). ${manual[0].toUpperCase()}${manual.slice(1)} или попробуйте завтра.`);
+    const sentence = `${manual[0].toUpperCase()}${manual.slice(1)}`;
+    return fail(429, lang === "kz" ? `Бүгінгі ЖИ шегі таусылды (${limit}). ${sentence} немесе ертең қайталап көріңіз.` : `Лимит ИИ на сегодня исчерпан (${limit}). ${sentence} или попробуйте завтра.`);
   }
-  if (error || !reserved) return fail(500, "Не удалось запустить ИИ: сервис недоступен.");
+  if (error || !reserved) return fail(500, lang === "kz" ? "ЖИ-ді іске қосу мүмкін болмады: сервис қолжетімсіз." : "Не удалось запустить ИИ: сервис недоступен.");
   return {
     ok: true,
     reserved,
