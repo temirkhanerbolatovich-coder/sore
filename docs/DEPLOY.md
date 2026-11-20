@@ -54,7 +54,7 @@ src/proxy.ts обновляет сессию и перенаправляет г�
 | --- | --- |
 | Сайт | https://sore-kz.netlify.app (Netlify, проект `sore-kz`, автодеплой с ветки `main` репозитория `temirkhanerbolatovich-coder/sore`). Старый `dukenai.vercel.app` перенаправляет (307) |
 | База, Auth, Storage | Supabase, проект `dukenai`, ref `pcgvyxwueshxksoffodf`, регион eu-central-1 (Франкфурт), бесплатный тариф |
-| Миграции | 0001–0025 применены командой `npx supabase db push --remote` (миграцию применяют на прод ДО релиза в `main`) |
+| Миграции | 0001–0027 применены командой `npx supabase db push --remote` (миграцию применяют на прод ДО релиза в `main`) |
 | Адреса возврата для входа | заданы блоком `[remotes.production]` в `supabase/config.toml`, применяются `npx supabase config push --remote pcgvyxwueshxksoffodf`; остальные значения закреплены как в облаке, чтобы push не ослаблял защиту |
 | Переменные Netlify | см. таблицу выше и [NETLIFY.md](NETLIFY.md); секреты помечены как «секрет» |
 | Пилот | `/povar-astana`, он же `/demo`; создан скриптом `npm run seed:pilot` с флагом `--allow-remote` |
