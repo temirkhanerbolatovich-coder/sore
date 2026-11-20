@@ -7,7 +7,7 @@ import { requireShop } from "@/lib/shop";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { ownedPhotoPath } from "@/lib/photos";
 import { invalidateShop } from "@/lib/shop-data";
-import { FREE_PRODUCT_LIMIT } from "@/lib/types";
+import { productLimit } from "@/lib/types";
 import { newVariantId } from "@/lib/variants";
 import { getUiLang, tr } from "@/lib/ui-lang";
 
@@ -105,8 +105,9 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
       .from("products")
       .select("id", { count: "exact", head: true })
       .eq("shop_id", shop.id);
-    if ((count ?? 0) >= FREE_PRODUCT_LIMIT) {
-      return { error: t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін.`) };
+    const limit = productLimit(shop.pro_until);
+    if ((count ?? 0) >= limit) {
+      return { error: t(`В вашем тарифе до ${limit} товаров.`, `Сіздің тарифте ${limit} тауарға дейін.`) };
     }
     const { error } = await supabase.from("products").insert({ ...row, shop_id: shop.id, sort: count ?? 0 });
     if (error) return { error: t("Не удалось сохранить товар. Попробуйте ещё раз.", "Тауарды сақтау мүмкін болмады. Қайталап көріңіз.") };

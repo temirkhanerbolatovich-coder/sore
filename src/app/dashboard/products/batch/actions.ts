@@ -6,7 +6,7 @@ import { z } from "zod";
 import { requireShop } from "@/lib/shop";
 import { ownedPhotoPath } from "@/lib/photos";
 import { invalidateShop } from "@/lib/shop-data";
-import { FREE_PRODUCT_LIMIT } from "@/lib/types";
+import { PRO_PRODUCT_LIMIT, productLimit } from "@/lib/types";
 import { getUiLang, tr } from "@/lib/ui-lang";
 
 export type BatchState = { error?: string };
@@ -27,7 +27,7 @@ export async function saveBatch(_prev: BatchState, formData: FormData): Promise<
   const t = (ru: string, kz: string) => tr(lang, ru, kz);
   let items: z.infer<typeof item>[];
   try {
-    items = z.array(item).min(1, "no-items").max(FREE_PRODUCT_LIMIT).parse(JSON.parse(String(formData.get("payload") ?? "[]")));
+    items = z.array(item).min(1, "no-items").max(PRO_PRODUCT_LIMIT).parse(JSON.parse(String(formData.get("payload") ?? "[]")));
   } catch (e) {
     const message = e instanceof z.ZodError ? e.issues[0]?.message : undefined;
     const known: Record<string, string> = {
@@ -45,8 +45,9 @@ export async function saveBatch(_prev: BatchState, formData: FormData): Promise<
 
   const { count } = await supabase.from("products").select("id", { count: "exact", head: true }).eq("shop_id", shop.id);
   const have = count ?? 0;
-  if (have + items.length > FREE_PRODUCT_LIMIT) {
-    return { error: t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Сейчас ${have}, можно добавить ещё ${Math.max(0, FREE_PRODUCT_LIMIT - have)}.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін. Қазір ${have}, тағы ${Math.max(0, FREE_PRODUCT_LIMIT - have)} қосуға болады.`) };
+  const limit = productLimit(shop.pro_until);
+  if (have + items.length > limit) {
+    return { error: t(`В вашем тарифе до ${limit} товаров. Сейчас ${have}, можно добавить ещё ${Math.max(0, limit - have)}.`, `Сіздің тарифте ${limit} тауарға дейін. Қазір ${have}, тағы ${Math.max(0, limit - have)} қосуға болады.`) };
   }
 
   const rows = items.map((i, idx) => ({

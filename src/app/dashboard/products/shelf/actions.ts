@@ -8,7 +8,7 @@ import { ownedPhotoPath } from "@/lib/photos";
 import { removeUnusedPhoto } from "@/lib/photo-cleanup";
 import { invalidateShop } from "@/lib/shop-data";
 import { MAX_SHELF_ITEMS } from "@/lib/ai-shelf";
-import { FREE_PRODUCT_LIMIT } from "@/lib/types";
+import { productLimit } from "@/lib/types";
 import { getUiLang, tr } from "@/lib/ui-lang";
 
 export type ShelfState = { error?: string };
@@ -74,9 +74,10 @@ export async function saveShelf(_prev: ShelfState, formData: FormData): Promise<
 
   const { count } = await supabase.from("products").select("id", { count: "exact", head: true }).eq("shop_id", shop.id);
   const have = count ?? 0;
-  const room = Math.max(0, FREE_PRODUCT_LIMIT - have);
+  const limit = productLimit(shop.pro_until);
+  const room = Math.max(0, limit - have);
   if (data.items.length > room) {
-    return { error: t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Сейчас ${have}, можно добавить ещё ${room}: снимите лишние галочки.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін. Қазір ${have}, тағы ${room} қосуға болады: артық белгілерді алып тастаңыз.`) };
+    return { error: t(`В вашем тарифе до ${limit} товаров. Сейчас ${have}, можно добавить ещё ${room}: снимите лишние галочки.`, `Сіздің тарифте ${limit} тауарға дейін. Қазір ${have}, тағы ${room} қосуға болады: артық белгілерді алып тастаңыз.`) };
   }
 
   const rows = data.items.map((i, idx) => ({
@@ -99,7 +100,7 @@ export async function saveShelf(_prev: ShelfState, formData: FormData): Promise<
   if (error) {
     return {
       error: error.message.includes("free product limit")
-        ? t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров. Обновите страницу: кто-то уже добавил товары.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін. Бетті жаңартыңыз: біреу тауар қосып қойған.`)
+        ? t(`В вашем тарифе до ${limit} товаров. Обновите страницу: кто-то уже добавил товары.`, `Сіздің тарифте ${limit} тауарға дейін. Бетті жаңартыңыз: біреу тауар қосып қойған.`)
         : t("Не удалось сохранить товары. Попробуйте ещё раз.", "Тауарларды сақтау мүмкін болмады. Қайталап көріңіз."),
     };
   }

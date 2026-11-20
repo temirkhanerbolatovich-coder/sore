@@ -16,6 +16,7 @@
     "seed:pilot": "tsx scripts/seed-pilot.ts",
     "seed:demo": "tsx scripts/seed-demo-shops.ts",
     "funnel": "tsx scripts/funnel.ts",
+    "plan": "tsx scripts/plan.ts",
     "telegram:setup": "tsx scripts/telegram-setup.ts",
     "bot": "tsx scripts/telegram-polling.ts",
     "brand:export": "tsx scripts/brand-export.ts"

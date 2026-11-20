@@ -147,8 +147,8 @@ export default async function Home({ searchParams }: Props) {
 
       <section className="flex flex-col gap-6" aria-labelledby="plans">
         <h2 id="plans" className="text-3xl font-extrabold tracking-tight">{t.plansTitle}</h2>
-        <div className="grid gap-5">
-          <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="card flex flex-col gap-4 p-6">
             <div>
               <div className="text-xl font-bold">Free</div>
               <div className="text-3xl font-extrabold">0 ₸</div>
@@ -161,6 +161,18 @@ export default async function Home({ searchParams }: Props) {
             <Link href="/login" className="btn-accent mt-auto">
               {t.create}
             </Link>
+          </div>
+          <div className="card flex flex-col gap-4 border-accent p-6">
+            <div>
+              <div className="text-xl font-bold">Pro</div>
+              <div className="text-3xl font-extrabold">{t.proPrice}</div>
+            </div>
+            <ul className="flex flex-col gap-2 text-muted">
+              {t.proPlan.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p className="mt-auto text-sm text-muted">{t.proNote}</p>
           </div>
         </div>
       </section>
