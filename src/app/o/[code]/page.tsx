@@ -5,7 +5,8 @@ import { DocumentLanguage } from "@/components/document-language";
 import { parseLang, shopHref, tFor } from "@/lib/lang";
 import { formatNeeded, formatPrice, whatsappUrl } from "@/lib/order";
 import { createPublicClient } from "@/lib/supabase/public";
-import { WhatsAppIcon } from "@/components/icons";
+import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
 import { TelegramContact } from "@/components/telegram-contact";
 
 // Ссылка с секретным кодом: страницу не индексируем и не кэшируем.
@@ -52,6 +53,10 @@ export default async function OrderStatusPage({
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-10 pt-8">
       <DocumentLanguage lang={lang} />
+      <BackLink fallback={shopHref(`/${order.shop_slug}`, lang)} className="-ml-2 flex min-h-11 items-center gap-1 self-start px-2 font-semibold">
+        <BackIcon size={22} />
+        {t.back}
+      </BackLink>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm text-muted">{order.shop_name}</p>

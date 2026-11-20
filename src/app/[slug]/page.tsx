@@ -6,7 +6,8 @@ import { getShopBySlug } from "@/lib/shop-data";
 import { parseLang, shopHref, tFor } from "@/lib/lang";
 import { contactText, inquiryText, isInquiry, priceLabel, whatsappUrl } from "@/lib/order";
 import { InquiryButton } from "@/components/inquiry-button";
-import { WhatsAppIcon } from "@/components/icons";
+import { BackIcon, WhatsAppIcon } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
 import { variantsOf } from "@/lib/variants";
 import { AddToCart } from "@/components/add-to-cart";
 import { CartBar } from "@/components/cart-bar";
@@ -73,6 +74,12 @@ export default async function ShopPage({ params, searchParams }: Props) {
       <DocumentLanguage lang={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <header className="flex flex-col gap-3 border-b border-line bg-surface px-5 pb-3 pt-4 md:py-4">
+        {demo && (
+          <BackLink fallback={shopHref("/", lang)} className="-ml-2 flex min-h-11 items-center gap-1 self-start px-2 font-semibold">
+            <BackIcon size={22} />
+            {t.backHome}
+          </BackLink>
+        )}
         <div className="flex items-center justify-between">
           <ShareButton title={shop.name} label={t.share} copiedLabel={t.shared} className="-ml-2" />
           <div className="flex items-center gap-2">

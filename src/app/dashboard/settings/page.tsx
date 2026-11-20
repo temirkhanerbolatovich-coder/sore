@@ -1,5 +1,7 @@
 import { requireShop } from "@/lib/shop";
 import { telegramConfigured } from "@/lib/telegram";
+import { BackLink } from "@/components/back-link";
+import { BackIcon } from "@/components/icons";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { SettingsForm } from "./settings-form";
 import { TelegramCard } from "./telegram-card";
@@ -18,7 +20,12 @@ export default async function SettingsPage() {
     <main className="mx-auto flex w-full max-w-md flex-col gap-5 p-5 pb-24 md:max-w-2xl lg:max-w-6xl lg:pb-10">
       <DashboardNav active="settings" desktop />
       <div id="main-content" tabIndex={-1} className="flex flex-col gap-5 lg:mx-auto lg:w-full lg:max-w-2xl">
-        <h1 className="text-2xl font-extrabold">Магазин</h1>
+        <div className="flex items-center gap-1">
+          <BackLink fallback="/dashboard" ariaLabel="Назад к товарам" className="-ml-2 flex size-11 flex-none items-center justify-center lg:hidden">
+            <BackIcon size={24} />
+          </BackLink>
+          <h1 className="text-2xl font-extrabold">Магазин</h1>
+        </div>
         {telegramConfigured() && <TelegramCard linked={Boolean(tg?.linked_at)} />}
         <SettingsForm shop={shop} url={url} />
         <DangerZone slug={shop.slug} />

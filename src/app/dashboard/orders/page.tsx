@@ -6,7 +6,8 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { Field } from "@/components/field";
 import { applyOrderFilters, filterQuery, parseOrderFilters } from "@/lib/orders-query";
 import { StatusButton } from "./status-button";
-import { CartIcon } from "@/components/icons";
+import { BackIcon, CartIcon } from "@/components/icons";
+import { BackLink } from "@/components/back-link";
 
 export const metadata = { title: "Заказы — SÖRE" };
 
@@ -63,7 +64,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-24 lg:max-w-6xl lg:pb-10">
       <DashboardNav active="orders" desktop />
       <div id="main-content" tabIndex={-1} className="flex flex-col gap-1 px-5 pb-3 pt-6">
-        <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
+        <div className="flex items-center gap-1">
+          <BackLink fallback="/dashboard" ariaLabel="Назад к товарам" className="-ml-2 flex size-11 flex-none items-center justify-center lg:hidden">
+            <BackIcon size={24} />
+          </BackLink>
+          <h1 className="text-2xl font-extrabold tracking-tight">Заказы</h1>
+        </div>
         <p className="text-body text-muted">
           Заказы сохраняются, даже если клиент не нажал «Отправить» в WhatsApp.
         </p>
