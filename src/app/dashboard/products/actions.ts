@@ -9,13 +9,14 @@ import { ownedPhotoPath } from "@/lib/photos";
 import { invalidateShop } from "@/lib/shop-data";
 import { FREE_PRODUCT_LIMIT } from "@/lib/types";
 import { newVariantId } from "@/lib/variants";
+import { getUiLang, tr } from "@/lib/ui-lang";
 
 export type ProductState = { error?: string };
 
 const text = (max: number) => z.string().trim().max(max).optional();
 
 const schema = z.object({
-  title: z.string().trim().min(1, "Введите название").max(120, "Название слишком длинное"),
+  title: z.string().trim().min(1, "title-empty").max(120, "title-long"),
   description_ru: text(1000),
   description_kz: text(1000),
   category: text(60),
@@ -25,6 +26,8 @@ const schema = z.object({
 
 
 export async function saveProduct(_prev: ProductState, formData: FormData): Promise<ProductState> {
+  const lang = await getUiLang();
+  const t = (ru: string, kz: string) => tr(lang, ru, kz);
   const parsed = schema.safeParse({
     title: formData.get("title") ?? "",
     description_ru: formData.get("description_ru") ?? "",
@@ -33,7 +36,10 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
     price: formData.get("price") ?? "",
     photo_url: formData.get("photo_url") ?? "",
   });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (!parsed.success) {
+    const code = parsed.error.issues[0].message;
+    return { error: code === "title-empty" ? t("Введите название", "Атауын енгізіңіз") : code === "title-long" ? t("Название слишком длинное", "Атауы тым ұзын") : t("Проверьте поля формы.", "Форма өрістерін тексеріңіз.") };
+  }
 
   const d = parsed.data;
   const rawMode = String(formData.get("price_mode") ?? "fixed");
@@ -58,16 +64,16 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
       price: v.price,
     }));
   } catch {
-    return { error: "Проверьте варианты: у каждого нужны название и цена в тенге." };
+    return { error: t("Проверьте варианты: у каждого нужны название и цена в тенге.", "Нұсқаларды тексеріңіз: әрқайсысының атауы мен теңгедегі бағасы болуы керек.") };
   }
-  if (variants.length > 0 && priceMode !== "fixed") return { error: "Варианты возможны только при точной цене." };
-  if (new Set(variants.map((v) => v.id)).size !== variants.length) return { error: "Проверьте варианты: названия не должны повторяться." };
+  if (variants.length > 0 && priceMode !== "fixed") return { error: t("Варианты возможны только при точной цене.", "Нұсқалар тек нақты баға кезінде болады.") };
+  if (new Set(variants.map((v) => v.id)).size !== variants.length) return { error: t("Проверьте варианты: названия не должны повторяться.", "Нұсқаларды тексеріңіз: атаулар қайталанбауы керек.") };
 
   let price = variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : 0;
   if (priceMode !== "request" && variants.length === 0) {
     price = /^\d+$/.test(d.price) ? Number(d.price) : NaN;
     if (!Number.isInteger(price) || price <= 0 || price > 100_000_000) {
-      return { error: "Цена: целое число в тенге, например 12000" };
+      return { error: t("Цена: целое число в тенге, например 12000", "Баға: теңгемен бүтін сан, мысалы 12000") };
     }
   }
   const { supabase, shop, user } = await requireShop();
@@ -88,29 +94,29 @@ export async function saveProduct(_prev: ProductState, formData: FormData): Prom
   let replacedPhoto: string | null = null;
   if (id) {
     const { data: previous } = await supabase.from("products").select("photo_url").eq("id", id).eq("shop_id", shop.id).single();
-    if (!previous) return { error: "Товар не найден." };
-    if (d.photo_url && d.photo_url !== previous.photo_url && !ownedPhotoPath(d.photo_url, user.id)) return { error: "Загрузите своё фото товара." };
+    if (!previous) return { error: t("Товар не найден.", "Тауар табылмады.") };
+    if (d.photo_url && d.photo_url !== previous.photo_url && !ownedPhotoPath(d.photo_url, user.id)) return { error: t("Загрузите своё фото товара.", "Тауардың өз фотосын жүктеңіз.") };
     const { error } = await supabase.from("products").update(row).eq("id", id).eq("shop_id", shop.id);
-    if (error) return { error: "Не удалось сохранить товар. Попробуйте ещё раз." };
+    if (error) return { error: t("Не удалось сохранить товар. Попробуйте ещё раз.", "Тауарды сақтау мүмкін болмады. Қайталап көріңіз.") };
     if (previous.photo_url !== row.photo_url) replacedPhoto = previous.photo_url;
   } else {
-    if (d.photo_url && !ownedPhotoPath(d.photo_url, user.id)) return { error: "Загрузите своё фото товара." };
+    if (d.photo_url && !ownedPhotoPath(d.photo_url, user.id)) return { error: t("Загрузите своё фото товара.", "Тауардың өз фотосын жүктеңіз.") };
     const { count } = await supabase
       .from("products")
       .select("id", { count: "exact", head: true })
       .eq("shop_id", shop.id);
     if ((count ?? 0) >= FREE_PRODUCT_LIMIT) {
-      return { error: `На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров.` };
+      return { error: t(`На бесплатном тарифе до ${FREE_PRODUCT_LIMIT} товаров.`, `Тегін тарифте ${FREE_PRODUCT_LIMIT} тауарға дейін.`) };
     }
     const { error } = await supabase.from("products").insert({ ...row, shop_id: shop.id, sort: count ?? 0 });
-    if (error) return { error: "Не удалось сохранить товар. Попробуйте ещё раз." };
+    if (error) return { error: t("Не удалось сохранить товар. Попробуйте ещё раз.", "Тауарды сақтау мүмкін болмады. Қайталап көріңіз.") };
   }
 
   invalidateShop(shop.slug);
   revalidatePath("/dashboard");
   if (replacedPhoto) {
     try { await removeUnusedPhoto(supabase, replacedPhoto, user.id); }
-    catch { return { error: "Товар сохранён, но старое фото не удалось удалить из Storage." }; }
+    catch { return { error: t("Товар сохранён, но старое фото не удалось удалить из Storage.", "Тауар сақталды, бірақ ескі фотоны Storage-тен жою мүмкін болмады.") }; }
   }
   redirect(id ? "/dashboard?saved=updated" : "/dashboard?saved=added");
 }

@@ -6,7 +6,9 @@ import { DocumentLanguage } from "@/components/document-language";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AiIcon, CameraIcon, WhatsAppIcon } from "@/components/icons";
 import { LANDING } from "@/lib/landing-text";
-import { parseLang, shopHref } from "@/lib/lang";
+import { shopHref } from "@/lib/lang";
+import { RememberLang } from "@/components/ui-lang";
+import { getUiLang } from "@/lib/ui-lang";
 import { publicAlternates } from "@/lib/shop-seo";
 
 const STEP_ICONS = [CameraIcon, AiIcon, WhatsAppIcon];
@@ -14,7 +16,7 @@ const STEP_ICONS = [CameraIcon, AiIcon, WhatsAppIcon];
 type Props = { searchParams: Promise<{ lang?: string }> };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const lang = parseLang((await searchParams).lang);
+  const lang = await getUiLang((await searchParams).lang);
   const t = LANDING[lang];
   return {
     title: t.title,
@@ -25,13 +27,15 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function Home({ searchParams }: Props) {
-  const lang = parseLang((await searchParams).lang);
+  const { lang: langParam } = await searchParams;
+  const lang = await getUiLang(langParam);
   const t = LANDING[lang];
   const demoHref = shopHref("/demo", lang);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-5 pb-14 pt-6 sm:px-8">
       <DocumentLanguage lang={lang} />
+      {(langParam === "kz" || langParam === "ru") && <RememberLang lang={lang} />}
       <header className="flex items-center justify-between gap-4">
         <div className="text-2xl font-extrabold tracking-tight">
           S<span className="text-accent">Ö</span>RE

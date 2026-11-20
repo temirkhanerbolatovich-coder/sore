@@ -8,6 +8,7 @@ import { ownedPhotoPath } from "@/lib/photos";
 import { invalidateShop } from "@/lib/shop-data";
 import { normalizeInstagram } from "@/lib/shop-info";
 import { normalizeTelegramUsername } from "@/lib/telegram-username";
+import { getUiLang, tr } from "@/lib/ui-lang";
 
 export type SettingsState = { error?: string; success?: string };
 const schema = z.object({
@@ -26,15 +27,16 @@ const schema = z.object({
   telegram: z.string().trim().max(120).default(""),
 });
 export async function saveSettings(_prev: SettingsState, form: FormData): Promise<SettingsState> {
+  const t = async (ru: string, kz: string) => tr(await getUiLang(), ru, kz);
   const parsed = schema.safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { error: "Проверьте название (2–60 символов), город, номер WhatsApp и длину текстов «О магазине»." };
+  if (!parsed.success) return { error: await t("Проверьте название (2–60 символов), город, номер WhatsApp и длину текстов «О магазине».", "Атауын (2–60 таңба), қаланы, WhatsApp нөмірін және «Дүкен туралы» мәтіндерінің ұзындығын тексеріңіз.") };
   const { supabase, user, shop } = await requireShop();
   const d = parsed.data;
   const instagram = normalizeInstagram(d.instagram);
-  if (d.instagram && !instagram) return { error: "Instagram: укажите ник (латиница, цифры, точка, подчёркивание) или ссылку на профиль." };
+  if (d.instagram && !instagram) return { error: await t("Instagram: укажите ник (латиница, цифры, точка, подчёркивание) или ссылку на профиль.", "Instagram: ник (латын әріптері, цифрлар, нүкте, астын сызу) немесе профиль сілтемесін көрсетіңіз.") };
   const telegram = normalizeTelegramUsername(d.telegram);
-  if (d.telegram && !telegram) return { error: "Telegram: укажите ник (5–32 символа: латиница, цифры, подчёркивание) или ссылку вида t.me/ник." };
-  if (d.avatar_url && !ownedPhotoPath(d.avatar_url, user.id)) return { error: "Загрузите своё фото магазина." };
+  if (d.telegram && !telegram) return { error: await t("Telegram: укажите ник (5–32 символа: латиница, цифры, подчёркивание) или ссылку вида t.me/ник.", "Telegram: ник (5–32 таңба: латын әріптері, цифрлар, астын сызу) немесе t.me/ник түріндегі сілтемені көрсетіңіз.") };
+  if (d.avatar_url && !ownedPhotoPath(d.avatar_url, user.id)) return { error: await t("Загрузите своё фото магазина.", "Дүкеннің өз фотосын жүктеңіз.") };
   const { telegram: _telegram, ...rest } = d;
   void _telegram;
   const { error } = await supabase.from("shops").update({
@@ -51,15 +53,15 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
     instagram,
     telegram_username: telegram,
   }).eq("id", shop.id);
-  if (error) return { error: "Не удалось сохранить настройки." };
+  if (error) return { error: await t("Не удалось сохранить настройки.", "Баптауларды сақтау мүмкін болмады.") };
   invalidateShop(shop.slug);
   const old = ownedPhotoPath(shop.avatar_url, user.id);
   let warning = "";
   if (old && shop.avatar_url !== d.avatar_url) {
     try { await removeUnusedPhoto(supabase, shop.avatar_url, user.id); }
-    catch { warning = " Старое фото не удалось удалить из хранилища."; }
+    catch { warning = await t(" Старое фото не удалось удалить из хранилища.", " Ескі фотоны қоймадан жою мүмкін болмады."); }
   }
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/settings");
-  return { success: `Настройки сохранены.${warning}` };
+  return { success: `${await t("Настройки сохранены.", "Баптаулар сақталды.")}${warning}` };
 }

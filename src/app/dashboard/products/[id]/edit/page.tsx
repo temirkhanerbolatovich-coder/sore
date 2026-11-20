@@ -1,13 +1,17 @@
 import { notFound } from "next/navigation";
 import { requireShop } from "@/lib/shop";
+import { getUiLang, tr } from "@/lib/ui-lang";
 import { enhanceConfigured } from "@/lib/ai-enhance";
 import type { Product } from "@/lib/types";
 import { FormHeader, ProductForm } from "../../product-form";
 
-export const metadata = { title: "Редактирование товара — SÖRE" };
+export async function generateMetadata() {
+  return { title: tr(await getUiLang(), "Редактирование товара — SÖRE", "Тауарды өңдеу — SÖRE") };
+}
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const lang = await getUiLang();
   const { supabase, shop } = await requireShop();
 
   const { data: product } = await supabase
@@ -20,7 +24,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   return (
     <main className="mx-auto flex w-full max-w-md md:max-w-2xl flex-1 flex-col">
-      <FormHeader title="Редактирование" />
+      <FormHeader title={tr(lang, "Редактирование", "Өңдеу")} />
       <ProductForm product={product} enhanceAvailable={enhanceConfigured()} />
     </main>
   );

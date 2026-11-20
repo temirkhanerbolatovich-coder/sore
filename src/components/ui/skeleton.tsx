@@ -1,3 +1,7 @@
+"use client";
+
+import { useTr } from "@/components/ui-lang";
+
 /** Декоративная заглушка: подпись загрузки задаёт контейнер. */
 export function Skeleton({ className = "" }: { className?: string }) {
   return <div aria-hidden="true" className={`rounded-xl bg-line motion-safe:animate-pulse ${className}`} />;
@@ -5,9 +9,10 @@ export function Skeleton({ className = "" }: { className?: string }) {
 
 /** Каркасы повторяют основные блоки страниц, не изображая реальные данные. */
 export function DashboardSkeleton() {
+  const tr = useTr();
   return (
     <main id="main-content" tabIndex={-1} role="status" className="mx-auto w-full max-w-md space-y-4 p-5 lg:max-w-6xl">
-      <span className="sr-only">Загружаем кабинет…</span>
+      <span className="sr-only">{tr("Загружаем кабинет…", "Кабинет жүктелуде…")}</span>
       <Skeleton className="h-12 w-2/3" />
       <Skeleton className="h-14 w-full" />
       <div className="grid grid-cols-2 gap-3"><Skeleton className="h-24" /><Skeleton className="h-24" /></div>
@@ -19,9 +24,10 @@ export function DashboardSkeleton() {
 }
 
 export function OrdersSkeleton() {
+  const tr = useTr();
   return (
     <main id="main-content" tabIndex={-1} role="status" className="mx-auto w-full max-w-md space-y-4 p-5 lg:max-w-6xl">
-      <span className="sr-only">Загружаем заказы…</span>
+      <span className="sr-only">{tr("Загружаем заказы…", "Тапсырыстар жүктелуде…")}</span>
       <Skeleton className="h-8 w-1/3" />
       <Skeleton className="h-12 w-full" />
       <Skeleton className="h-48 w-full" />

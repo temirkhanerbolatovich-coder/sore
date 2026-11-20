@@ -5,10 +5,13 @@ import { useStatefulAction } from "@/lib/use-stateful-action";
 import { createShop, type OnboardingState } from "./actions";
 import { formatPhoneInput } from "@/lib/order";
 import { slugError, slugify } from "@/lib/slug";
+import { useTr, useUiLang } from "@/components/ui-lang";
 
 const initial: OnboardingState = {};
 
 export function OnboardingForm() {
+  const tr = useTr();
+  const lang = useUiLang();
   const [state, onSubmit, pending] = useStatefulAction(createShop, initial);
   const [name, setName] = useState(state.values?.name ?? "");
   const [slug, setSlug] = useState(state.values?.slug ?? "");
@@ -21,7 +24,7 @@ export function OnboardingForm() {
   // Ошибку показываем рядом с полем, а не внизу формы, где её не видно на телефоне.
   const fieldError = (f: string) => (errIn(f) ? state.error : undefined);
   const siteHost = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/^https?:\/\//, "").replace(/\/+$/, "") || "sore.kz";
-  const liveSlugError = slugBlurred && shownSlug ? slugError(shownSlug) : null;
+  const liveSlugError = slugBlurred && shownSlug ? slugError(shownSlug, lang) : null;
   const slugMsg = fieldError("slug") ?? liveSlugError;
   const err = (id: string, msg?: string | null) =>
     msg ? (
@@ -34,7 +37,7 @@ export function OnboardingForm() {
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm font-semibold">
-          Название магазина
+          {tr("Название магазина", "Дүкен атауы")}
         </label>
         <input
           id="name"
@@ -43,7 +46,7 @@ export function OnboardingForm() {
           name="name"
           required
           maxLength={60}
-          placeholder="Сладкий дом Алии"
+          placeholder={tr("Сладкий дом Алии", "Әлияның тәттілер үйі")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           aria-invalid={errIn("name")}
@@ -55,7 +58,7 @@ export function OnboardingForm() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="slug" className="text-sm font-semibold">
-          Адрес ссылки
+          {tr("Адрес ссылки", "Сілтеме мекенжайы")}
         </label>
         <div className="flex items-center gap-2">
           <span className="text-body text-muted">{siteHost}/</span>
@@ -76,12 +79,12 @@ export function OnboardingForm() {
           />
         </div>
         {err("slug", slugMsg)}
-        <p className="text-caption text-muted">Латиница, цифры и дефис, от 3 символов. Эту ссылку вы поставите в био Instagram.</p>
+        <p className="text-caption text-muted">{tr("Латиница, цифры и дефис, от 3 символов. Эту ссылку вы поставите в био Instagram.", "Латын әріптері, цифрлар және дефис, кемінде 3 таңба. Бұл сілтемені Instagram профиліне саласыз.")}</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="whatsapp" className="text-sm font-semibold">
-          Номер WhatsApp
+          {tr("Номер WhatsApp", "WhatsApp нөмірі")}
         </label>
         <input
           id="whatsapp"
@@ -98,14 +101,14 @@ export function OnboardingForm() {
           className="input"
         />
         {err("whatsapp", fieldError("whatsapp"))}
-        <p className="text-caption text-muted">Сюда будут приходить заказы.</p>
+        <p className="text-caption text-muted">{tr("Сюда будут приходить заказы.", "Тапсырыстар осы нөмірге келеді.")}</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="city" className="text-sm font-semibold">
-          Город
+          {tr("Город", "Қала")}
         </label>
-        <input id="city" autoComplete="address-level2" name="city" placeholder="Алматы" defaultValue={state.values?.city} className="input" />
+        <input id="city" autoComplete="address-level2" name="city" placeholder={tr("Алматы", "Алматы")} defaultValue={state.values?.city} className="input" />
       </div>
 
       {state.error && !state.field && (
@@ -115,7 +118,7 @@ export function OnboardingForm() {
       )}
 
       <button type="submit" disabled={pending} className="btn-accent h-14 text-lg disabled:opacity-60">
-        {pending ? "Создаём…" : "Создать магазин"}
+        {pending ? tr("Создаём…", "Ашылуда…") : tr("Создать магазин", "Дүкен ашу")}
       </button>
     </form>
   );
