@@ -17,7 +17,7 @@ import { useTr } from "@/components/ui-lang";
 
 const initial: ProductState = {};
 
-export function ProductForm({ product, enhanceAvailable = false, atLimit = false, proUrl = null, cap = FREE_PRODUCT_LIMIT }: { product?: Product; enhanceAvailable?: boolean; atLimit?: boolean; proUrl?: string | null; cap?: number }) {
+export function ProductForm({ product, atLimit = false, proUrl = null, cap = FREE_PRODUCT_LIMIT }: { product?: Product; atLimit?: boolean; proUrl?: string | null; cap?: number }) {
   const tr = useTr();
   const [state, onSubmit, pending] = useStatefulAction(saveProduct, initial);
   const [photoUrl, setPhotoUrl] = useState(product?.photo_url ?? "");
@@ -55,17 +55,11 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
   const [aiBackup, setAiBackup] = useState<{ title: string; descRu: string; descKz: string; category: string } | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
   useUnsavedGuard(touched && !pending);
-  // Улучшение фото: оригинал остаётся в photoUrl, пока продавец не согласится на результат.
-  const [enhanced, setEnhanced] = useState<string | null>(null);
-  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
-  const [enhanceBusy, setEnhanceBusy] = useState(false);
-  const [enhanceMessage, setEnhanceMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [aiMessage, setAiMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function fillWithAi() {
     setAiBusy(true);
     setAiMessage(null);
-    setEnhanceMessage((m) => (m && !m.ok ? null : m));
     try {
       const res = await fetch("/api/ai/product-card", {
         method: "POST",
@@ -106,54 +100,6 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
     }
   }
 
-  async function enhancePhoto() {
-    setEnhanceBusy(true);
-    setEnhanceMessage(null);
-    setAiMessage((m) => (m && !m.ok ? null : m));
-    try {
-      const res = await fetch("/api/ai/photo-enhance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photo_url: photoUrl }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "error");
-      setEnhanced(json.image);
-      setEnhanceMessage({ ok: true, text: tr(`Сравните фото. Осталось ИИ-запросов на сегодня: ${json.remaining}.`, `Фотоларды салыстырыңыз. Бүгінге қалған ЖИ сұраныстары: ${json.remaining}.`) });
-    } catch (e) {
-      setEnhanceMessage({
-        ok: false,
-        text: e instanceof Error && e.message !== "error" ? e.message : tr("Не удалось связаться с ИИ. Оставьте фото как есть.", "ЖИ-мен байланысу мүмкін болмады. Фотоны сол қалпында қалдырыңыз."),
-      });
-    } finally {
-      setEnhanceBusy(false);
-    }
-  }
-
-  async function acceptEnhanced() {
-    if (!enhanced) return;
-    setUploading(true);
-    setPhotoError("");
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("no user");
-      const blob = await (await fetch(enhanced)).blob();
-      const url = await uploadProductPhoto(supabase, user.id, new File([blob], "enhanced", { type: blob.type }));
-      setOriginalUrl(photoUrl);
-      setPhotoUrl(url);
-      setEnhanced(null);
-      setEnhanceMessage({ ok: true, text: tr("Фото заменено.", "Фото ауыстырылды.") });
-      setTouched(true);
-    } catch {
-      setPhotoError(tr("Не удалось сохранить улучшенное фото. Попробуйте ещё раз.", "Жақсартылған фотоны сақтау мүмкін болмады. Қайталап көріңіз."));
-    } finally {
-      setUploading(false);
-    }
-  }
-
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -167,9 +113,6 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
       if (!user) throw new Error("no user");
 
       setPhotoUrl(await uploadProductPhoto(supabase, user.id, file));
-      setEnhanced(null);
-      setOriginalUrl(null);
-      setEnhanceMessage(null);
       setTouched(true);
     } catch {
       setPhotoError(tr("Не удалось загрузить фото. Попробуйте другое или проверьте интернет.", "Фотоны жүктеу мүмкін болмады. Басқасын таңдаңыз немесе интернетті тексеріңіз."));
@@ -230,7 +173,7 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
                 {uploading ? tr("Загружаем…", "Жүктелуде…") : photoUrl ? tr("Заменить фото", "Фотоны ауыстыру") : tr("Сделать или выбрать фото", "Фото түсіру немесе таңдау")}
               </label>
               {photoUrl && !uploading && (
-                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setEnhanced(null); setOriginalUrl(null); setEnhanceMessage(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
+                <button type="button" onClick={() => { setPhotoUrl(""); setAiBackup(null); setTouched(true); }} className="min-h-11 text-sm font-semibold text-accent-dark underline">
                   {tr("Убрать фото", "Фотоны жою")}
                 </button>
               )}
@@ -243,17 +186,6 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
                 <AiIcon size={18} />
                 {aiBusy ? tr("ИИ думает…", "ЖИ ойланып жатыр…") : tr("Заполнить с ИИ", "ЖИ-мен толтыру")}
               </button>
-              {enhanceAvailable && (
-              <button
-                type="button"
-                onClick={enhancePhoto}
-                disabled={!photoUrl || uploading || aiBusy || enhanceBusy || enhanced !== null}
-                className="flex h-11 items-center justify-center gap-2 rounded-xl border-[1.5px] border-ink bg-surface text-body font-bold disabled:opacity-50"
-              >
-                <AiIcon size={18} />
-                {enhanceBusy ? tr("Улучшаем…", "Жақсартылуда…") : tr("Сделать фото продающим", "Фотоны сатылымды ету")}
-              </button>
-              )}
               {!photoUrl && <p className="text-caption leading-snug text-muted">{tr("ИИ работает по фото: сначала добавьте его.", "ЖИ фото бойынша жұмыс істейді: алдымен оны қосыңыз.")}</p>}
             </div>
           </div>
@@ -261,53 +193,6 @@ export function ProductForm({ product, enhanceAvailable = false, atLimit = false
             <p role="alert" tabIndex={-1} ref={(node) => node?.focus()} className="text-sm font-semibold text-accent-dark">
               {photoError}
             </p>
-          )}
-          {enhanceMessage && (
-            <p
-              role={enhanceMessage.ok ? "status" : "alert"}
-              className={`rounded-xl border px-3.5 py-3 text-sm leading-snug ${
-                enhanceMessage.ok ? "border-ok-line bg-ok-bg text-ok-ink" : "border-line bg-accent-soft font-semibold text-accent-dark"
-              }`}
-            >
-              {enhanceMessage.text}
-              {enhanceMessage.ok && originalUrl && !enhanced && (
-                <>
-                  {" "}
-                  <button
-                    type="button"
-                    className="min-h-11 font-semibold underline"
-                    onClick={() => { setPhotoUrl(originalUrl); setOriginalUrl(null); setEnhanceMessage(null); setTouched(true); }}
-                  >
-                    {tr("Вернуть оригинал", "Түпнұсқаны қайтару")}
-                  </button>
-                </>
-              )}
-            </p>
-          )}
-          {enhanced && (
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                <figure className="flex flex-col gap-1.5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photoUrl} alt={tr("Фото до улучшения", "Жақсартуға дейінгі фото")} className="aspect-square w-full rounded-2xl object-cover" />
-                  <figcaption className="text-caption text-muted">{tr("До", "Дейін")}</figcaption>
-                </figure>
-                <figure className="flex flex-col gap-1.5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={enhanced} alt={tr("Фото после улучшения", "Жақсартудан кейінгі фото")} className="aspect-square w-full rounded-2xl object-cover" />
-                  <figcaption className="text-caption text-muted">{tr("После", "Кейін")}</figcaption>
-                </figure>
-              </div>
-              <p className="text-caption leading-snug text-muted">{tr("Проверьте, что товар на фото не изменился: цвет, форма, надписи.", "Фотодағы тауар өзгермегенін тексеріңіз: түсі, пішіні, жазулары.")}</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={acceptEnhanced} disabled={uploading} className="btn-accent h-11 disabled:opacity-60">
-                  {uploading ? tr("Сохраняем…", "Сақталуда…") : tr("Взять новое", "Жаңасын алу")}
-                </button>
-                <button type="button" onClick={() => { setEnhanced(null); setEnhanceMessage(null); }} className="btn-outline h-11">
-                  {tr("Оставить как есть", "Сол қалпында қалдыру")}
-                </button>
-              </div>
-            </div>
           )}
           {aiMessage && (
             <p
