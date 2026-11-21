@@ -1,3 +1,4 @@
+import { getUiLang, tr } from "@/lib/ui-lang";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -18,22 +19,24 @@ export const maxDuration = 90;
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status });
 
 export async function POST(request: Request) {
-  if (!aiConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return fail(503, "ИИ пока не настроен. Добавьте товары по одному или загрузите прайс.");
+  const lang = await getUiLang();
+  const t = (ru: string, kz: string) => tr(lang, ru, kz);
+  if (!aiConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return fail(503, t("ИИ пока не настроен. Добавьте товары по одному или загрузите прайс.", "ЖИ әлі бапталмаған. Тауарларды бір-бірден қосыңыз немесе прайсты жүктеңіз."));
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return fail(401, "Войдите в аккаунт.");
+  if (!user) return fail(401, t("Войдите в аккаунт.", "Аккаунтқа кіріңіз."));
 
   const { data: shop } = await supabase.from("shops").select("id").eq("owner_id", user.id).maybeSingle();
-  if (!shop) return fail(404, "Сначала создайте магазин.");
+  if (!shop) return fail(404, t("Сначала создайте магазин.", "Алдымен дүкен ашыңыз."));
 
   const body = (await request.json().catch(() => null)) as { photo_url?: unknown } | null;
-  const loaded = await loadOwnedPhoto(supabase, user.id, body?.photo_url ?? "", "Сначала загрузите фото полки.");
+  const loaded = await loadOwnedPhoto(supabase, user.id, body?.photo_url ?? "", t("Сначала загрузите фото полки.", "Алдымен сөре фотосын жүктеңіз."), lang);
   if (!loaded.ok) return fail(loaded.status, loaded.error);
 
-  const quota = await reserveAi(supabase, shop.id, "добавьте товары вручную");
+  const quota = await reserveAi(supabase, shop.id, t("добавьте товары вручную", "тауарларды қолмен қосыңыз"), lang);
   if (!quota.ok) return fail(quota.status, quota.error);
 
   const bytes = Buffer.from(await loaded.photo.arrayBuffer());
@@ -44,10 +47,10 @@ export async function POST(request: Request) {
   } catch (e) {
     await quota.release();
     if (e instanceof ShelfEmptyError) {
-      return fail(422, "На фото не нашли товаров. Снимите полку ближе и при хорошем свете или добавьте товары вручную.");
+      return fail(422, t("На фото не нашли товаров. Снимите полку ближе и при хорошем свете или добавьте товары вручную.", "Фотодан тауар табылмады. Сөрені жақынырақ және жақсы жарықта түсіріңіз немесе тауарларды қолмен қосыңыз."));
     }
     console.error("ai-shelf failed:", e instanceof Error ? e.message : e);
-    return fail(502, "ИИ не смог разобрать фото. Попробуйте ещё раз или добавьте товары вручную.");
+    return fail(502, t("ИИ не смог разобрать фото. Попробуйте ещё раз или добавьте товары вручную.", "ЖИ фотоны талдай алмады. Қайталап көріңіз немесе тауарларды қолмен қосыңыз."));
   }
 
   // Вырезки: каждая с миниатюрой, как обычное фото товара. Не загрузилась — товар покажет фото полки.
